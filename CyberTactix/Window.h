@@ -17,7 +17,7 @@ namespace pix
 	//
 	// Rendering is assumed to operate at a fixed internal resolution which
 	// is simply upscaled to the native desktop resolution. 
-	// Fullscreen is offered exclusively as a borderless window, and
+	// Fullscreen is offered only as a borderless window, and
 	// the legacy exclusive fullscreen mode is deliberately not offered.
 	//
 	// The desktop resolution is cached once at initialization to reduce overhead for frequent access.
