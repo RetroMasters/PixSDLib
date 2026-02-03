@@ -1,0 +1,174 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <Filter Include="Source Files">
+      <UniqueIdentifier>{4FC737F1-C7A5-4376-A066-2A32D752A2FF}</UniqueIdentifier>
+      <Extensions>cpp;c;cc;cxx;c++;cppm;ixx;def;odl;idl;hpj;bat;asm;asmx</Extensions>
+    </Filter>
+    <Filter Include="Header Files">
+      <UniqueIdentifier>{93995380-89BD-4b04-88EB-625FBE52EBFB}</UniqueIdentifier>
+      <Extensions>h;hh;hpp;hxx;h++;hm;inl;inc;ipp;xsd</Extensions>
+    </Filter>
+    <Filter Include="Resource Files">
+      <UniqueIdentifier>{67DA6AB6-F800-4c08-8B7A-83BB121AAD01}</UniqueIdentifier>
+      <Extensions>rc;ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe;resx;tiff;tif;png;wav;mfcribbon-ms</Extensions>
+    </Filter>
+    <Filter Include="Source Files\CyberTactix">
+      <UniqueIdentifier>{822fb2b4-7f47-47d1-89aa-221e6bbc7403}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\PixSDLib">
+      <UniqueIdentifier>{303a25ac-8cfc-425c-88a2-e75e95476bab}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\CyberTactix">
+      <UniqueIdentifier>{17945ad7-d0e1-4b45-9a69-08136e8ce5c4}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\TestGame">
+      <UniqueIdentifier>{6697ab39-6d6f-4c0e-87f0-fd5478c7f71c}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\PixSDLib">
+      <UniqueIdentifier>{01eccef5-95f7-4a22-9a8c-137ca2726a04}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\TestGame">
+      <UniqueIdentifier>{814b9c5b-3a6a-44ee-8926-48ea245bebec}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\PixSDLib\Singletons">
+      <UniqueIdentifier>{3c5b32aa-f887-4070-a605-024dbd5a6c4b}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\PixSDLib\Singletons">
+      <UniqueIdentifier>{d03cffff-b0df-432a-b2f7-fefe3a3255a4}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\PixSDLib\Misc">
+      <UniqueIdentifier>{94bcde40-5519-40a9-8871-99f465bd3ab3}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\PixSDLib\Rendering">
+      <UniqueIdentifier>{f057d085-de7b-45cd-962a-6fff3c09a2da}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\PixSDLib\Rendering\Texture">
+      <UniqueIdentifier>{8c9117bd-cd29-4cae-9731-0f83ef7f278f}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\PixSDLib\Rendering">
+      <UniqueIdentifier>{93c06cb5-b5f5-4867-a0a6-ec1fd2abedff}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\PixSDLib\Rendering\Texture">
+      <UniqueIdentifier>{904e5410-d771-4aef-9890-96d274d6018c}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\PixSDLib\Math">
+      <UniqueIdentifier>{c1d5316e-c6ae-4e42-b488-bc040264daab}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\PixSDLib\Math">
+      <UniqueIdentifier>{19f54457-f986-4a27-be36-82727e7d9481}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\PixSDLib\GameLoop">
+      <UniqueIdentifier>{1a815164-2bff-4c04-902c-484ad88feb20}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\PixSDLib\GameLoop">
+      <UniqueIdentifier>{0b1754c7-2723-4c2f-88ee-4082a7d520ec}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\PixSDLib\Audio">
+      <UniqueIdentifier>{68c123b8-eab5-430f-9d6f-5d045c835cbe}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\PixSDLib\Audio">
+      <UniqueIdentifier>{029b46d2-7f7d-4d77-807f-c036a2aa0aaf}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="ErrorLogger.cpp">
+      <Filter>Source Files\PixSDLib\Singletons</Filter>
+    </ClCompile>
+    <ClCompile Include="Window.cpp">
+      <Filter>Source Files\PixSDLib\Singletons</Filter>
+    </ClCompile>
+    <ClCompile Include="Renderer.cpp">
+      <Filter>Source Files\PixSDLib\Singletons</Filter>
+    </ClCompile>
+    <ClCompile Include="Texture.cpp">
+      <Filter>Source Files\PixSDLib\Rendering\Texture</Filter>
+    </ClCompile>
+    <ClCompile Include="TargetTexture.cpp">
+      <Filter>Source Files\PixSDLib\Rendering\Texture</Filter>
+    </ClCompile>
+    <ClCompile Include="PixMath.cpp">
+      <Filter>Source Files\PixSDLib\Math</Filter>
+    </ClCompile>
+    <ClCompile Include="Main.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="ImageTexture.cpp">
+      <Filter>Source Files\PixSDLib\Rendering\Texture</Filter>
+    </ClCompile>
+    <ClCompile Include="TextTexture.cpp">
+      <Filter>Source Files\PixSDLib\Rendering\Texture</Filter>
+    </ClCompile>
+    <ClCompile Include="StreamingTexture.cpp">
+      <Filter>Source Files\PixSDLib\Rendering\Texture</Filter>
+    </ClCompile>
+    <ClCompile Include="LaunchConfig.cpp">
+      <Filter>Source Files\PixSDLib\Singletons</Filter>
+    </ClCompile>
+    <ClCompile Include="GameLoop.cpp">
+      <Filter>Source Files\PixSDLib\GameLoop</Filter>
+    </ClCompile>
+    <ClCompile Include="UpdateLoopScheduler.cpp">
+      <Filter>Source Files\PixSDLib\GameLoop</Filter>
+    </ClCompile>
+    <ClCompile Include="Audio.cpp">
+      <Filter>Source Files\PixSDLib\Singletons</Filter>
+    </ClCompile>
+    <ClCompile Include="Input.cpp">
+      <Filter>Source Files\PixSDLib\Singletons</Filter>
+    </ClCompile>
+    <ClCompile Include="SoundEffect.cpp">
+      <Filter>Source Files\PixSDLib\Audio</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="ErrorLogger.h">
+      <Filter>Header Files\PixSDLib\Singletons</Filter>
+    </ClInclude>
+    <ClInclude Include="Uncopyable.h">
+      <Filter>Header Files\PixSDLib\Misc</Filter>
+    </ClInclude>
+    <ClInclude Include="Window.h">
+      <Filter>Header Files\PixSDLib\Singletons</Filter>
+    </ClInclude>
+    <ClInclude Include="Renderer.h">
+      <Filter>Header Files\PixSDLib\Singletons</Filter>
+    </ClInclude>
+    <ClInclude Include="Texture.h">
+      <Filter>Header Files\PixSDLib\Rendering\Texture</Filter>
+    </ClInclude>
+    <ClInclude Include="TargetTexture.h">
+      <Filter>Header Files\PixSDLib\Rendering\Texture</Filter>
+    </ClInclude>
+    <ClInclude Include="PixMath.h">
+      <Filter>Header Files\PixSDLib\Math</Filter>
+    </ClInclude>
+    <ClInclude Include="ImageTexture.h">
+      <Filter>Header Files\PixSDLib\Rendering\Texture</Filter>
+    </ClInclude>
+    <ClInclude Include="TextTexture.h">
+      <Filter>Header Files\PixSDLib\Rendering\Texture</Filter>
+    </ClInclude>
+    <ClInclude Include="StreamingTexture.h">
+      <Filter>Header Files\PixSDLib\Rendering\Texture</Filter>
+    </ClInclude>
+    <ClInclude Include="LaunchConfig.h">
+      <Filter>Header Files\PixSDLib\Singletons</Filter>
+    </ClInclude>
+    <ClInclude Include="GameLoop.h">
+      <Filter>Header Files\PixSDLib\GameLoop</Filter>
+    </ClInclude>
+    <ClInclude Include="UpdateLoopScheduler.h">
+      <Filter>Header Files\PixSDLib\GameLoop</Filter>
+    </ClInclude>
+    <ClInclude Include="Audio.h">
+      <Filter>Header Files\PixSDLib\Singletons</Filter>
+    </ClInclude>
+    <ClInclude Include="Input.h">
+      <Filter>Header Files\PixSDLib\Singletons</Filter>
+    </ClInclude>
+    <ClInclude Include="SoundEffect.h">
+      <Filter>Header Files\PixSDLib\Audio</Filter>
+    </ClInclude>
+  </ItemGroup>
+</Project>

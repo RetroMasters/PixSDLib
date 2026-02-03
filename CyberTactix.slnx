@@ -1,0 +1,7 @@
+<Solution>
+  <Configurations>
+    <Platform Name="x64" />
+    <Platform Name="x86" />
+  </Configurations>
+  <Project Path="CyberTactix/CyberTactix.vcxproj" Id="131b8a39-a3c5-41e5-b737-246e4bb1888d" />
+</Solution>
