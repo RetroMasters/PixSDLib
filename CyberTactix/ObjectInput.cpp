@@ -2,15 +2,7 @@
 
 namespace pix
 {
-	/*
-	KeyboardInputPump::KeyboardInputPump(SDL_Scancode sourceKey, VirtualAxis& targetAxis, InputPump::PumpFunction pumpFunction) noexcept : InputPump(targetAxis, pumpFunction), sourceKey_(sourceKey)
-	{
-		// Prevent wrong "Now"-Actions during the Update of instantiation
-		PumpInput();
-		GetVirtualAxis()->UpdatePreviousInput();
-	}
-	*/
-
+	
 	void ObjectInput::Update() 
 	{
 		UpdatePreviousInput();

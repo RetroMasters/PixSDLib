@@ -15,8 +15,8 @@ namespace pix
 	public:
 
 		VirtualAxis(const std::string& name, float deadZone = 0.001f) : //deadZone is not negative
-			axisValue_(0.0f),
-			prevAxisValue_(0.0f),
+			axisState_(0.0f),
+			prevAxisState_(0.0f),
 			name_(name)
 		{
 			SetDeadZone(deadZone);
@@ -28,20 +28,20 @@ namespace pix
 		// Must be called exactly once per update loop iteration, at its beginning before pumping input.
 		void BeginUpdate()
 		{
-			prevAxisValue_ = axisValue_;
+			prevAxisState_ = axisState_;
 		}
 
 		void SetAxisState(float value) 
 		{
-			axisValue_ = std::abs(value) > deadZone_ ? value : 0.0f;
+			axisState_ = std::abs(value) > deadZone_ ? value : 0.0f;
 
-			if (axisValue_ > 1.0f) axisValue_ = 1.0f;
-			else if (axisValue_ < -1.0f) axisValue_ = -1.0f;
+			if (axisState_ > 1.0f) axisState_ = 1.0f;
+			else if (axisState_ < -1.0f) axisState_ = -1.0f;
 		}
 
 		float GetAxisState() const
 		{
-			return axisValue_;
+			return axisState_;
 		}
 
 		void SetDeadZone(float value) 
@@ -59,17 +59,17 @@ namespace pix
 		// Resets the previous and current axis state to zero (dead zone remains unchanged)
 		void ResetState() 
 		{
-			axisValue_ = 0.0f;
-			prevAxisValue_ = 0.0f;
+			axisState_ = 0.0f;
+			prevAxisState_ = 0.0f;
 		}
 
-		bool IsPositive() const { return axisValue_ > 0.0f; }
-		bool IsNowPositive() const { return prevAxisValue_ <= 0.0f && axisValue_ > 0.0f; }
-		bool IsNowZeroFromPositive() const { return prevAxisValue_ > 0.0f && axisValue_ == 0.0f; }
-		bool IsNegative() const { return axisValue_ < 0.0f; }
-		bool IsNowNegative() const { return prevAxisValue_ >= 0.0f && axisValue_ < 0.0f; }
-		bool IsNowZeroFromNegative() const { return prevAxisValue_ < 0.0f && axisValue_ == 0.0f; }
-		bool IsNowZero() const { return prevAxisValue_ != 0.0f && axisValue_ == 0.0f; }
+		bool IsPositive() const { return axisState_ > 0.0f; }
+		bool IsNowPositive() const { return prevAxisState_ <= 0.0f && axisState_ > 0.0f; }
+		bool IsNowZeroFromPositive() const { return prevAxisState_ > 0.0f && axisState_ == 0.0f; }
+		bool IsNegative() const { return axisState_ < 0.0f; }
+		bool IsNowNegative() const { return prevAxisState_ >= 0.0f && axisState_ < 0.0f; }
+		bool IsNowZeroFromNegative() const { return prevAxisState_ < 0.0f && axisState_ == 0.0f; }
+		bool IsNowZero() const { return prevAxisState_ != 0.0f && axisState_ == 0.0f; }
 
 
 		const std::string& GetName() const
@@ -79,8 +79,8 @@ namespace pix
 
 	protected:
 
-		float axisValue_;
-		float prevAxisValue_;
+		float axisState_;
+		float prevAxisState_;
 		std::string name_;
 
 	private:

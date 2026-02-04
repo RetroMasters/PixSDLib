@@ -142,6 +142,7 @@
     <ClCompile Include="LaunchConfig.cpp" />
     <ClCompile Include="Main.cpp" />
     <ClCompile Include="MoveableObject2D.cpp" />
+    <ClCompile Include="MoveableObject3D.cpp" />
     <ClCompile Include="ObjectInput.cpp" />
     <ClCompile Include="PixMath.cpp" />
     <ClCompile Include="Renderer.cpp" />
@@ -151,6 +152,10 @@
     <ClCompile Include="Sprite2DEx.cpp" />
     <ClCompile Include="Sprite2DExNode.cpp" />
     <ClCompile Include="Sprite2DNode.cpp" />
+    <ClCompile Include="Sprite3D.cpp" />
+    <ClCompile Include="Sprite3DEx.cpp" />
+    <ClCompile Include="Sprite3DExNode.cpp" />
+    <ClCompile Include="Sprite3DNode.cpp" />
     <ClCompile Include="StreamingTexture.cpp" />
     <ClCompile Include="TargetTexture.cpp" />
     <ClCompile Include="TextTexture.cpp" />
@@ -168,6 +173,7 @@
     <ClInclude Include="InputPumps.h" />
     <ClInclude Include="LaunchConfig.h" />
     <ClInclude Include="MoveableObject2D.h" />
+    <ClInclude Include="MoveableObject3D.h" />
     <ClInclude Include="ObjectInput.h" />
     <ClInclude Include="PixMath.h" />
     <ClInclude Include="Renderer.h" />
@@ -176,12 +182,18 @@
     <ClInclude Include="Sprite2DEx.h" />
     <ClInclude Include="Sprite2DExNode.h" />
     <ClInclude Include="Sprite2DNode.h" />
+    <ClInclude Include="Sprite3D.h" />
+    <ClInclude Include="Sprite3DEx.h" />
+    <ClInclude Include="Sprite3DExNode.h" />
+    <ClInclude Include="Sprite3DNode.h" />
     <ClInclude Include="SpriteMesh.h" />
     <ClInclude Include="StreamingTexture.h" />
     <ClInclude Include="TargetTexture.h" />
+    <ClInclude Include="TexCoodsTypes.h" />
     <ClInclude Include="TextTexture.h" />
     <ClInclude Include="Texture.h" />
     <ClInclude Include="TriangleMesh2D.h" />
+    <ClInclude Include="TriangleMesh3D.h" />
     <ClInclude Include="Uncopyable.h" />
     <ClInclude Include="UpdateLoopScheduler.h" />
     <ClInclude Include="Window.h" />

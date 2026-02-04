@@ -85,6 +85,15 @@
     <Filter Include="Header Files\PixSDLib\Rendering\Rendering2D">
       <UniqueIdentifier>{05875e37-94a2-419d-b89e-138e6a99ea6a}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Header Files\PixSDLib\Rendering\Rendering3D">
+      <UniqueIdentifier>{993ac2b3-712b-4583-b600-5358fb630099}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\PixSDLib\Entity\Entity3D">
+      <UniqueIdentifier>{08f8797d-881f-4b5d-8ddf-2f83db08924c}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\PixSDLib\Entity\Entity3D">
+      <UniqueIdentifier>{cea7fd44-4159-471f-b010-8f088f676c7d}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="ErrorLogger.cpp">
@@ -155,6 +164,21 @@
     </ClCompile>
     <ClCompile Include="Sprite2DNode.cpp">
       <Filter>Source Files\PixSDLib\Entity\Entitty2D</Filter>
+    </ClCompile>
+    <ClCompile Include="Sprite3DExNode.cpp">
+      <Filter>Source Files\PixSDLib\Entity\Entity3D</Filter>
+    </ClCompile>
+    <ClCompile Include="Sprite3DNode.cpp">
+      <Filter>Source Files\PixSDLib\Entity\Entity3D</Filter>
+    </ClCompile>
+    <ClCompile Include="MoveableObject3D.cpp">
+      <Filter>Source Files\PixSDLib\Entity\Entity3D</Filter>
+    </ClCompile>
+    <ClCompile Include="Sprite3D.cpp">
+      <Filter>Source Files\PixSDLib\Entity\Entity3D</Filter>
+    </ClCompile>
+    <ClCompile Include="Sprite3DEx.cpp">
+      <Filter>Source Files\PixSDLib\Entity\Entity3D</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -235,6 +259,27 @@
     </ClInclude>
     <ClInclude Include="TriangleMesh2D.h">
       <Filter>Header Files\PixSDLib\Rendering\Rendering2D</Filter>
+    </ClInclude>
+    <ClInclude Include="TexCoodsTypes.h">
+      <Filter>Header Files\PixSDLib\Rendering\Rendering2D</Filter>
+    </ClInclude>
+    <ClInclude Include="TriangleMesh3D.h">
+      <Filter>Header Files\PixSDLib\Rendering\Rendering3D</Filter>
+    </ClInclude>
+    <ClInclude Include="MoveableObject3D.h">
+      <Filter>Header Files\PixSDLib\Entity\Entity3D</Filter>
+    </ClInclude>
+    <ClInclude Include="Sprite3D.h">
+      <Filter>Header Files\PixSDLib\Entity\Entity3D</Filter>
+    </ClInclude>
+    <ClInclude Include="Sprite3DEx.h">
+      <Filter>Header Files\PixSDLib\Entity\Entity3D</Filter>
+    </ClInclude>
+    <ClInclude Include="Sprite3DNode.h">
+      <Filter>Header Files\PixSDLib\Entity\Entity3D</Filter>
+    </ClInclude>
+    <ClInclude Include="Sprite3DExNode.h">
+      <Filter>Header Files\PixSDLib\Entity\Entity3D</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>
