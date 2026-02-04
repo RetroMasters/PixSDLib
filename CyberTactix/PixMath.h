@@ -278,7 +278,7 @@ namespace pix
 
 		Rotation2D();
 
-		Rotation2D(float degrees);
+		explicit Rotation2D(float degrees);
 
 		void SetToIdentity();
 
@@ -298,13 +298,6 @@ namespace pix
 
 		Rotation2D& AddRotation(const Rotation2D& deltaRotation);
 
-		/*
-		template<typename T> Vector2<T> RotatePoint(const Vector2<T>& point) const noexcept
-		{
-			return { xAxis_.X * point.X - xAxis_.Y * point.Y,
-					 xAxis_.Y * point.X + xAxis_.X * point.Y };
-		}
-		*/
 
 		Vector2f RotatePoint(const Vector2f& point) const
 		{

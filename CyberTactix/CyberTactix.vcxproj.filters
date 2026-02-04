@@ -13,14 +13,8 @@
       <UniqueIdentifier>{67DA6AB6-F800-4c08-8B7A-83BB121AAD01}</UniqueIdentifier>
       <Extensions>rc;ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe;resx;tiff;tif;png;wav;mfcribbon-ms</Extensions>
     </Filter>
-    <Filter Include="Source Files\CyberTactix">
-      <UniqueIdentifier>{822fb2b4-7f47-47d1-89aa-221e6bbc7403}</UniqueIdentifier>
-    </Filter>
     <Filter Include="Header Files\PixSDLib">
       <UniqueIdentifier>{303a25ac-8cfc-425c-88a2-e75e95476bab}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="Header Files\CyberTactix">
-      <UniqueIdentifier>{17945ad7-d0e1-4b45-9a69-08136e8ce5c4}</UniqueIdentifier>
     </Filter>
     <Filter Include="Source Files\TestGame">
       <UniqueIdentifier>{6697ab39-6d6f-4c0e-87f0-fd5478c7f71c}</UniqueIdentifier>
@@ -69,6 +63,12 @@
     </Filter>
     <Filter Include="Source Files\PixSDLib\Audio">
       <UniqueIdentifier>{029b46d2-7f7d-4d77-807f-c036a2aa0aaf}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\PixSDLib\Input">
+      <UniqueIdentifier>{11f6efd7-7f73-41be-837b-86068447956b}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\PixSDLib\Input">
+      <UniqueIdentifier>{c468b15e-12c8-46ad-ac47-937eaa260adf}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
   <ItemGroup>
@@ -120,6 +120,12 @@
     <ClCompile Include="SoundEffect.cpp">
       <Filter>Source Files\PixSDLib\Audio</Filter>
     </ClCompile>
+    <ClCompile Include="AbstractInputPump.cpp">
+      <Filter>Source Files\PixSDLib\Input</Filter>
+    </ClCompile>
+    <ClCompile Include="ObjectInput.cpp">
+      <Filter>Source Files\PixSDLib\Input</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="ErrorLogger.h">
@@ -169,6 +175,15 @@
     </ClInclude>
     <ClInclude Include="SoundEffect.h">
       <Filter>Header Files\PixSDLib\Audio</Filter>
+    </ClInclude>
+    <ClInclude Include="AbstractInputPump.h">
+      <Filter>Header Files\PixSDLib\Input</Filter>
+    </ClInclude>
+    <ClInclude Include="InputPumps.h">
+      <Filter>Header Files\PixSDLib\Input</Filter>
+    </ClInclude>
+    <ClInclude Include="ObjectInput.h">
+      <Filter>Header Files\PixSDLib\Input</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

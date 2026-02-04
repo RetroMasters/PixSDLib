@@ -134,12 +134,14 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="AbstractInputPump.cpp" />
     <ClCompile Include="Audio.cpp" />
     <ClCompile Include="ErrorLogger.cpp" />
     <ClCompile Include="GameLoop.cpp" />
     <ClCompile Include="ImageTexture.cpp" />
     <ClCompile Include="LaunchConfig.cpp" />
     <ClCompile Include="Main.cpp" />
+    <ClCompile Include="ObjectInput.cpp" />
     <ClCompile Include="PixMath.cpp" />
     <ClCompile Include="Renderer.cpp" />
     <ClCompile Include="Input.cpp" />
@@ -152,12 +154,15 @@
     <ClCompile Include="Window.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="AbstractInputPump.h" />
     <ClInclude Include="Audio.h" />
     <ClInclude Include="ErrorLogger.h" />
     <ClInclude Include="GameLoop.h" />
     <ClInclude Include="ImageTexture.h" />
     <ClInclude Include="Input.h" />
+    <ClInclude Include="InputPumps.h" />
     <ClInclude Include="LaunchConfig.h" />
+    <ClInclude Include="ObjectInput.h" />
     <ClInclude Include="PixMath.h" />
     <ClInclude Include="Renderer.h" />
     <ClInclude Include="SoundEffect.h" />
