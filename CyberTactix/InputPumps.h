@@ -12,21 +12,21 @@ namespace pix
 	{
 	public:
 
-		KeyboardInputPump(SDL_Scancode sourceKey, VirtualAxis& targetAxis, AbstractInputPump::PumpFunction pumpFunction) noexcept : AbstractInputPump(targetAxis, pumpFunction), sourceKey_(sourceKey)
+		KeyboardInputPump(SDL_Scancode sourceKey, VirtualAxis& targetAxis, AbstractInputPump::PumpFunction pumpFunction)  : AbstractInputPump(targetAxis, pumpFunction), sourceKey_(sourceKey)
 		{
 			// Prevent wrong "Now"-Actions during the Update of instantiation
 			PumpInput();
 			GetVirtualAxis()->BeginUpdate();
 		}
 
-		~KeyboardInputPump() noexcept = default;
+		~KeyboardInputPump()  = default;
 
-		float GetSourceState() const noexcept override
+		float GetSourceState() const  override
 		{
 			return KeyboardInput::Get().IsKeyDown(sourceKey_) ? 1.0f : 0.0f;
 		}
 
-		SDL_Scancode GetSourceKey() const noexcept { return sourceKey_; }
+		SDL_Scancode GetSourceKey() const  { return sourceKey_; }
 
 	private:
 
@@ -41,16 +41,16 @@ namespace pix
 	{
 	public:
 
-		MouseInputPump(MouseInput::Button sourceButton, VirtualAxis& targetAxis, AbstractInputPump::PumpFunction pumpFunction = nullptr) noexcept : AbstractInputPump(targetAxis, pumpFunction), sourceButton_(sourceButton)
+		MouseInputPump(MouseInput::Button sourceButton, VirtualAxis& targetAxis, AbstractInputPump::PumpFunction pumpFunction = nullptr)  : AbstractInputPump(targetAxis, pumpFunction), sourceButton_(sourceButton)
 		{
 			// Prevent wrong "Now"-Actions during the Update of instantiation
 			PumpInput();
 			GetVirtualAxis()->BeginUpdate();
 		}
 
-		~MouseInputPump() noexcept = default;
+		~MouseInputPump()  = default;
 
-		float GetSourceState() const noexcept override
+		float GetSourceState() const  override
 		{
 			return MouseInput::Get().IsButtonDown(sourceButton_) ? 1.0f : 0.0f;
 		}

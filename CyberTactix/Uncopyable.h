@@ -14,8 +14,8 @@ namespace pix
 		//Uncopyable& operator= (Uncopyable&&) = delete;
 
 	protected:                    // abstract: allow construction/destruction of derived classes only
-		Uncopyable() noexcept = default;
-		~Uncopyable() noexcept = default;  // Not supposed to be handled by a base pointer -> no need for virtual
+		Uncopyable()  = default;
+		~Uncopyable()  = default;  // Not supposed to be handled by a base pointer -> no need for virtual
 	};
 
 }

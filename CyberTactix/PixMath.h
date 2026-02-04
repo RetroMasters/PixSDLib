@@ -278,7 +278,7 @@ namespace pix
 
 		Rotation2D();
 
-		explicit Rotation2D(float degrees);
+		Rotation2D(float degrees);
 
 		void SetToIdentity();
 

@@ -70,6 +70,21 @@
     <Filter Include="Source Files\PixSDLib\Input">
       <UniqueIdentifier>{c468b15e-12c8-46ad-ac47-937eaa260adf}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Header Files\PixSDLib\Entity">
+      <UniqueIdentifier>{86252ce1-8f52-49ac-b399-3037d2058975}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\PixSDLib\Entity\Entity2D">
+      <UniqueIdentifier>{1ddf56c5-2552-42c5-8453-2a736c6b3063}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\PixSDLib\Entity">
+      <UniqueIdentifier>{9688638d-a654-49f2-aff3-937fb500d898}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\PixSDLib\Entity\Entitty2D">
+      <UniqueIdentifier>{25b4c9e4-69e7-4b7b-9045-86b9ea6a7acf}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\PixSDLib\Rendering\Rendering2D">
+      <UniqueIdentifier>{05875e37-94a2-419d-b89e-138e6a99ea6a}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="ErrorLogger.cpp">
@@ -125,6 +140,21 @@
     </ClCompile>
     <ClCompile Include="ObjectInput.cpp">
       <Filter>Source Files\PixSDLib\Input</Filter>
+    </ClCompile>
+    <ClCompile Include="MoveableObject2D.cpp">
+      <Filter>Source Files\PixSDLib\Entity\Entitty2D</Filter>
+    </ClCompile>
+    <ClCompile Include="Sprite2D.cpp">
+      <Filter>Source Files\PixSDLib\Entity\Entitty2D</Filter>
+    </ClCompile>
+    <ClCompile Include="Sprite2DEx.cpp">
+      <Filter>Source Files\PixSDLib\Entity\Entitty2D</Filter>
+    </ClCompile>
+    <ClCompile Include="Sprite2DExNode.cpp">
+      <Filter>Source Files\PixSDLib\Entity\Entitty2D</Filter>
+    </ClCompile>
+    <ClCompile Include="Sprite2DNode.cpp">
+      <Filter>Source Files\PixSDLib\Entity\Entitty2D</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -184,6 +214,27 @@
     </ClInclude>
     <ClInclude Include="ObjectInput.h">
       <Filter>Header Files\PixSDLib\Input</Filter>
+    </ClInclude>
+    <ClInclude Include="MoveableObject2D.h">
+      <Filter>Header Files\PixSDLib\Entity\Entity2D</Filter>
+    </ClInclude>
+    <ClInclude Include="Sprite2D.h">
+      <Filter>Header Files\PixSDLib\Entity\Entity2D</Filter>
+    </ClInclude>
+    <ClInclude Include="Sprite2DEx.h">
+      <Filter>Header Files\PixSDLib\Entity\Entity2D</Filter>
+    </ClInclude>
+    <ClInclude Include="Sprite2DNode.h">
+      <Filter>Header Files\PixSDLib\Entity\Entity2D</Filter>
+    </ClInclude>
+    <ClInclude Include="Sprite2DExNode.h">
+      <Filter>Header Files\PixSDLib\Entity\Entity2D</Filter>
+    </ClInclude>
+    <ClInclude Include="SpriteMesh.h">
+      <Filter>Header Files\PixSDLib\Rendering\Rendering2D</Filter>
+    </ClInclude>
+    <ClInclude Include="TriangleMesh2D.h">
+      <Filter>Header Files\PixSDLib\Rendering\Rendering2D</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>
