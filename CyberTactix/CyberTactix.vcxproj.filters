@@ -94,6 +94,18 @@
     <Filter Include="Source Files\PixSDLib\Entity\Entity3D">
       <UniqueIdentifier>{cea7fd44-4159-471f-b010-8f088f676c7d}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Header Files\PixSDLib\SpriteAnimation">
+      <UniqueIdentifier>{f6eb70cb-f973-4414-ac08-af8fdc57e934}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\PixSDLib\SpriteAnimation\SpriteAnimation2D">
+      <UniqueIdentifier>{a4b5361d-e87b-4b39-a575-41143999a215}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\PixSDLib\SpriteAnimation">
+      <UniqueIdentifier>{ea1c6590-7081-4e05-a750-a3132bdb5266}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\PixSDLib\SpriteAnimation\SpriteAnimation2D">
+      <UniqueIdentifier>{6a91437b-c922-410f-9a9e-8593ac4efdf9}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="ErrorLogger.cpp">
@@ -180,6 +192,9 @@
     <ClCompile Include="Sprite3DEx.cpp">
       <Filter>Source Files\PixSDLib\Entity\Entity3D</Filter>
     </ClCompile>
+    <ClCompile Include="SpriteMeshAnimatorUtils.cpp">
+      <Filter>Source Files\PixSDLib\SpriteAnimation\SpriteAnimation2D</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="ErrorLogger.h">
@@ -260,7 +275,7 @@
     <ClInclude Include="TriangleMesh2D.h">
       <Filter>Header Files\PixSDLib\Rendering\Rendering2D</Filter>
     </ClInclude>
-    <ClInclude Include="TexCoodsTypes.h">
+    <ClInclude Include="TexCoordsTypes.h">
       <Filter>Header Files\PixSDLib\Rendering\Rendering2D</Filter>
     </ClInclude>
     <ClInclude Include="TriangleMesh3D.h">
@@ -280,6 +295,15 @@
     </ClInclude>
     <ClInclude Include="Sprite3DExNode.h">
       <Filter>Header Files\PixSDLib\Entity\Entity3D</Filter>
+    </ClInclude>
+    <ClInclude Include="SpriteMeshAnimator.h">
+      <Filter>Header Files\PixSDLib\SpriteAnimation\SpriteAnimation2D</Filter>
+    </ClInclude>
+    <ClInclude Include="SpriteMeshAnimatorUtils.h">
+      <Filter>Header Files\PixSDLib\SpriteAnimation\SpriteAnimation2D</Filter>
+    </ClInclude>
+    <ClInclude Include="TexCoordsUtils.h">
+      <Filter>Header Files\PixSDLib\Rendering</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

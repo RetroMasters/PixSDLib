@@ -3,8 +3,6 @@
 #include "MoveableObject3D.h"
 #include "TriangleMesh2D.h"
 
-//Note, don't draw sprites directly to the display's rendertarget (NULL) but to a set one since sdl-scale can mess up zooming
-
 //Sprite is the basis class for a sprite-based object that can move in space
 namespace pix
 {
@@ -40,7 +38,7 @@ namespace pix
 	private:
 
 		Sprite3DExNode* parent_;
-		std::vector<Sprite3DExNode*> children_;  //TODO: has to be managed by methods
+		std::vector<Sprite3DExNode*> children_;  
 
 	};
 
