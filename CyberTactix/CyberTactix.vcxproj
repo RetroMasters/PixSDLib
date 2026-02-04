@@ -157,10 +157,12 @@
     <ClCompile Include="Sprite3DExNode.cpp" />
     <ClCompile Include="Sprite3DNode.cpp" />
     <ClCompile Include="SpriteMeshAnimatorUtils.cpp" />
+    <ClCompile Include="SpriteMeshRenderer2D.cpp" />
     <ClCompile Include="StreamingTexture.cpp" />
     <ClCompile Include="TargetTexture.cpp" />
     <ClCompile Include="TextTexture.cpp" />
     <ClCompile Include="Texture.cpp" />
+    <ClCompile Include="TriangleMesh2DRenderer2D.cpp" />
     <ClCompile Include="UpdateLoopScheduler.cpp" />
     <ClCompile Include="Window.cpp" />
   </ItemGroup>
@@ -190,6 +192,7 @@
     <ClInclude Include="SpriteMesh.h" />
     <ClInclude Include="SpriteMeshAnimator.h" />
     <ClInclude Include="SpriteMeshAnimatorUtils.h" />
+    <ClInclude Include="SpriteMeshRenderer2D.h" />
     <ClInclude Include="StreamingTexture.h" />
     <ClInclude Include="TargetTexture.h" />
     <ClInclude Include="TexCoordsTypes.h" />
@@ -197,6 +200,7 @@
     <ClInclude Include="TextTexture.h" />
     <ClInclude Include="Texture.h" />
     <ClInclude Include="TriangleMesh2D.h" />
+    <ClInclude Include="TriangleMesh2DRenderer2D.h" />
     <ClInclude Include="TriangleMesh3D.h" />
     <ClInclude Include="Uncopyable.h" />
     <ClInclude Include="UpdateLoopScheduler.h" />
