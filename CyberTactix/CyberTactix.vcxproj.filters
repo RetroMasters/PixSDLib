@@ -109,6 +109,9 @@
     <Filter Include="Source Files\PixSDLib\Rendering\Rendering2D">
       <UniqueIdentifier>{6d7dbf88-3229-4049-8668-330e74b971f1}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Source Files\PixSDLib\Rendering\Rendering3D">
+      <UniqueIdentifier>{2903a89a-e761-4f8e-8904-7d528f7424ac}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="ErrorLogger.cpp">
@@ -204,6 +207,18 @@
     <ClCompile Include="TriangleMesh2DRenderer2D.cpp">
       <Filter>Source Files\PixSDLib\Rendering\Rendering2D</Filter>
     </ClCompile>
+    <ClCompile Include="SpriteMeshRenderer3D.cpp">
+      <Filter>Source Files\PixSDLib\Rendering\Rendering3D</Filter>
+    </ClCompile>
+    <ClCompile Include="TriangleMeshRenderer3D.cpp">
+      <Filter>Source Files\PixSDLib\Rendering\Rendering3D</Filter>
+    </ClCompile>
+    <ClCompile Include="InputPumps.cpp">
+      <Filter>Source Files\PixSDLib\Input</Filter>
+    </ClCompile>
+    <ClCompile Include="SpriteMeshUtils.cpp">
+      <Filter>Source Files\PixSDLib\Rendering\Rendering2D</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="ErrorLogger.h">
@@ -284,9 +299,6 @@
     <ClInclude Include="TriangleMesh2D.h">
       <Filter>Header Files\PixSDLib\Rendering\Rendering2D</Filter>
     </ClInclude>
-    <ClInclude Include="TexCoordsTypes.h">
-      <Filter>Header Files\PixSDLib\Rendering\Rendering2D</Filter>
-    </ClInclude>
     <ClInclude Include="TriangleMesh3D.h">
       <Filter>Header Files\PixSDLib\Rendering\Rendering3D</Filter>
     </ClInclude>
@@ -318,6 +330,18 @@
       <Filter>Header Files\PixSDLib\Rendering\Rendering2D</Filter>
     </ClInclude>
     <ClInclude Include="TriangleMesh2DRenderer2D.h">
+      <Filter>Header Files\PixSDLib\Rendering\Rendering2D</Filter>
+    </ClInclude>
+    <ClInclude Include="SpriteMeshRenderer3D.h">
+      <Filter>Header Files\PixSDLib\Rendering\Rendering3D</Filter>
+    </ClInclude>
+    <ClInclude Include="TriangleMeshRenderer3D.h">
+      <Filter>Header Files\PixSDLib\Rendering\Rendering3D</Filter>
+    </ClInclude>
+    <ClInclude Include="TexCoordsTypes.h">
+      <Filter>Header Files\PixSDLib\Rendering</Filter>
+    </ClInclude>
+    <ClInclude Include="SpriteMeshUtils.h">
       <Filter>Header Files\PixSDLib\Rendering\Rendering2D</Filter>
     </ClInclude>
   </ItemGroup>

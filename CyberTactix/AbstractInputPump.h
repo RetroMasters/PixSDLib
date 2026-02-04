@@ -14,68 +14,36 @@ namespace pix
 	{
 	public:
 
-		VirtualAxis(const std::string& name, float deadZone = 0.001f) : //deadZone is not negative
-			axisState_(0.0f),
-			prevAxisState_(0.0f),
-			name_(name)
-		{
-			SetDeadZone(deadZone);
-		}
+		VirtualAxis(const std::string& name, float deadZone = 0.001f); //deadZone is not negative
+
 
 		~VirtualAxis() = default; 
 
 		// Syncs previous state with the current one.
 		// Must be called exactly once per update loop iteration, at its beginning before pumping input.
-		void BeginUpdate()
-		{
-			prevAxisState_ = axisState_;
-		}
+		void BeginUpdate();
 
-		void SetAxisState(float value) 
-		{
-			axisState_ = std::abs(value) > deadZone_ ? value : 0.0f;
+		void SetAxisState(float value);
 
-			if (axisState_ > 1.0f) axisState_ = 1.0f;
-			else if (axisState_ < -1.0f) axisState_ = -1.0f;
-		}
+		float GetAxisState() const;
 
-		float GetAxisState() const
-		{
-			return axisState_;
-		}
+		void SetDeadZone(float value);
 
-		void SetDeadZone(float value) 
-		{
-			deadZone_ = value;
-			if (deadZone_ > 1.0f) deadZone_ = 1.0f;
-			else if (deadZone_ < 0.0f) deadZone_ = 0.0f;
-		}
-
-		float GetDeadZone() const 
-		{
-			return deadZone_;
-		}
+		float GetDeadZone() const;
 
 		// Resets the previous and current axis state to zero (dead zone remains unchanged)
-		void ResetState() 
-		{
-			axisState_ = 0.0f;
-			prevAxisState_ = 0.0f;
-		}
+		void ResetState();
 
-		bool IsPositive() const { return axisState_ > 0.0f; }
-		bool IsNowPositive() const { return prevAxisState_ <= 0.0f && axisState_ > 0.0f; }
-		bool IsNowZeroFromPositive() const { return prevAxisState_ > 0.0f && axisState_ == 0.0f; }
-		bool IsNegative() const { return axisState_ < 0.0f; }
-		bool IsNowNegative() const { return prevAxisState_ >= 0.0f && axisState_ < 0.0f; }
-		bool IsNowZeroFromNegative() const { return prevAxisState_ < 0.0f && axisState_ == 0.0f; }
-		bool IsNowZero() const { return prevAxisState_ != 0.0f && axisState_ == 0.0f; }
+		bool IsPositive() const;
+		bool IsNowPositive() const;
+		bool IsNowZeroFromPositive() const;
+		bool IsNegative() const;
+		bool IsNowNegative() const;
+		bool IsNowZeroFromNegative() const;
+		bool IsNowZero() const;
 
 
-		const std::string& GetName() const
-		{
-			return name_;
-		}
+		const std::string& GetName() const;
 
 	protected:
 
@@ -103,48 +71,29 @@ namespace pix
 	public:
 
 		//typedef float(*PumpFunction) (float sourceValue, float axisValue); // A 2D float function taking the current source input and axis value to determine the resulting axis value.
-
+		//Note: If a virtual axis has multiple input sources, the AbsMax() pump function is typically suited to set the input properly.
 		using PumpFunction = float(*) (float sourceState, float axisState);
 
 		bool Enabled;
 
-		AbstractInputPump(VirtualAxis& virtualAxis, PumpFunction pumpFunction = nullptr):
-			Enabled(true),
-			pumpFunction_(AbsMax), // AbsMax() takes the absolute value of both inputs, and returns the biggest one
-			virtualAxis_(&virtualAxis)
-		{
-			if (pumpFunction != nullptr) pumpFunction_ = pumpFunction;
-		}
+		// If pumpFuntion is nullptr, then AbsMax() is used as default: takes the absolute value of both inputs, and returns the biggest one
+		AbstractInputPump(VirtualAxis& virtualAxis, PumpFunction pumpFunction = nullptr);
 
 		virtual ~AbstractInputPump() = default;
 
-		void PumpInput() 
-		{
-			if (Enabled)
-				virtualAxis_->SetAxisState(pumpFunction_(GetSourceState(), virtualAxis_->GetAxisState()));
-		}
+		void PumpInput();
 
-		virtual float GetSourceState() const = 0;  //the input source is what differentiates the pump types 
+		void SetVirtualAxis(VirtualAxis& virtualAxis);
 
 
-		PumpFunction GetPumpFunction() const 
-		{
-			return pumpFunction_;
-		}
 
-		VirtualAxis* GetVirtualAxis() const 
-		{
-			return virtualAxis_;
-		}
+		virtual float GetSourceState() const = 0;  // The input source is what differentiates the pump types 
 
-		void SetVirtualAxis(VirtualAxis& virtualAxis)
-		{
-			virtualAxis_ = &virtualAxis;
-		}
+		PumpFunction GetPumpFunction() const;
+
+		VirtualAxis* GetVirtualAxis() const;
 
 	private:
-
-		//Note: If a virtual axis has multiple input sources, the AbsMax() pump function is typically suited to set the input properly.
 
 		PumpFunction pumpFunction_;
 		VirtualAxis* virtualAxis_;

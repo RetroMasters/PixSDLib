@@ -139,6 +139,7 @@
     <ClCompile Include="ErrorLogger.cpp" />
     <ClCompile Include="GameLoop.cpp" />
     <ClCompile Include="ImageTexture.cpp" />
+    <ClCompile Include="InputPumps.cpp" />
     <ClCompile Include="LaunchConfig.cpp" />
     <ClCompile Include="Main.cpp" />
     <ClCompile Include="MoveableObject2D.cpp" />
@@ -158,11 +159,14 @@
     <ClCompile Include="Sprite3DNode.cpp" />
     <ClCompile Include="SpriteMeshAnimatorUtils.cpp" />
     <ClCompile Include="SpriteMeshRenderer2D.cpp" />
+    <ClCompile Include="SpriteMeshRenderer3D.cpp" />
+    <ClCompile Include="SpriteMeshUtils.cpp" />
     <ClCompile Include="StreamingTexture.cpp" />
     <ClCompile Include="TargetTexture.cpp" />
     <ClCompile Include="TextTexture.cpp" />
     <ClCompile Include="Texture.cpp" />
     <ClCompile Include="TriangleMesh2DRenderer2D.cpp" />
+    <ClCompile Include="TriangleMeshRenderer3D.cpp" />
     <ClCompile Include="UpdateLoopScheduler.cpp" />
     <ClCompile Include="Window.cpp" />
   </ItemGroup>
@@ -193,6 +197,8 @@
     <ClInclude Include="SpriteMeshAnimator.h" />
     <ClInclude Include="SpriteMeshAnimatorUtils.h" />
     <ClInclude Include="SpriteMeshRenderer2D.h" />
+    <ClInclude Include="SpriteMeshRenderer3D.h" />
+    <ClInclude Include="SpriteMeshUtils.h" />
     <ClInclude Include="StreamingTexture.h" />
     <ClInclude Include="TargetTexture.h" />
     <ClInclude Include="TexCoordsTypes.h" />
@@ -202,6 +208,7 @@
     <ClInclude Include="TriangleMesh2D.h" />
     <ClInclude Include="TriangleMesh2DRenderer2D.h" />
     <ClInclude Include="TriangleMesh3D.h" />
+    <ClInclude Include="TriangleMeshRenderer3D.h" />
     <ClInclude Include="Uncopyable.h" />
     <ClInclude Include="UpdateLoopScheduler.h" />
     <ClInclude Include="Window.h" />

@@ -1,0 +1,99 @@
+#include "InputPumps.h"
+
+namespace pix
+{
+
+		KeyboardInputPump::KeyboardInputPump(SDL_Scancode sourceKey, VirtualAxis& targetAxis, AbstractInputPump::PumpFunction pumpFunction) : AbstractInputPump(targetAxis, pumpFunction), sourceKey_(sourceKey)
+		{
+			// Prevent wrong "Now"-Actions during the Update of instantiation
+			PumpInput();
+			GetVirtualAxis()->BeginUpdate();
+		}
+
+		float KeyboardInputPump::GetSourceState() const 
+		{
+			return KeyboardInput::Get().IsKeyDown(sourceKey_) ? 1.0f : 0.0f;
+		}
+
+		SDL_Scancode KeyboardInputPump::GetSourceKey() const { return sourceKey_; }
+
+
+
+
+
+		MouseInputPump::MouseInputPump(MouseInput::Button sourceButton, VirtualAxis& targetAxis, AbstractInputPump::PumpFunction pumpFunction) : AbstractInputPump(targetAxis, pumpFunction), sourceButton_(sourceButton)
+		{
+			// Prevent wrong "Now"-Actions during the Update of instantiation
+			PumpInput();
+			GetVirtualAxis()->BeginUpdate();
+		}
+
+		float MouseInputPump::GetSourceState() const 
+		{
+			return MouseInput::Get().IsButtonDown(sourceButton_) ? 1.0f : 0.0f;
+		}
+
+		MouseInput::Button MouseInputPump::GetSourceButton() const
+		{
+			return sourceButton_;
+		}
+
+
+
+
+		GamepadInputPump::GamepadInputPump(int sourceGamepadIndex, SDL_GameControllerButton sourceButton, VirtualAxis& targetAxis, AbstractInputPump::PumpFunction pumpFunction) : AbstractInputPump(targetAxis, pumpFunction),
+			sourceGamepadIndex_(sourceGamepadIndex),
+			sourceButton_(sourceButton),
+			sourceAxis_(SDL_CONTROLLER_AXIS_INVALID)
+		{
+			// Prevent wrong "Now"-Actions during the Update of instantiation
+			PumpInput();
+			GetVirtualAxis()->BeginUpdate();
+		}
+
+		GamepadInputPump::GamepadInputPump(int sourceGamepadIndex, SDL_GameControllerAxis sourceAxis, VirtualAxis& targetAxis, AbstractInputPump::PumpFunction pumpFunction) : AbstractInputPump(targetAxis, pumpFunction),
+			sourceGamepadIndex_(sourceGamepadIndex),
+			sourceButton_(SDL_CONTROLLER_BUTTON_INVALID),
+			sourceAxis_(sourceAxis)
+		{
+			// Prevent wrong "Now"-Actions during the Update of instantiation
+			PumpInput();
+			GetVirtualAxis()->BeginUpdate();
+		}
+
+		float GamepadInputPump::GetSourceState() const 
+		{
+			if (sourceButton_ != SDL_CONTROLLER_BUTTON_INVALID)
+				return GamepadInput::Get().IsButtonDown(sourceGamepadIndex_, sourceButton_) ? 1.0f : 0.0f;
+			else if (sourceAxis_ != SDL_CONTROLLER_AXIS_INVALID)
+				return GamepadInput::Get().GetAxisValue(sourceGamepadIndex_, sourceAxis_);
+
+			return 0.0f;
+		}
+
+		int GamepadInputPump::GetSourceGamepadIndex() const { return sourceGamepadIndex_; }
+		SDL_GameControllerButton GamepadInputPump::GetSourceBoutton() const { return sourceButton_; }
+		SDL_GameControllerAxis  GamepadInputPump::GetSourceAxis() const { return sourceAxis_; }
+
+	
+
+
+
+		VirtualInputPump::VirtualInputPump(VirtualAxis& axis, PumpFunction pumpFunction) : AbstractInputPump(axis, pumpFunction), 
+			sourceState_(0.0f)
+		{
+			PumpInput();
+			GetVirtualAxis()->BeginUpdate();
+		}
+
+		void VirtualInputPump::SetSourceValue(float value)
+		{
+			sourceState_ = value;
+		}
+
+		float VirtualInputPump::GetSourceState() const 
+		{
+			return sourceState_;
+		}
+
+}
