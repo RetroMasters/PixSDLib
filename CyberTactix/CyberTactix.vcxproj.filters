@@ -165,7 +165,7 @@
     <ClCompile Include="AbstractInputPump.cpp">
       <Filter>Source Files\PixSDLib\Input</Filter>
     </ClCompile>
-    <ClCompile Include="ObjectInput.cpp">
+    <ClCompile Include="ObjectInputLegacy.cpp">
       <Filter>Source Files\PixSDLib\Input</Filter>
     </ClCompile>
     <ClCompile Include="MoveableObject2D.cpp">
@@ -218,6 +218,9 @@
     </ClCompile>
     <ClCompile Include="SpriteMeshUtils.cpp">
       <Filter>Source Files\PixSDLib\Rendering\Rendering2D</Filter>
+    </ClCompile>
+    <ClCompile Include="ObjectInput.cpp">
+      <Filter>Source Files\PixSDLib\Input</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -275,7 +278,7 @@
     <ClInclude Include="InputPumps.h">
       <Filter>Header Files\PixSDLib\Input</Filter>
     </ClInclude>
-    <ClInclude Include="ObjectInput.h">
+    <ClInclude Include="ObjectInputLegacy.h">
       <Filter>Header Files\PixSDLib\Input</Filter>
     </ClInclude>
     <ClInclude Include="MoveableObject2D.h">
@@ -343,6 +346,9 @@
     </ClInclude>
     <ClInclude Include="SpriteMeshUtils.h">
       <Filter>Header Files\PixSDLib\Rendering\Rendering2D</Filter>
+    </ClInclude>
+    <ClInclude Include="ObjectInput.h">
+      <Filter>Header Files\PixSDLib\Input</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

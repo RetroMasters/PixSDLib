@@ -1,65 +1,86 @@
 #pragma once
 
 #include<string>
-#include"PixMath.h"
+
 
 namespace pix
 {
 	// A virtual input axis that stores values in the range [-1,1].
 	//
 	// Philosophy:
-	// A virtual axis is a system independent virtual "float button" that can be pushed in the range [-1,1].
-	// This button can be set by input systems and then be queried for its state. 
+	// VirtualAxis represents a system independent virtual analog axis that can be pushed in the range [-1,1].
+	// This virtual analog axis can be set by input systems and then be queried for its state.
+	// It can also be used like a button that can be pressed.
 	class VirtualAxis
 	{
 	public:
 
-		VirtualAxis(const std::string& name, float deadZone = 0.001f); //deadZone is not negative
+		//######################## INITIALIZATION ################################
 
+		VirtualAxis(const std::string& name, int id, float deadZone = 0.001f); //deadZone is not negative
 
 		~VirtualAxis() = default; 
 
-		// Syncs previous state with the current one.
+		//############################ FUNCTIONALITY ###################################
+
+		// Syncs previous axis state with the current one.
 		// Must be called exactly once per update loop iteration, at its beginning before pumping input.
+		// "Became" queries compare current state with the snapshot taken by BeginUpdate().
 		void BeginUpdate();
 
-		void SetAxisState(float value);
+		// Sets the current axis state within the range [-1,1]
+		// Note that within the dead zone, the axis state is set to zero
+		void SetAxisState(float state);
 
-		float GetAxisState() const;
-
+		// Sets the dead zone within the range [0,1]
 		void SetDeadZone(float value);
+
+		// Resets the previous and current axis state to zero 
+		void Reset();
+		
+		//################################# GETTERS ##########################################
+		
+		// True if the axis is currently positive
+		bool IsPositive() const;
+		// True if the axis crossed from <= 0 to > 0 this update
+		bool BecamePositive() const;
+		// True if the axis crossed from > 0 to 0 this update
+		bool BecameZeroFromPositive() const;
+		// True if the axis is currently negative
+		bool IsNegative() const;
+		// True if the axis crossed from >= 0 to < 0 this update
+		bool BecameNegative() const;
+		// True if the axis crossed from < 0 to 0 this update
+		bool BecameZeroFromNegative() const;
+		// True if the axis crossed from != 0 to 0 this update
+		bool BecameZero() const;
+		// Returns the current internal axis state. Note that within the dead zone, the internal axis state is zero.
+		float GetAxisState() const;
+		// Returns the axis state with the dead zone removed and the remaining range rescaled to [-1, 1].
+		float GetEffectiveAxisState() const;
 
 		float GetDeadZone() const;
 
-		// Resets the previous and current axis state to zero (dead zone remains unchanged)
-		void ResetState();
-
-		bool IsPositive() const;
-		bool IsNowPositive() const;
-		bool IsNowZeroFromPositive() const;
-		bool IsNegative() const;
-		bool IsNowNegative() const;
-		bool IsNowZeroFromNegative() const;
-		bool IsNowZero() const;
-
-
 		const std::string& GetName() const;
-
-	protected:
-
-		float axisState_;
-		float prevAxisState_;
-		std::string name_;
+		int GetID() const;
 
 	private:
 
+		float axisState_;
+		float prevAxisState_;
 		float deadZone_;
+
+		std::string name_;
+		int id_;
 	};
 
 
 	// AbstractInputPump is the abstract base class for pumps transferring specific source-input, like a button press on gamepad, to a virtual axis. 
 	// The transfer is handled by a pump function that takes the current source and axis state as input.
-	// The concrete InputPump types only differ in the source of input. Thus they only have to implement GetSourceValue().
+	// The concrete InputPump types only differ in the source of input. Thus they only have to implement GetSourceState().
+	// 
+	// Technical note:
+	// The axis ID gets cached, primarily to have a link recovery option for array storage that can relocate the axis. 
 	// 
 	// Philosophy:
 	// An input pump is the fundamental building block for streaming input. An input pump does not own the virtual axis, it just connects exactly 
@@ -70,34 +91,55 @@ namespace pix
 
 	public:
 
-		//typedef float(*PumpFunction) (float sourceValue, float axisValue); // A 2D float function taking the current source input and axis value to determine the resulting axis value.
-		//Note: If a virtual axis has multiple input sources, the AbsMax() pump function is typically suited to set the input properly.
+	    // A 2D float function taking the current source state and axis state to determine the resulting axis state.
+		// Note: If a virtual axis has multiple input sources, the AbsMax() function is typically suited to set the input properly.
 		using PumpFunction = float(*) (float sourceState, float axisState);
 
-		bool Enabled;
+		//######################## INITIALIZATION ################################
 
-		// If pumpFuntion is nullptr, then AbsMax() is used as default: takes the absolute value of both inputs, and returns the biggest one
+		// Virtual axis is expected to be set to a valid axis after construction. 
+		// The pump function defaults to AbsMaxf(), if pumpFunction is nullptr.
 		AbstractInputPump(VirtualAxis& virtualAxis, PumpFunction pumpFunction = nullptr);
 
 		virtual ~AbstractInputPump() = default;
 
-		void PumpInput();
+		//###################### FUNCTIONALITY #############################
 
+		bool Enabled;
+
+		// Pumps the current source state to the axis by using the pump function.
+		// If Enabled is set to false or pump function is null, PumpInput() is no-op. 
+		void Pump();
+
+		// Rebinds the pump to a different axis and updates the cached axis ID
 		void SetVirtualAxis(VirtualAxis& virtualAxis);
 
-
+		// If pumpFunction is nullptr, the default function AbsMaxf() is set.
+		// AbsMax() takes the absolute value of both inputs, and returns the biggest one, preferring the source.
+		void SetPumpFunction(PumpFunction pumpFunction);
 
 		virtual float GetSourceState() const = 0;  // The input source is what differentiates the pump types 
+
+		//################################# GETTERS ##########################################
 
 		PumpFunction GetPumpFunction() const;
 
 		VirtualAxis* GetVirtualAxis() const;
 
+		int GetCachedAxisID() const;
+
 	private:
+
+		// Returns the value with the biggest magnitude, so the biggest contributer wins.
+		// On equal magnitude, the source value wins (later pumps override earlier ones).
+		static float DefaultPumpFunction(float sourceState, float axisState)
+		{		
+			return (std::abs(sourceState) < std::abs(axisState)) ? axisState : sourceState; 
+		}
 
 		PumpFunction pumpFunction_;
 		VirtualAxis* virtualAxis_;
-
+		int cachedAxisID_;
 	};
 
 

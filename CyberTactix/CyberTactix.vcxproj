@@ -144,6 +144,7 @@
     <ClCompile Include="Main.cpp" />
     <ClCompile Include="MoveableObject2D.cpp" />
     <ClCompile Include="MoveableObject3D.cpp" />
+    <ClCompile Include="ObjectInputLegacy.cpp" />
     <ClCompile Include="ObjectInput.cpp" />
     <ClCompile Include="PixMath.cpp" />
     <ClCompile Include="Renderer.cpp" />
@@ -181,6 +182,7 @@
     <ClInclude Include="LaunchConfig.h" />
     <ClInclude Include="MoveableObject2D.h" />
     <ClInclude Include="MoveableObject3D.h" />
+    <ClInclude Include="ObjectInputLegacy.h" />
     <ClInclude Include="ObjectInput.h" />
     <ClInclude Include="PixMath.h" />
     <ClInclude Include="Renderer.h" />

@@ -1,8 +1,6 @@
 #pragma once
 
 #include "InputPumps.h"
-#include <map>
-
 
 namespace pix
 {
@@ -12,110 +10,115 @@ namespace pix
 
 	public:
 
+		// ######################################## INITIALIZATION ###################################################
+
 		ObjectInput() = default;
 		~ObjectInput() = default;
 
+		ObjectInput(const ObjectInput& other);
+		ObjectInput& operator= (const ObjectInput& other);
 
-		ObjectInput(const ObjectInput& other) :
-			virtualAxes_(other.virtualAxes_),
-			keyboardInputPumps_(other.keyboardInputPumps_),
-			mouseInputPumps_(other.mouseInputPumps_),
-			gamepadInputPumps_(other.gamepadInputPumps_),
-			virtualInputPumps_(other.virtualInputPumps_)
-		{
-			RelinkPumpsToAxes();
-		}
-
-
-		ObjectInput& operator= (const ObjectInput& other)
-		{
-			virtualAxes_ = other.virtualAxes_;
-
-			keyboardInputPumps_ = other.keyboardInputPumps_;
-			mouseInputPumps_ = other.mouseInputPumps_;
-			gamepadInputPumps_ = other.gamepadInputPumps_;
-			virtualInputPumps_ = other.virtualInputPumps_;
-
-			RelinkPumpsToAxes();
-
-			return *this;
-		}
-
+		// ################################### UPDATE ##################################
 
 		void Update();
 
-
 		//################################################################## CONFIGURE INPUT ####################################################
 
-		bool AddKeyboardInput(SDL_Scancode sourceKey, const std::string& axisName, AbstractInputPump::PumpFunction pumpFunction = nullptr);
+		// All methods return true if the binding has been added/removed, false otherwise 
 
-		bool DeleteKeyboardInput(SDL_Scancode sourceKey, const std::string& axisName);
+		bool AddKeyboardBinding(SDL_Scancode sourceKey, const std::string& axisName, AbstractInputPump::PumpFunction pumpFunction = AbsMaxf);
 
-		bool AddMouseInput(MouseInput::Button sourceButton, const std::string& axisName, AbstractInputPump::PumpFunction pumpFunction = nullptr);
+		bool RemoveKeyboardBinding(SDL_Scancode sourceKey, const std::string& axisName);
 
-		bool DeleteMouseInput(MouseInput::Button sourceButton, const std::string& axisName);
+		bool AddMouseBinding(MouseInput::Button sourceButton, const std::string& axisName, AbstractInputPump::PumpFunction pumpFunction = AbsMaxf);
 
-		bool AddGamepadButtonInput(int sourceGamepadIndex, SDL_GameControllerButton sourceButton, std::string axisName, AbstractInputPump::PumpFunction pumpFunction = nullptr);
+		bool RemoveMouseBinding(MouseInput::Button sourceButton, const std::string& axisName);
 
-		bool DeleteGamepadButtonInput(int sourceGamepadIndex, SDL_GameControllerButton sourceButton, const std::string& axisName);
+		bool AddGamepadButtonBinding(int sourceGamepadIndex, SDL_GameControllerButton sourceButton, const std::string& axisName, AbstractInputPump::PumpFunction pumpFunction = AbsMaxf);
 
-		bool AddGamepadAxisInput(int sourceGamepadIndex, SDL_GameControllerAxis sourceAxis, std::string axisName, AbstractInputPump::PumpFunction pumpFunction = nullptr);
+		bool RemoveGamepadButtonBinding(int sourceGamepadIndex, SDL_GameControllerButton sourceButton, const std::string& axisName);
 
-		bool DeleteGamepadAxisInput(int sourceGamepadIndex, SDL_GameControllerAxis sourceAxis, const std::string& axisName);
+		bool AddGamepadAxisBinding(int sourceGamepadIndex, SDL_GameControllerAxis sourceAxis, const std::string& axisName, AbstractInputPump::PumpFunction pumpFunction = AbsMaxf);
 
-		bool AddVirtualInput(const std::string& sourceID, const std::string& axisName, AbstractInputPump::PumpFunction pumpFunction = nullptr);
+		bool RemoveGamepadAxisBinding(int sourceGamepadIndex, SDL_GameControllerAxis sourceAxis, const std::string& axisName);
 
-		bool DeleteVirtualInput(const std::string& sourceID, const std::string& axisName);
+		bool AddVirtualBinding(int sourceID, const std::string& axisName, AbstractInputPump::PumpFunction pumpFunction = AbsMaxf);
 
-		bool SetVirtualInput(const std::string& sourceID, const std::string& axisName, float sourceValue);
+		bool RemoveVirtualBinding(int sourceID, const std::string& axisName);
 
+		bool SetVirtualSourceState(int sourceID, const std::string& axisName, float sourceState);
+
+		// The axis state within the deadzone is zero
 		bool SetDeadZone(const std::string& axisName, float value);
 
-		void ResetState();
+		// Resets the previous and current state of all axes to zero
+		void ResetAxes();
+
+		// Resets the state of all virtual input sources to zero
+		void ResetVirtualSourceState();
 
 		//################################################################## CHECK INPUT ####################################################
 
+		// Returns true if current axis state is positive, false otherwise
 		bool IsPositive(const std::string& axisName) const;
 
-		bool IsNowPositive(const std::string& axisName) const;
+		// Returns true if axis state was not positive and became positive in the current update iteration, false otherwise
+		bool BecamePositive(const std::string& axisName) const;
 
-		bool IsNowZeroFromPositive(const std::string& axisName) const;
+		// Returns true if axis state was positive and became zero in the current update iteration, false otherwise
+		bool BecameZeroFromPositive(const std::string& axisName) const;
 
+		// Returns true if current axis state is negative, false otherwise
 		bool IsNegative(const std::string& axisName) const;
 
-		bool IsNowNegative(const std::string& axisName) const;
+		// Returns true if axis state was not negative and became negative in the current update iteration, false otherwise
+		bool BecameNegative(const std::string& axisName) const;
 
-		bool IsNowZeroFromNegative(const std::string& axisName) const;
+		// Returns true if axis state was negative and became zero in the current update iteration, false otherwise
+		bool BecameZeroFromNegative(const std::string& axisName) const;
 
-		bool IsNowZero(const std::string& axisName) const;
+		// Returns true if axis state was not zero and became zero in the current update iteration, false otherwise
+		bool BecameZero(const std::string& axisName) const;
 
-		float GetAxisValue(const std::string& axisName) const;
+		// Returns current axis state
+		float GetAxisState(const std::string& axisName) const;
 
-		bool ContainsAxis(const std::string& axisName) const; // To support manual error handling
-
-
-
-
+		
 
 	private:
 
+		void SyncPreviousInput();
+
+		void ResetAxisState();
+
+		void PumpInput();
+
+		void RelinkPumpsToAxes();
+
 		VirtualAxis* GetOrAddVirtualAxis(const std::string& axisName);
+		
+		VirtualAxis* GetVirtualAxis(const std::string& axisName);
 
-		void UpdatePreviousInput();
+		const VirtualAxis* GetVirtualAxis(const std::string& axisName) const;
 
-		void ResetAllAxisValues() ;
+		int GetKeyboardPumpIndex(SDL_Scancode sourceKey, const std::string& axisName) const;
 
-		void PumpInput() ;
+		int GetMousePumpIndex(MouseInput::Button sourceButton, const std::string& axisName) const;
 
-		void RelinkPumpsToAxes() ;
+		int GetGamepadPumpIndex(int sourceGamepadIndex, SDL_GameControllerButton sourceButton, const std::string& axisName) const;
 
-		std::map<std::string, VirtualAxis> virtualAxes_;
+		int GetGamepadPumpIndex(int sourceGamepadIndex, SDL_GameControllerAxis sourceAxis, const std::string& axisName) const;
 
-		std::map<std::string, KeyboardInputPump> keyboardInputPumps_;
-		std::map<std::string, MouseInputPump>    mouseInputPumps_;
-		std::map<std::string, GamepadInputPump>  gamepadInputPumps_;
-		std::map<std::string, VirtualInputPump>  virtualInputPumps_;
+		int GetVirtualPumpIndex(int sourceID, const std::string& axisName) const;
+
+	
+		std::vector<VirtualAxis> virtualAxes_;
+		std::vector<KeyboardInputPump> keyboardInputPumps_;
+		std::vector<MouseInputPump>    mouseInputPumps_;
+		std::vector<GamepadInputPump>  gamepadInputPumps_;
+		std::vector<VirtualInputPump>  virtualInputPumps_;
 
 	};
 
 }
+

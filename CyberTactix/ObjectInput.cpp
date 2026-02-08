@@ -2,296 +2,416 @@
 
 namespace pix
 {
-	
-	void ObjectInput::Update() 
+	ObjectInput::ObjectInput(const ObjectInput& other) :
+		virtualAxes_(other.virtualAxes_),
+		keyboardInputPumps_(other.keyboardInputPumps_),
+		mouseInputPumps_(other.mouseInputPumps_),
+		gamepadInputPumps_(other.gamepadInputPumps_),
+		virtualInputPumps_(other.virtualInputPumps_)
 	{
-		UpdatePreviousInput();
-
-		ResetAllAxisValues();
-
-		PumpInput();
-
-		//Debug.LogException(e);
+		RelinkPumpsToAxes();
 	}
 
 
-	bool ObjectInput::AddKeyboardInput(SDL_Scancode sourceKey, const std::string& axisName, AbstractInputPump::PumpFunction pumpFunction) 
+	ObjectInput& ObjectInput::operator= (const ObjectInput& other)
+	{
+		if (this == &other) return *this;
+
+		virtualAxes_ = other.virtualAxes_;
+		keyboardInputPumps_ = other.keyboardInputPumps_;
+		mouseInputPumps_ = other.mouseInputPumps_;
+		gamepadInputPumps_ = other.gamepadInputPumps_;
+		virtualInputPumps_ = other.virtualInputPumps_;
+
+		RelinkPumpsToAxes();
+
+		return *this;
+	}
+
+
+
+	void ObjectInput::Update()
+	{
+		SyncPreviousInput();
+
+		ResetAxisState();
+
+		PumpInput();
+
+	}
+
+
+	bool ObjectInput::AddKeyboardBinding(SDL_Scancode sourceKey, const std::string& axisName, AbstractInputPump::PumpFunction pumpFunction)
 	{
 		VirtualAxis* targetAxis = GetOrAddVirtualAxis(axisName);
 		if (targetAxis == nullptr)
 			return false;
 
-		std::string key = std::to_string(sourceKey) + axisName;
-
-		if (keyboardInputPumps_.find(key) != keyboardInputPumps_.end())
+		if(GetKeyboardPumpIndex(sourceKey, axisName) >= 0) // Already exists
 			return false;
 
-		return keyboardInputPumps_.emplace(key, KeyboardInputPump(sourceKey, *targetAxis, pumpFunction)).second;
+		keyboardInputPumps_.emplace_back(sourceKey, *targetAxis, pumpFunction);
+		// Sync transient state to prevent wrong "Now"-Actions during the update of instantiation
+		keyboardInputPumps_.back().Pump();
+		keyboardInputPumps_.back().GetVirtualAxis()->BeginUpdate();
+
+		return true;
 	}
 
-	bool ObjectInput::DeleteKeyboardInput(SDL_Scancode sourceKey, const std::string& axisName) 
+	bool ObjectInput::RemoveKeyboardBinding(SDL_Scancode sourceKey, const std::string& axisName)
 	{
-		std::string key = std::to_string(sourceKey) + axisName;
+		int pumpIndex = GetKeyboardPumpIndex(sourceKey, axisName);
 
-		return keyboardInputPumps_.erase(key) > 0;
+		if (pumpIndex < 0) return false;
+		
+		keyboardInputPumps_.erase(keyboardInputPumps_.begin() + pumpIndex);
+		return true;
 	}
 
-	bool ObjectInput::AddMouseInput(MouseInput::Button sourceButton, const std::string& axisName, AbstractInputPump::PumpFunction pumpFunction) 
+	bool ObjectInput::AddMouseBinding(MouseInput::Button sourceButton, const std::string& axisName, AbstractInputPump::PumpFunction pumpFunction)
 	{
 		VirtualAxis* targetAxis = GetOrAddVirtualAxis(axisName);
 		if (targetAxis == nullptr) return false;
 
-		std::string key = std::to_string(sourceButton) + axisName;
-
-		if (mouseInputPumps_.find(key) != mouseInputPumps_.end())
+		if (GetMousePumpIndex(sourceButton, axisName) >= 0) // Already exists
 			return false;
 
-		return mouseInputPumps_.emplace(key, MouseInputPump(sourceButton, *targetAxis, pumpFunction)).second;
+		mouseInputPumps_.emplace_back(sourceButton, *targetAxis, pumpFunction);
+		// Sync transient state to prevent wrong "Now"-Actions during the update of instantiation
+		mouseInputPumps_.back().Pump();
+		mouseInputPumps_.back().GetVirtualAxis()->BeginUpdate();
+
+		return true;
 	}
 
-	bool ObjectInput::DeleteMouseInput(MouseInput::Button sourceButton, const std::string& axisName) 
+	bool ObjectInput::RemoveMouseBinding(MouseInput::Button sourceButton, const std::string& axisName)
 	{
-		if (axisName.empty()) return false;
+		int pumpIndex = GetMousePumpIndex(sourceButton, axisName);
 
-		std::string key = std::to_string(sourceButton) + axisName;
+		if (pumpIndex < 0) return false;
 
-		return mouseInputPumps_.erase(key) > 0;
+		mouseInputPumps_.erase(mouseInputPumps_.begin() + pumpIndex);
+	
+		return true;
 	}
 
-	bool ObjectInput::AddGamepadButtonInput(int sourceGamepadIndex, SDL_GameControllerButton sourceButton, std::string axisName, AbstractInputPump::PumpFunction pumpFunction) 
+	bool ObjectInput::AddGamepadButtonBinding(int sourceGamepadIndex, SDL_GameControllerButton sourceButton, const std::string& axisName, AbstractInputPump::PumpFunction pumpFunction)
 	{
 		if (!GamepadInput::Get().IsValidGamepadIndex(sourceGamepadIndex)) return false;
 
 		VirtualAxis* targetAxis = GetOrAddVirtualAxis(axisName);
 		if (targetAxis == nullptr) return false;
 
-		std::string key = std::to_string(sourceGamepadIndex) + std::to_string(sourceButton) + axisName;
-
-		if (gamepadInputPumps_.find(key) != gamepadInputPumps_.end())
+		if (GetGamepadPumpIndex(sourceGamepadIndex, sourceButton, axisName) >= 0) // Already exists
 			return false;
 
-		return gamepadInputPumps_.emplace(key, GamepadInputPump(sourceGamepadIndex, sourceButton, *targetAxis, pumpFunction)).second;
+		gamepadInputPumps_.emplace_back(sourceGamepadIndex, sourceButton, *targetAxis, pumpFunction);
+		// Sync transient state to prevent wrong "Now"-Actions during the update of instantiation
+		gamepadInputPumps_.back().Pump();
+		gamepadInputPumps_.back().GetVirtualAxis()->BeginUpdate();
+
+		return true;
 	}
 
-	bool ObjectInput::DeleteGamepadButtonInput(int sourceGamepadIndex, SDL_GameControllerButton sourceButton, const std::string& axisName) 
+	bool ObjectInput::RemoveGamepadButtonBinding(int sourceGamepadIndex, SDL_GameControllerButton sourceButton, const std::string& axisName)
 	{
-		std::string key = std::to_string(sourceGamepadIndex) + std::to_string(sourceButton) + axisName;
+		int pumpIndex = GetGamepadPumpIndex(sourceGamepadIndex, sourceButton, axisName);
 
-		return gamepadInputPumps_.erase(key) > 0;
+		if (pumpIndex < 0) return false;
+		
+		gamepadInputPumps_.erase(gamepadInputPumps_.begin() + pumpIndex);
+		return true;
 	}
 
-	bool ObjectInput::AddGamepadAxisInput(int sourceGamepadIndex, SDL_GameControllerAxis sourceAxis, std::string axisName, AbstractInputPump::PumpFunction pumpFunction) 
+	bool ObjectInput::AddGamepadAxisBinding(int sourceGamepadIndex, SDL_GameControllerAxis sourceAxis, const std::string& axisName, AbstractInputPump::PumpFunction pumpFunction)
 	{
 		if (!GamepadInput::Get().IsValidGamepadIndex(sourceGamepadIndex)) return false;
 
 		VirtualAxis* targetAxis = GetOrAddVirtualAxis(axisName);
 		if (targetAxis == nullptr) return false;
 
-		std::string key = std::to_string(sourceGamepadIndex) + std::to_string(sourceAxis) + axisName;
-
-		if (gamepadInputPumps_.find(key) != gamepadInputPumps_.end())
+		if (GetGamepadPumpIndex(sourceGamepadIndex, sourceAxis, axisName) >= 0) // Already exists
 			return false;
 
-		return gamepadInputPumps_.emplace(key, GamepadInputPump(sourceGamepadIndex, sourceAxis, *targetAxis, pumpFunction)).second;
+		gamepadInputPumps_.emplace_back(sourceGamepadIndex, sourceAxis, *targetAxis, pumpFunction);
+		// Sync transient state to prevent wrong "Now"-Actions during the update of instantiation
+		gamepadInputPumps_.back().Pump();
+		gamepadInputPumps_.back().GetVirtualAxis()->BeginUpdate();
 
+		return true;
 	}
 
-	bool ObjectInput::DeleteGamepadAxisInput(int sourceGamepadIndex, SDL_GameControllerAxis sourceAxis, const std::string& axisName) 
+	bool ObjectInput::RemoveGamepadAxisBinding(int sourceGamepadIndex, SDL_GameControllerAxis sourceAxis, const std::string& axisName)
 	{
-		std::string key = std::to_string(sourceGamepadIndex) + std::to_string(sourceAxis) + axisName;
+		int pumpIndex = GetGamepadPumpIndex(sourceGamepadIndex, sourceAxis, axisName);
 
-		return gamepadInputPumps_.erase(key) > 0;
+		if (pumpIndex < 0) return false;
+
+		gamepadInputPumps_.erase(gamepadInputPumps_.begin() + pumpIndex);
+		return true;
 	}
 
-	bool ObjectInput::AddVirtualInput(const std::string& sourceID, const std::string& axisName, AbstractInputPump::PumpFunction pumpFunction) 
+	bool ObjectInput::AddVirtualBinding(int sourceID, const std::string& axisName, AbstractInputPump::PumpFunction pumpFunction)
 	{
 		VirtualAxis* targetAxis = GetOrAddVirtualAxis(axisName);
-		if (targetAxis == nullptr) //|| sourceID.empty())
+		if (targetAxis == nullptr) return false;
+
+		if (GetVirtualPumpIndex(sourceID, axisName) >= 0) // Already exists
 			return false;
 
-		std::string key = sourceID + axisName;
+		virtualInputPumps_.emplace_back(sourceID, *targetAxis, pumpFunction);
+		// Sync transient state to prevent wrong "Now"-Actions during the update of instantiation
+		virtualInputPumps_.back().Pump();
+		virtualInputPumps_.back().GetVirtualAxis()->BeginUpdate();
 
-		return virtualInputPumps_.emplace(key, VirtualInputPump(*targetAxis, pumpFunction)).second;
-
+		return true;
 	}
 
-	bool ObjectInput::DeleteVirtualInput(const std::string& sourceID, const std::string& axisName) 
+	bool ObjectInput::RemoveVirtualBinding(int sourceID, const std::string& axisName)
 	{
-		std::string key = sourceID + axisName;
+		int pumpIndex = GetVirtualPumpIndex(sourceID, axisName);
+		if (pumpIndex < 0) return false;
 
-		return virtualInputPumps_.erase(key) > 0;
+		virtualInputPumps_.erase(virtualInputPumps_.begin() + pumpIndex);
+		return true;	
 	}
 
 
-	bool ObjectInput::SetVirtualInput(const std::string& sourceID, const std::string& axisName, float sourceValue) 
+	bool ObjectInput::SetVirtualSourceState(int sourceID, const std::string& axisName, float sourceState)
 	{
-		std::string key = sourceID + axisName;
+		int pumpIndex = GetVirtualPumpIndex(sourceID, axisName);
+		if (pumpIndex < 0) return false;
 
-		auto it = virtualInputPumps_.find(key);
-		if (it != virtualInputPumps_.end())
-		{
-			it->second.SetSourceValue(sourceValue);
-			return true;
-		}
-
-		return false;
+		virtualInputPumps_[pumpIndex].SetSourceState(sourceState);
+		return true;
 	}
 
-	bool ObjectInput::SetDeadZone(const std::string& axisName, float value) 
+	bool ObjectInput::SetDeadZone(const std::string& axisName, float value)
 	{
-		auto it = virtualAxes_.find(axisName);
+		VirtualAxis* axis = GetVirtualAxis(axisName);
 
-		if (it != virtualAxes_.end())
-		{
-			it->second.SetDeadZone(value);
-			return true;
-		}
-
-		return false;
+		if (!axis) return false;
+		
+		axis->SetDeadZone(value);
+		return true;
 	}
 
-	void ObjectInput::ResetState() 
+	void ObjectInput::ResetAxes()
 	{
-		for (auto& pair : virtualAxes_)
-			pair.second.ResetState();
-
-		for (auto& pair : virtualInputPumps_)
-			pair.second.SetSourceValue(0.0f);
+		for (int i = 0; i < virtualAxes_.size(); i++)
+			virtualAxes_[i].Reset();
 	}
 
-
-	bool ObjectInput::IsPositive(const std::string& axisName) const 
+	void ObjectInput::ResetVirtualSourceState()
 	{
-		auto it = virtualAxes_.find(axisName);
-
-		if (it != virtualAxes_.end())
-			return it->second.IsPositive();
-
-		return false;
+		for (int i = 0; i < virtualInputPumps_.size(); i++)
+			virtualInputPumps_[i].SetSourceState(0.0f);
 	}
 
-	bool ObjectInput::IsNowPositive(const std::string& axisName) const 
+
+	bool ObjectInput::IsPositive(const std::string& axisName) const
 	{
-		auto it = virtualAxes_.find(axisName);
+		const VirtualAxis* axis = GetVirtualAxis(axisName);
+		if (!axis) return false;
 
-		if (it != virtualAxes_.end())
-			return it->second.IsNowPositive();
-
-		return false;
+		return axis->IsPositive();
 	}
 
-	bool ObjectInput::IsNowZeroFromPositive(const std::string& axisName) const 
+	bool ObjectInput::BecamePositive(const std::string& axisName) const
 	{
-		auto it = virtualAxes_.find(axisName);
+		const VirtualAxis* axis = GetVirtualAxis(axisName);
+		if (!axis) return false;
 
-		if (it != virtualAxes_.end())
-			return it->second.IsNowZeroFromPositive();
-
-		return false;
+		return axis->BecamePositive();
 	}
 
-	bool ObjectInput::IsNegative(const std::string& axisName) const 
+	bool ObjectInput::BecameZeroFromPositive(const std::string& axisName) const
 	{
-		auto it = virtualAxes_.find(axisName);
+		const VirtualAxis* axis = GetVirtualAxis(axisName);
+		if (!axis) return false;
 
-		if (it != virtualAxes_.end())
-			return it->second.IsNegative();
-
-		return false;
+		return axis->BecameZeroFromPositive();
 	}
 
-	bool ObjectInput::IsNowNegative(const std::string& axisName) const 
+	bool ObjectInput::IsNegative(const std::string& axisName) const
 	{
-		auto it = virtualAxes_.find(axisName);
+		const VirtualAxis* axis = GetVirtualAxis(axisName);
+		if (!axis) return false;
 
-		if (it != virtualAxes_.end())
-			return it->second.IsNowNegative();
-
-		return false;
+		return axis->IsNegative();
 	}
 
-	bool ObjectInput::IsNowZeroFromNegative(const std::string& axisName) const 
+	bool ObjectInput::BecameNegative(const std::string& axisName) const
 	{
-		auto it = virtualAxes_.find(axisName);
+		const VirtualAxis* axis = GetVirtualAxis(axisName);
+		if (!axis) return false;
 
-		if (it != virtualAxes_.end())
-			return it->second.IsNowZeroFromNegative();
-
-		return false;
+		return axis->BecameNegative();
 	}
 
-	bool ObjectInput::IsNowZero(const std::string& axisName) const 
+	bool ObjectInput::BecameZeroFromNegative(const std::string& axisName) const
 	{
-		auto it = virtualAxes_.find(axisName);
+		const VirtualAxis* axis = GetVirtualAxis(axisName);
+		if (!axis) return false;
 
-		if (it != virtualAxes_.end())
-			return it->second.IsNowZeroFromPositive() || it->second.IsNowZeroFromNegative();
-
-		return false;
+		return axis->BecameZeroFromNegative();
 	}
 
-	float ObjectInput::GetAxisValue(const std::string& axisName) const 
+	bool ObjectInput::BecameZero(const std::string& axisName) const
 	{
-		auto it = virtualAxes_.find(axisName);
+		const VirtualAxis* axis = GetVirtualAxis(axisName);
+		if (!axis) return false;
 
-		if (it != virtualAxes_.end())
-			return it->second.GetAxisState();
-
-		return 0.0f;
+		return axis->BecameZero();
 	}
 
-	bool ObjectInput::ContainsAxis(const std::string& axisName) const  // To support manual error handling
+	float ObjectInput::GetAxisState(const std::string& axisName) const
 	{
-		return virtualAxes_.find(axisName) != virtualAxes_.end();
+		const VirtualAxis* axis = GetVirtualAxis(axisName);
+		if (!axis) return 0.0f;
+
+		return axis->GetAxisState();
 	}
 
 
-	VirtualAxis* ObjectInput::GetOrAddVirtualAxis(const std::string& axisName) 
+
+	VirtualAxis* ObjectInput::GetOrAddVirtualAxis(const std::string& axisName)
 	{
 		if (axisName.empty()) return nullptr;
 
-		auto it = virtualAxes_.find(axisName);
+		VirtualAxis* axis = GetVirtualAxis(axisName);
 
-		if (it != virtualAxes_.end())
-			return &(it->second);
+		if (!axis)
+		{
+			virtualAxes_.emplace_back(axisName, virtualAxes_.size());
+			axis = &(virtualAxes_.back());
 
-		return &(virtualAxes_.emplace(axisName, axisName).first->second);
+			RelinkPumpsToAxes(); // In case the axis vector store gets relocated, update the axis binding
+		}
+
+		return axis;
 	}
 
-	void ObjectInput::UpdatePreviousInput() 
+	const VirtualAxis* ObjectInput::GetVirtualAxis(const std::string& axisName) const
 	{
-		for (auto& pair : virtualAxes_)
-			pair.second.BeginUpdate();
+		for (int i = 0; i < virtualAxes_.size(); i++)
+		{
+			if (virtualAxes_[i].GetName() == axisName)
+				return &(virtualAxes_[i]);
+		}
+
+		return nullptr;
 	}
 
-	void ObjectInput::ResetAllAxisValues() 
+	VirtualAxis* ObjectInput::GetVirtualAxis(const std::string& axisName) 
 	{
-		for (auto& pair : virtualAxes_)
-			pair.second.SetAxisState(0.0f);
+		for (int i = 0; i < virtualAxes_.size(); i++)
+		{
+			if (virtualAxes_[i].GetName() == axisName)
+				return &(virtualAxes_[i]);
+		}
+
+		return nullptr;
 	}
 
-	void ObjectInput::PumpInput() 
+
+    int ObjectInput::GetKeyboardPumpIndex(SDL_Scancode sourceKey, const std::string& axisName) const
 	{
-		for (auto& pair : keyboardInputPumps_)
-			pair.second.PumpInput();
-		for (auto& pair : gamepadInputPumps_)
-			pair.second.PumpInput();
-		for (auto& pair : mouseInputPumps_)
-			pair.second.PumpInput();
-		for (auto& pair : virtualInputPumps_)
-			pair.second.PumpInput();
+		for (int i = 0; i < keyboardInputPumps_.size(); i++)
+		{
+			if (keyboardInputPumps_[i].GetSourceKey() == sourceKey && keyboardInputPumps_[i].GetVirtualAxis()->GetName() == axisName)
+				return i;
+		}
+
+		return -1;
 	}
 
-	void ObjectInput::RelinkPumpsToAxes() 
+	int ObjectInput::GetMousePumpIndex(MouseInput::Button sourceButton, const std::string& axisName) const
 	{
-		for (auto& pair : keyboardInputPumps_)
-			pair.second.SetVirtualAxis(virtualAxes_.at(pair.second.GetVirtualAxis()->GetName()));
-		for (auto& pair : mouseInputPumps_)
-			pair.second.SetVirtualAxis(virtualAxes_.at(pair.second.GetVirtualAxis()->GetName()));
-		for (auto& pair : gamepadInputPumps_)
-			pair.second.SetVirtualAxis(virtualAxes_.at(pair.second.GetVirtualAxis()->GetName()));
-		for (auto& pair : virtualInputPumps_)
-			pair.second.SetVirtualAxis(virtualAxes_.at(pair.second.GetVirtualAxis()->GetName()));
+		for (int i = 0; i < mouseInputPumps_.size(); i++)
+		{
+			if (mouseInputPumps_[i].GetSourceButton() == sourceButton && mouseInputPumps_[i].GetVirtualAxis()->GetName() == axisName)
+				return i;
+		}
+
+		return -1;
+	}
+
+	int ObjectInput::GetGamepadPumpIndex(int sourceGamepadIndex, SDL_GameControllerButton sourceButton, const std::string& axisName) const
+	{
+		for (int i = 0; i < gamepadInputPumps_.size(); i++)
+		{
+			if (gamepadInputPumps_[i].GetSourceGamepadIndex() == sourceGamepadIndex && gamepadInputPumps_[i].GetSourceButton() == sourceButton && gamepadInputPumps_[i].GetVirtualAxis()->GetName() == axisName)
+				return i;
+		}
+
+		return -1;
+	}
+
+	int ObjectInput::GetGamepadPumpIndex(int sourceGamepadIndex, SDL_GameControllerAxis sourceAxis, const std::string& axisName) const
+	{
+		for (int i = 0; i < gamepadInputPumps_.size(); i++)
+		{
+			if (gamepadInputPumps_[i].GetSourceGamepadIndex() == sourceGamepadIndex && gamepadInputPumps_[i].GetSourceAxis() == sourceAxis && gamepadInputPumps_[i].GetVirtualAxis()->GetName() == axisName)
+				return i;
+		}
+
+		return -1;
+	}
+
+	int ObjectInput::GetVirtualPumpIndex(int sourceID, const std::string& axisName) const
+	{
+
+		for (int i = 0; i < virtualInputPumps_.size(); i++)
+		{
+			if (virtualInputPumps_[i].GetSourceID() == sourceID && virtualInputPumps_[i].GetVirtualAxis()->GetName() == axisName)
+				return i;
+		}
+
+		return -1;
+	}
+
+
+	void ObjectInput::SyncPreviousInput()
+	{
+		for (int i = 0; i < virtualAxes_.size(); i++)
+			virtualAxes_[i].BeginUpdate();
+	}
+
+	void ObjectInput::ResetAxisState()
+	{
+		for (int i = 0; i < virtualAxes_.size(); i++)
+			virtualAxes_[i].SetAxisState(0.0f);
+	}
+
+	void ObjectInput::PumpInput()
+	{
+		for (int i = 0; i < keyboardInputPumps_.size(); i++)
+			keyboardInputPumps_[i].Pump();
+
+		for (int i = 0; i < mouseInputPumps_.size(); i++)
+			mouseInputPumps_[i].Pump();
+
+		for (int i = 0; i < gamepadInputPumps_.size(); i++)
+			gamepadInputPumps_[i].Pump();
+
+		for (int i = 0; i < virtualInputPumps_.size(); i++)
+			virtualInputPumps_[i].Pump();
+	}
+
+	void ObjectInput::RelinkPumpsToAxes()
+	{
+		for (int i = 0; i < keyboardInputPumps_.size(); i++)
+			keyboardInputPumps_[i].SetVirtualAxis(virtualAxes_[keyboardInputPumps_[i].GetCachedAxisID()]);
+
+		for (int i = 0; i < mouseInputPumps_.size(); i++)
+			mouseInputPumps_[i].SetVirtualAxis(virtualAxes_[mouseInputPumps_[i].GetCachedAxisID()]);
+
+		for (int i = 0; i < gamepadInputPumps_.size(); i++)
+			gamepadInputPumps_[i].SetVirtualAxis(virtualAxes_[gamepadInputPumps_[i].GetCachedAxisID()]);
+
+		for (int i = 0; i < virtualInputPumps_.size(); i++)
+			virtualInputPumps_[i].SetVirtualAxis(virtualAxes_[virtualInputPumps_[i].GetCachedAxisID()]);
 	}
 
 }

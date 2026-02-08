@@ -5,12 +5,14 @@ namespace pix
 
 		KeyboardInputPump::KeyboardInputPump(SDL_Scancode sourceKey, VirtualAxis& targetAxis, AbstractInputPump::PumpFunction pumpFunction) : AbstractInputPump(targetAxis, pumpFunction), sourceKey_(sourceKey)
 		{
-			// Prevent wrong "Now"-Actions during the Update of instantiation
-			PumpInput();
-			GetVirtualAxis()->BeginUpdate();
 		}
 
-		float KeyboardInputPump::GetSourceState() const 
+		void KeyboardInputPump::SetSourceKey(SDL_Scancode sourceKey)
+		{
+			sourceKey_ = sourceKey;
+		}
+
+		float KeyboardInputPump::GetSourceState() const
 		{
 			return KeyboardInput::Get().IsKeyDown(sourceKey_) ? 1.0f : 0.0f;
 		}
@@ -19,16 +21,16 @@ namespace pix
 
 
 
-
-
 		MouseInputPump::MouseInputPump(MouseInput::Button sourceButton, VirtualAxis& targetAxis, AbstractInputPump::PumpFunction pumpFunction) : AbstractInputPump(targetAxis, pumpFunction), sourceButton_(sourceButton)
 		{
-			// Prevent wrong "Now"-Actions during the Update of instantiation
-			PumpInput();
-			GetVirtualAxis()->BeginUpdate();
 		}
 
-		float MouseInputPump::GetSourceState() const 
+		void MouseInputPump::SetSourceButton(MouseInput::Button sourceButton)
+		{
+			sourceButton_ = sourceButton;
+		}
+
+		float MouseInputPump::GetSourceState() const
 		{
 			return MouseInput::Get().IsButtonDown(sourceButton_) ? 1.0f : 0.0f;
 		}
@@ -46,9 +48,6 @@ namespace pix
 			sourceButton_(sourceButton),
 			sourceAxis_(SDL_CONTROLLER_AXIS_INVALID)
 		{
-			// Prevent wrong "Now"-Actions during the Update of instantiation
-			PumpInput();
-			GetVirtualAxis()->BeginUpdate();
 		}
 
 		GamepadInputPump::GamepadInputPump(int sourceGamepadIndex, SDL_GameControllerAxis sourceAxis, VirtualAxis& targetAxis, AbstractInputPump::PumpFunction pumpFunction) : AbstractInputPump(targetAxis, pumpFunction),
@@ -56,9 +55,21 @@ namespace pix
 			sourceButton_(SDL_CONTROLLER_BUTTON_INVALID),
 			sourceAxis_(sourceAxis)
 		{
-			// Prevent wrong "Now"-Actions during the Update of instantiation
-			PumpInput();
-			GetVirtualAxis()->BeginUpdate();
+		}
+
+		void GamepadInputPump::SetSourceGamepadIndex(int sourceGamepadIndex)
+		{
+			sourceGamepadIndex_ = sourceGamepadIndex;
+		}
+
+		void GamepadInputPump::SetSourceButton(SDL_GameControllerButton sourceButton)
+		{
+			sourceButton_ = sourceButton;
+		}
+
+		void GamepadInputPump::SetSourceAxis(SDL_GameControllerAxis sourceAxis)
+		{
+			sourceAxis_ = sourceAxis;
 		}
 
 		float GamepadInputPump::GetSourceState() const 
@@ -72,28 +83,40 @@ namespace pix
 		}
 
 		int GamepadInputPump::GetSourceGamepadIndex() const { return sourceGamepadIndex_; }
-		SDL_GameControllerButton GamepadInputPump::GetSourceBoutton() const { return sourceButton_; }
+		SDL_GameControllerButton GamepadInputPump::GetSourceButton() const { return sourceButton_; }
 		SDL_GameControllerAxis  GamepadInputPump::GetSourceAxis() const { return sourceAxis_; }
 
 	
 
 
 
-		VirtualInputPump::VirtualInputPump(VirtualAxis& axis, PumpFunction pumpFunction) : AbstractInputPump(axis, pumpFunction), 
-			sourceState_(0.0f)
+		VirtualInputPump::VirtualInputPump(int sourceID, VirtualAxis& axis, PumpFunction pumpFunction) : AbstractInputPump(axis, pumpFunction), 
+			sourceState_(0.0f),
+			sourceID_(sourceID)
 		{
-			PumpInput();
-			GetVirtualAxis()->BeginUpdate();
 		}
 
-		void VirtualInputPump::SetSourceValue(float value)
+		void VirtualInputPump::SetSourceState(float state)
 		{
-			sourceState_ = value;
+			if (state < -1.0f) state = -1.0f;
+			else if (state > 1.0f) state = 1.0f;
+
+			sourceState_ = state;
+		}
+
+		void VirtualInputPump::SetSourceID(int sourceID)
+		{
+			sourceID_ = sourceID;
 		}
 
 		float VirtualInputPump::GetSourceState() const 
 		{
 			return sourceState_;
+		}
+
+		int VirtualInputPump::GetSourceID() const
+		{
+			return sourceID_;
 		}
 
 }

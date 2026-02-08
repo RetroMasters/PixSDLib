@@ -3,8 +3,6 @@
 #include "AbstractInputPump.h"
 #include "Input.h"
 
-
-
 namespace pix
 {
 
@@ -12,13 +10,16 @@ namespace pix
 	{
 	public:
 
-		KeyboardInputPump(SDL_Scancode sourceKey, VirtualAxis& targetAxis, AbstractInputPump::PumpFunction pumpFunction);
+		KeyboardInputPump(SDL_Scancode sourceKey, VirtualAxis& targetAxis, AbstractInputPump::PumpFunction pumpFunction = AbsMaxf);
 
 		~KeyboardInputPump()  = default;
+
+		void SetSourceKey(SDL_Scancode sourceKey);
 
 		float GetSourceState() const  override;
 
 		SDL_Scancode GetSourceKey() const;
+
 
 	private:
 
@@ -33,9 +34,11 @@ namespace pix
 	{
 	public:
 
-		MouseInputPump(MouseInput::Button sourceButton, VirtualAxis& targetAxis, AbstractInputPump::PumpFunction pumpFunction = nullptr);
+		MouseInputPump(MouseInput::Button sourceButton, VirtualAxis& targetAxis, AbstractInputPump::PumpFunction pumpFunction = AbsMaxf);
 
 		~MouseInputPump()  = default;
+
+		void SetSourceButton(MouseInput::Button sourceButton);
 
 		float GetSourceState() const  override;
 
@@ -53,16 +56,22 @@ namespace pix
 	{
 	public:
 
-		GamepadInputPump(int sourceGamepadIndex, SDL_GameControllerButton sourceButton, VirtualAxis& targetAxis, AbstractInputPump::PumpFunction pumpFunction = nullptr);
+		GamepadInputPump(int sourceGamepadIndex, SDL_GameControllerButton sourceButton, VirtualAxis& targetAxis, AbstractInputPump::PumpFunction pumpFunction = AbsMaxf);
 
-		GamepadInputPump(int sourceGamepadIndex, SDL_GameControllerAxis sourceAxis, VirtualAxis& targetAxis, AbstractInputPump::PumpFunction pumpFunction = nullptr);
+		GamepadInputPump(int sourceGamepadIndex, SDL_GameControllerAxis sourceAxis, VirtualAxis& targetAxis, AbstractInputPump::PumpFunction pumpFunction = AbsMaxf);
 
 		~GamepadInputPump() = default;
+
+		void SetSourceGamepadIndex(int sourceGamepadIndex);
+
+		void SetSourceButton(SDL_GameControllerButton sourceButton);
+
+		void SetSourceAxis(SDL_GameControllerAxis sourceAxis);
 
 		float GetSourceState() const override;
 
 		int GetSourceGamepadIndex() const;
-		SDL_GameControllerButton GetSourceBoutton() const;
+		SDL_GameControllerButton GetSourceButton() const;
 		SDL_GameControllerAxis  GetSourceAxis() const;
 
 	private:
@@ -79,17 +88,22 @@ namespace pix
 	{
 	public:
 
-		VirtualInputPump(VirtualAxis& axis, PumpFunction pumpFunction = nullptr);
+		VirtualInputPump(int sourceID, VirtualAxis& axis, PumpFunction pumpFunction = AbsMaxf);
 
 		~VirtualInputPump() = default;
 
-		void SetSourceValue(float value);
+		void SetSourceState(float state); // The unique feature of VirtualInputPup is to set source state manually
+
+		void SetSourceID(int sourceID);
 
 		float GetSourceState() const override;
+
+		int GetSourceID() const;
 
 	private:
 
 		float sourceState_;
+		int sourceID_;
 	};
 
 

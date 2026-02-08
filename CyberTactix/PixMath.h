@@ -89,12 +89,17 @@ namespace pix
 
 
 
-
+	/*
 	template<typename T> inline T AbsMax(T a, T b) 
 	{
 		return (std::abs(a) < std::abs(b)) ? b : a;
 	}
+	*/
 
+	inline float AbsMaxf(float a, float b)
+	{
+		return (std::abs(a) < std::abs(b)) ? b : a;
+	}
 
 
 	//################################################################################ 2D TYPES #############################################################

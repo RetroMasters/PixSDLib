@@ -1,29 +1,29 @@
 #include "AbstractInputPump.h"
+#include "PixMath.h"
 
 namespace pix
 {
 	
-		VirtualAxis::VirtualAxis(const std::string& name, float deadZone) : //deadZone is not negative
+		VirtualAxis::VirtualAxis(const std::string& name, int id, float deadZone) :
 			axisState_(0.0f),
 			prevAxisState_(0.0f),
-			name_(name)
+			name_(name),
+			id_(id)
 		{
 			SetDeadZone(deadZone);
 		}
 
-		// Syncs previous state with the current one.
-		// Must be called exactly once per update loop iteration, at its beginning before pumping input.
 		void VirtualAxis::BeginUpdate()
 		{
 			prevAxisState_ = axisState_;
 		}
-
-		void VirtualAxis::SetAxisState(float value)
+		
+		void VirtualAxis::SetAxisState(float state)
 		{
-			axisState_ = std::abs(value) > deadZone_ ? value : 0.0f;
+			if (state > 1.0f) state = 1.0f;
+			else if (state < -1.0f) state = -1.0f;
 
-			if (axisState_ > 1.0f) axisState_ = 1.0f;
-			else if (axisState_ < -1.0f) axisState_ = -1.0f;
+			axisState_ = std::abs(state) > deadZone_ ? state : 0.0f;
 		}
 
 		float VirtualAxis::GetAxisState() const
@@ -31,11 +31,26 @@ namespace pix
 			return axisState_;
 		}
 
+		float VirtualAxis::GetEffectiveAxisState() const
+		{
+			// When deadZone_ == 1, axisState_ is 0, so division by zero cannot occur
+			float effectiveRange = 1.0f - deadZone_;
+
+			if (axisState_ > 0.0f)
+				return (axisState_ - deadZone_) / effectiveRange;
+
+			if (axisState_ < 0.0f)
+				return (axisState_ + deadZone_) / effectiveRange;
+
+			return 0.0f;
+		}
+
 		void VirtualAxis::SetDeadZone(float value)
 		{
+			if (value > 1.0f) value = 1.0f;
+			else if (value < 0.0f) value = 0.0f;
+
 			deadZone_ = value;
-			if (deadZone_ > 1.0f) deadZone_ = 1.0f;
-			else if (deadZone_ < 0.0f) deadZone_ = 0.0f;
 		}
 
 		float VirtualAxis::GetDeadZone() const
@@ -43,20 +58,19 @@ namespace pix
 			return deadZone_;
 		}
 
-		// Resets the previous and current axis state to zero (dead zone remains unchanged)
-		void VirtualAxis::ResetState()
+		void VirtualAxis::Reset()
 		{
 			axisState_ = 0.0f;
 			prevAxisState_ = 0.0f;
 		}
 
 		bool VirtualAxis::IsPositive() const { return axisState_ > 0.0f; }
-		bool VirtualAxis::IsNowPositive() const { return prevAxisState_ <= 0.0f && axisState_ > 0.0f; }
-		bool VirtualAxis::IsNowZeroFromPositive() const { return prevAxisState_ > 0.0f && axisState_ == 0.0f; }
+		bool VirtualAxis::BecamePositive() const { return prevAxisState_ <= 0.0f && axisState_ > 0.0f; }
+		bool VirtualAxis::BecameZeroFromPositive() const { return prevAxisState_ > 0.0f && axisState_ == 0.0f; }
 		bool VirtualAxis::IsNegative() const { return axisState_ < 0.0f; }
-		bool VirtualAxis::IsNowNegative() const { return prevAxisState_ >= 0.0f && axisState_ < 0.0f; }
-		bool VirtualAxis::IsNowZeroFromNegative() const { return prevAxisState_ < 0.0f && axisState_ == 0.0f; }
-		bool VirtualAxis::IsNowZero() const { return prevAxisState_ != 0.0f && axisState_ == 0.0f; }
+		bool VirtualAxis::BecameNegative() const { return prevAxisState_ >= 0.0f && axisState_ < 0.0f; }
+		bool VirtualAxis::BecameZeroFromNegative() const { return prevAxisState_ < 0.0f && axisState_ == 0.0f; }
+		bool VirtualAxis::BecameZero() const { return prevAxisState_ != 0.0f && axisState_ == 0.0f; }
 
 
 		const std::string& VirtualAxis::GetName() const
@@ -64,15 +78,20 @@ namespace pix
 			return name_;
 		}
 
-		AbstractInputPump::AbstractInputPump(VirtualAxis& virtualAxis, PumpFunction pumpFunction) :
-			Enabled(true),
-			pumpFunction_(AbsMax), // AbsMax() takes the absolute value of both inputs, and returns the biggest one
-			virtualAxis_(&virtualAxis)
+		int VirtualAxis::GetID() const
 		{
-			if (pumpFunction != nullptr) pumpFunction_ = pumpFunction;
+			return id_;
 		}
 
-		void AbstractInputPump::PumpInput()
+		AbstractInputPump::AbstractInputPump(VirtualAxis& virtualAxis, PumpFunction pumpFunction) :
+			Enabled(true),
+			pumpFunction_(pumpFunction ? pumpFunction : AbsMaxf), 
+			virtualAxis_(&virtualAxis),
+			cachedAxisID_(virtualAxis.GetID())
+		{
+		}
+
+		void AbstractInputPump::Pump()
 		{
 			if (Enabled)
 				virtualAxis_->SetAxisState(pumpFunction_(GetSourceState(), virtualAxis_->GetAxisState()));
@@ -81,6 +100,12 @@ namespace pix
 		void AbstractInputPump::SetVirtualAxis(VirtualAxis& virtualAxis)
 		{
 			virtualAxis_ = &virtualAxis;
+			cachedAxisID_ = virtualAxis.GetID();
+		}
+
+		void AbstractInputPump::SetPumpFunction(PumpFunction pumpFunction)
+		{
+			pumpFunction_ = pumpFunction ? pumpFunction : AbsMaxf;
 		}
 
 		AbstractInputPump::PumpFunction AbstractInputPump::GetPumpFunction() const
@@ -93,6 +118,9 @@ namespace pix
 			return virtualAxis_;
 		}
 
-		
+		int AbstractInputPump::GetCachedAxisID() const
+		{
+			return cachedAxisID_;
+		}
 
 }
