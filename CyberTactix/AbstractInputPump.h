@@ -17,7 +17,7 @@ namespace pix
 
 		//######################## INITIALIZATION ################################
 
-		VirtualAxis(const std::string& name, int id, float deadZone = 0.001f); //deadZone is not negative
+		VirtualAxis(const std::string& name, int id, float deadZone = 0.001f); 
 
 		~VirtualAxis() = default; 
 
@@ -78,9 +78,9 @@ namespace pix
 	// AbstractInputPump is the abstract base class for pumps transferring specific source-input, like a button press on gamepad, to a virtual axis. 
 	// The transfer is handled by a pump function that takes the current source and axis state as input.
 	// The concrete InputPump types only differ in the source of input. Thus they only have to implement GetSourceState().
-	// 
-	// Technical note:
-	// The axis ID gets cached, primarily to have a link recovery option for array storage that can relocate the axis. 
+	// A valid axis that outlives the pump must be provided by its owner, so the Pump() method can operate. 
+	// The axis ID is cached primarily as an index-like identity for owners that store axes in vectors (to relink after reallocation).
+	// But validity of the ID depends on the owner. 
 	// 
 	// Philosophy:
 	// An input pump is the fundamental building block for streaming input. An input pump does not own the virtual axis, it just connects exactly 
@@ -92,13 +92,13 @@ namespace pix
 	public:
 
 	    // A 2D float function taking the current source state and axis state to determine the resulting axis state.
-		// Note: If a virtual axis has multiple input sources, the AbsMax() function is typically suited to set the input properly.
+		// Note: If a virtual axis has multiple input sources, DefaultPumpFunction() is typically suited to set the input properly.
 		using PumpFunction = float(*) (float sourceState, float axisState);
 
 		//######################## INITIALIZATION ################################
 
-		// Virtual axis is expected to be set to a valid axis after construction. 
-		// The pump function defaults to AbsMaxf(), if pumpFunction is nullptr.
+		// virtualAxis must be valid. 
+		// DefaultPumpFunction() is set if pumpFunction is nullptr.
 		AbstractInputPump(VirtualAxis& virtualAxis, PumpFunction pumpFunction = nullptr);
 
 		virtual ~AbstractInputPump() = default;
@@ -108,14 +108,14 @@ namespace pix
 		bool Enabled;
 
 		// Pumps the current source state to the axis by using the pump function.
-		// If Enabled is set to false or pump function is null, PumpInput() is no-op. 
+		// If Enabled is set to false, Pump() is no-op. 
 		void Pump();
 
-		// Rebinds the pump to a different axis and updates the cached axis ID
+		// Rebinds the pump to a different axis and updates the cached axis ID.
+		// virtualAxis must be valid. 
 		void SetVirtualAxis(VirtualAxis& virtualAxis);
 
-		// If pumpFunction is nullptr, the default function AbsMaxf() is set.
-		// AbsMax() takes the absolute value of both inputs, and returns the biggest one, preferring the source.
+		// If pumpFunction is nullptr, DefaultPumpFunction() is set.
 		void SetPumpFunction(PumpFunction pumpFunction);
 
 		virtual float GetSourceState() const = 0;  // The input source is what differentiates the pump types 
@@ -130,17 +130,13 @@ namespace pix
 
 	private:
 
-		// Returns the value with the biggest magnitude, so the biggest contributer wins.
+		// Returns the value with the biggest magnitude, so the biggest contributor wins.
 		// On equal magnitude, the source value wins (later pumps override earlier ones).
-		static float DefaultPumpFunction(float sourceState, float axisState)
-		{		
-			return (std::abs(sourceState) < std::abs(axisState)) ? axisState : sourceState; 
-		}
+		static float DefaultPumpFunction(float sourceState, float axisState);
 
 		PumpFunction pumpFunction_;
 		VirtualAxis* virtualAxis_;
 		int cachedAxisID_;
 	};
-
 
 }

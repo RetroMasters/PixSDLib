@@ -1,5 +1,5 @@
 #include "AbstractInputPump.h"
-#include "PixMath.h"
+#include <cmath>
 
 namespace pix
 {
@@ -85,7 +85,7 @@ namespace pix
 
 		AbstractInputPump::AbstractInputPump(VirtualAxis& virtualAxis, PumpFunction pumpFunction) :
 			Enabled(true),
-			pumpFunction_(pumpFunction ? pumpFunction : AbsMaxf), 
+			pumpFunction_(pumpFunction ? pumpFunction : DefaultPumpFunction), 
 			virtualAxis_(&virtualAxis),
 			cachedAxisID_(virtualAxis.GetID())
 		{
@@ -105,7 +105,7 @@ namespace pix
 
 		void AbstractInputPump::SetPumpFunction(PumpFunction pumpFunction)
 		{
-			pumpFunction_ = pumpFunction ? pumpFunction : AbsMaxf;
+			pumpFunction_ = pumpFunction ? pumpFunction : DefaultPumpFunction;
 		}
 
 		AbstractInputPump::PumpFunction AbstractInputPump::GetPumpFunction() const
@@ -121,6 +121,11 @@ namespace pix
 		int AbstractInputPump::GetCachedAxisID() const
 		{
 			return cachedAxisID_;
+		}
+
+		float AbstractInputPump::DefaultPumpFunction(float sourceState, float axisState)
+		{
+			return (std::abs(sourceState) < std::abs(axisState)) ? axisState : sourceState;
 		}
 
 }
