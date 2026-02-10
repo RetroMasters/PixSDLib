@@ -6,8 +6,6 @@
 #include <vector>
 #include "Uncopyable.h"
 #include "PixMath.h"
-#include "ErrorLogger.h"
-
 
 namespace pix
 {
@@ -144,7 +142,7 @@ namespace pix
 
 
 		// Runs a simple rumble effect on a haptic device.
-		// The force of the rumble to play is in range [0,1].
+		// The force of the rumble to play is clamped in range [0,1].
 		// The duration of the effect is measured in ms (a negative value means "infinite" duration).
 		void StartRumble(int gamepadIndex, float force, int duration);
 

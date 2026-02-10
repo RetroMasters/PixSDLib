@@ -1,5 +1,5 @@
 #include "AbstractInputPump.h"
-#include <cmath>
+#include "PixMath.h"
 
 namespace pix
 {
@@ -20,8 +20,7 @@ namespace pix
 		
 		void VirtualAxis::SetAxisState(float state)
 		{
-			if (state > 1.0f) state = 1.0f;
-			else if (state < -1.0f) state = -1.0f;
+			state = GetClampedValue(state, -1.0f, 1.0f);
 
 			axisState_ = std::abs(state) > deadZone_ ? state : 0.0f;
 		}
@@ -47,10 +46,7 @@ namespace pix
 
 		void VirtualAxis::SetDeadZone(float value)
 		{
-			if (value > 1.0f) value = 1.0f;
-			else if (value < 0.0f) value = 0.0f;
-
-			deadZone_ = value;
+			deadZone_ = GetClampedValue(value, 0.0f, 1.0f);
 		}
 
 		float VirtualAxis::GetDeadZone() const
@@ -113,9 +109,14 @@ namespace pix
 			return pumpFunction_;
 		}
 
-		VirtualAxis* AbstractInputPump::GetVirtualAxis() const
+		VirtualAxis& AbstractInputPump::GetVirtualAxis() 
 		{
-			return virtualAxis_;
+			return *virtualAxis_;
+		}
+
+		const VirtualAxis& AbstractInputPump::GetVirtualAxis() const
+		{
+			return *virtualAxis_;
 		}
 
 		int AbstractInputPump::GetCachedAxisID() const

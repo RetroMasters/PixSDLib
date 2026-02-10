@@ -113,7 +113,7 @@ namespace pix
 		std::map<std::string, VirtualAxis> virtualAxes_;
 
 		std::map<std::string, KeyboardInputPump> keyboardInputPumps_;
-		std::map<std::string, MouseInputPump>    mouseInputPumps_;
+		std::map<std::string, MouseButtonInputPump>    mouseInputPumps_;
 		std::map<std::string, GamepadInputPump>  gamepadInputPumps_;
 		std::map<std::string, VirtualInputPump>  virtualInputPumps_;
 

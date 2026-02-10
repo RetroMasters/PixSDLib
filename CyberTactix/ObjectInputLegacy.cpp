@@ -45,7 +45,7 @@ namespace pix
 		if (mouseInputPumps_.find(key) != mouseInputPumps_.end())
 			return false;
 
-		return mouseInputPumps_.emplace(key, MouseInputPump(sourceButton, *targetAxis, pumpFunction)).second;
+		return mouseInputPumps_.emplace(key, MouseButtonInputPump(sourceButton, *targetAxis, pumpFunction)).second;
 	}
 
 	bool ObjectInputLegacy::RemoveMouseBinding(MouseInput::Button sourceButton, const std::string& axisName) 
@@ -285,13 +285,13 @@ namespace pix
 	void ObjectInputLegacy::RelinkPumpsToAxes() 
 	{
 		for (auto& pair : keyboardInputPumps_)
-			pair.second.SetVirtualAxis(virtualAxes_.at(pair.second.GetVirtualAxis()->GetName()));
+			pair.second.SetVirtualAxis(virtualAxes_.at(pair.second.GetVirtualAxis().GetName()));
 		for (auto& pair : mouseInputPumps_)
-			pair.second.SetVirtualAxis(virtualAxes_.at(pair.second.GetVirtualAxis()->GetName()));
+			pair.second.SetVirtualAxis(virtualAxes_.at(pair.second.GetVirtualAxis().GetName()));
 		for (auto& pair : gamepadInputPumps_)
-			pair.second.SetVirtualAxis(virtualAxes_.at(pair.second.GetVirtualAxis()->GetName()));
+			pair.second.SetVirtualAxis(virtualAxes_.at(pair.second.GetVirtualAxis().GetName()));
 		for (auto& pair : virtualInputPumps_)
-			pair.second.SetVirtualAxis(virtualAxes_.at(pair.second.GetVirtualAxis()->GetName()));
+			pair.second.SetVirtualAxis(virtualAxes_.at(pair.second.GetVirtualAxis().GetName()));
 	}
 	
 

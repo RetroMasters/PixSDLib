@@ -44,8 +44,7 @@ namespace pix
 	bool ObjectInput::AddKeyboardBinding(SDL_Scancode sourceKey, const std::string& axisName, AbstractInputPump::PumpFunction pumpFunction)
 	{
 		VirtualAxis* targetAxis = GetOrAddVirtualAxis(axisName);
-		if (targetAxis == nullptr)
-			return false;
+		if (!targetAxis) return false;
 
 		if(GetKeyboardPumpIndex(sourceKey, axisName) >= 0) // Already exists
 			return false;
@@ -53,7 +52,7 @@ namespace pix
 		keyboardInputPumps_.emplace_back(sourceKey, *targetAxis, pumpFunction);
 		// Sync transient state to prevent wrong "Now"-Actions during the update of instantiation
 		keyboardInputPumps_.back().Pump();
-		keyboardInputPumps_.back().GetVirtualAxis()->BeginUpdate();
+		keyboardInputPumps_.back().GetVirtualAxis().BeginUpdate();
 
 		return true;
 	}
@@ -61,17 +60,16 @@ namespace pix
 	bool ObjectInput::RemoveKeyboardBinding(SDL_Scancode sourceKey, const std::string& axisName)
 	{
 		int pumpIndex = GetKeyboardPumpIndex(sourceKey, axisName);
-
 		if (pumpIndex < 0) return false;
 		
 		keyboardInputPumps_.erase(keyboardInputPumps_.begin() + pumpIndex);
 		return true;
 	}
 
-	bool ObjectInput::AddMouseBinding(MouseInput::Button sourceButton, const std::string& axisName, AbstractInputPump::PumpFunction pumpFunction)
+	bool ObjectInput::AddMouseButtonBinding(MouseInput::Button sourceButton, const std::string& axisName, AbstractInputPump::PumpFunction pumpFunction)
 	{
 		VirtualAxis* targetAxis = GetOrAddVirtualAxis(axisName);
-		if (targetAxis == nullptr) return false;
+		if (!targetAxis) return false;
 
 		if (GetMousePumpIndex(sourceButton, axisName) >= 0) // Already exists
 			return false;
@@ -79,15 +77,14 @@ namespace pix
 		mouseInputPumps_.emplace_back(sourceButton, *targetAxis, pumpFunction);
 		// Sync transient state to prevent wrong "Now"-Actions during the update of instantiation
 		mouseInputPumps_.back().Pump();
-		mouseInputPumps_.back().GetVirtualAxis()->BeginUpdate();
+		mouseInputPumps_.back().GetVirtualAxis().BeginUpdate();
 
 		return true;
 	}
 
-	bool ObjectInput::RemoveMouseBinding(MouseInput::Button sourceButton, const std::string& axisName)
+	bool ObjectInput::RemoveMouseButtonBinding(MouseInput::Button sourceButton, const std::string& axisName)
 	{
 		int pumpIndex = GetMousePumpIndex(sourceButton, axisName);
-
 		if (pumpIndex < 0) return false;
 
 		mouseInputPumps_.erase(mouseInputPumps_.begin() + pumpIndex);
@@ -100,7 +97,7 @@ namespace pix
 		if (!GamepadInput::Get().IsValidGamepadIndex(sourceGamepadIndex)) return false;
 
 		VirtualAxis* targetAxis = GetOrAddVirtualAxis(axisName);
-		if (targetAxis == nullptr) return false;
+		if (!targetAxis) return false;
 
 		if (GetGamepadPumpIndex(sourceGamepadIndex, sourceButton, axisName) >= 0) // Already exists
 			return false;
@@ -108,7 +105,7 @@ namespace pix
 		gamepadInputPumps_.emplace_back(sourceGamepadIndex, sourceButton, *targetAxis, pumpFunction);
 		// Sync transient state to prevent wrong "Now"-Actions during the update of instantiation
 		gamepadInputPumps_.back().Pump();
-		gamepadInputPumps_.back().GetVirtualAxis()->BeginUpdate();
+		gamepadInputPumps_.back().GetVirtualAxis().BeginUpdate();
 
 		return true;
 	}
@@ -116,7 +113,6 @@ namespace pix
 	bool ObjectInput::RemoveGamepadButtonBinding(int sourceGamepadIndex, SDL_GameControllerButton sourceButton, const std::string& axisName)
 	{
 		int pumpIndex = GetGamepadPumpIndex(sourceGamepadIndex, sourceButton, axisName);
-
 		if (pumpIndex < 0) return false;
 		
 		gamepadInputPumps_.erase(gamepadInputPumps_.begin() + pumpIndex);
@@ -128,7 +124,7 @@ namespace pix
 		if (!GamepadInput::Get().IsValidGamepadIndex(sourceGamepadIndex)) return false;
 
 		VirtualAxis* targetAxis = GetOrAddVirtualAxis(axisName);
-		if (targetAxis == nullptr) return false;
+		if (!targetAxis) return false;
 
 		if (GetGamepadPumpIndex(sourceGamepadIndex, sourceAxis, axisName) >= 0) // Already exists
 			return false;
@@ -136,7 +132,7 @@ namespace pix
 		gamepadInputPumps_.emplace_back(sourceGamepadIndex, sourceAxis, *targetAxis, pumpFunction);
 		// Sync transient state to prevent wrong "Now"-Actions during the update of instantiation
 		gamepadInputPumps_.back().Pump();
-		gamepadInputPumps_.back().GetVirtualAxis()->BeginUpdate();
+		gamepadInputPumps_.back().GetVirtualAxis().BeginUpdate();
 
 		return true;
 	}
@@ -144,7 +140,6 @@ namespace pix
 	bool ObjectInput::RemoveGamepadAxisBinding(int sourceGamepadIndex, SDL_GameControllerAxis sourceAxis, const std::string& axisName)
 	{
 		int pumpIndex = GetGamepadPumpIndex(sourceGamepadIndex, sourceAxis, axisName);
-
 		if (pumpIndex < 0) return false;
 
 		gamepadInputPumps_.erase(gamepadInputPumps_.begin() + pumpIndex);
@@ -154,15 +149,15 @@ namespace pix
 	bool ObjectInput::AddVirtualBinding(int sourceID, const std::string& axisName, AbstractInputPump::PumpFunction pumpFunction)
 	{
 		VirtualAxis* targetAxis = GetOrAddVirtualAxis(axisName);
-		if (targetAxis == nullptr) return false;
+		if (!targetAxis) return false;
 
 		if (GetVirtualPumpIndex(sourceID, axisName) >= 0) // Already exists
 			return false;
 
 		virtualInputPumps_.emplace_back(sourceID, *targetAxis, pumpFunction);
-		// Sync transient state to prevent wrong "Now"-Actions during the update of instantiation
+		// Sync transient state to prevent wrong "Became"-Actions during the update of instantiation
 		virtualInputPumps_.back().Pump();
-		virtualInputPumps_.back().GetVirtualAxis()->BeginUpdate();
+		virtualInputPumps_.back().GetVirtualAxis().BeginUpdate();
 
 		return true;
 	}
@@ -189,7 +184,6 @@ namespace pix
 	bool ObjectInput::SetDeadZone(const std::string& axisName, float value)
 	{
 		VirtualAxis* axis = GetVirtualAxis(axisName);
-
 		if (!axis) return false;
 		
 		axis->SetDeadZone(value);
@@ -198,13 +192,13 @@ namespace pix
 
 	void ObjectInput::ResetAxes()
 	{
-		for (int i = 0; i < virtualAxes_.size(); i++)
+		for (size_t i = 0; i < virtualAxes_.size(); i++)
 			virtualAxes_[i].Reset();
 	}
 
 	void ObjectInput::ResetVirtualSourceState()
 	{
-		for (int i = 0; i < virtualInputPumps_.size(); i++)
+		for (size_t i = 0; i < virtualInputPumps_.size(); i++)
 			virtualInputPumps_[i].SetSourceState(0.0f);
 	}
 
@@ -292,9 +286,10 @@ namespace pix
 		return axis;
 	}
 
+	
 	const VirtualAxis* ObjectInput::GetVirtualAxis(const std::string& axisName) const
 	{
-		for (int i = 0; i < virtualAxes_.size(); i++)
+		for (size_t i = 0; i < virtualAxes_.size(); i++)
 		{
 			if (virtualAxes_[i].GetName() == axisName)
 				return &(virtualAxes_[i]);
@@ -302,10 +297,11 @@ namespace pix
 
 		return nullptr;
 	}
+	
 
 	VirtualAxis* ObjectInput::GetVirtualAxis(const std::string& axisName) 
 	{
-		for (int i = 0; i < virtualAxes_.size(); i++)
+		for (size_t i = 0; i < virtualAxes_.size(); i++)
 		{
 			if (virtualAxes_[i].GetName() == axisName)
 				return &(virtualAxes_[i]);
@@ -317,10 +313,10 @@ namespace pix
 
     int ObjectInput::GetKeyboardPumpIndex(SDL_Scancode sourceKey, const std::string& axisName) const
 	{
-		for (int i = 0; i < keyboardInputPumps_.size(); i++)
+		for (size_t i = 0; i < keyboardInputPumps_.size(); i++)
 		{
-			if (keyboardInputPumps_[i].GetSourceKey() == sourceKey && keyboardInputPumps_[i].GetVirtualAxis()->GetName() == axisName)
-				return i;
+			if (keyboardInputPumps_[i].GetSourceKey() == sourceKey && keyboardInputPumps_[i].GetVirtualAxis().GetName() == axisName)
+				return (int)i;
 		}
 
 		return -1;
@@ -328,10 +324,10 @@ namespace pix
 
 	int ObjectInput::GetMousePumpIndex(MouseInput::Button sourceButton, const std::string& axisName) const
 	{
-		for (int i = 0; i < mouseInputPumps_.size(); i++)
+		for (size_t i = 0; i < mouseInputPumps_.size(); i++)
 		{
-			if (mouseInputPumps_[i].GetSourceButton() == sourceButton && mouseInputPumps_[i].GetVirtualAxis()->GetName() == axisName)
-				return i;
+			if (mouseInputPumps_[i].GetSourceButton() == sourceButton && mouseInputPumps_[i].GetVirtualAxis().GetName() == axisName)
+				return (int)i;
 		}
 
 		return -1;
@@ -339,10 +335,10 @@ namespace pix
 
 	int ObjectInput::GetGamepadPumpIndex(int sourceGamepadIndex, SDL_GameControllerButton sourceButton, const std::string& axisName) const
 	{
-		for (int i = 0; i < gamepadInputPumps_.size(); i++)
+		for (size_t i = 0; i < gamepadInputPumps_.size(); i++)
 		{
-			if (gamepadInputPumps_[i].GetSourceGamepadIndex() == sourceGamepadIndex && gamepadInputPumps_[i].GetSourceButton() == sourceButton && gamepadInputPumps_[i].GetVirtualAxis()->GetName() == axisName)
-				return i;
+			if (gamepadInputPumps_[i].GetSourceGamepadIndex() == sourceGamepadIndex && gamepadInputPumps_[i].GetSourceButton() == sourceButton && gamepadInputPumps_[i].GetVirtualAxis().GetName() == axisName)
+				return (int)i;
 		}
 
 		return -1;
@@ -350,10 +346,10 @@ namespace pix
 
 	int ObjectInput::GetGamepadPumpIndex(int sourceGamepadIndex, SDL_GameControllerAxis sourceAxis, const std::string& axisName) const
 	{
-		for (int i = 0; i < gamepadInputPumps_.size(); i++)
+		for (size_t i = 0; i < gamepadInputPumps_.size(); i++)
 		{
-			if (gamepadInputPumps_[i].GetSourceGamepadIndex() == sourceGamepadIndex && gamepadInputPumps_[i].GetSourceAxis() == sourceAxis && gamepadInputPumps_[i].GetVirtualAxis()->GetName() == axisName)
-				return i;
+			if (gamepadInputPumps_[i].GetSourceGamepadIndex() == sourceGamepadIndex && gamepadInputPumps_[i].GetSourceAxis() == sourceAxis && gamepadInputPumps_[i].GetVirtualAxis().GetName() == axisName)
+				return (int)i;
 		}
 
 		return -1;
@@ -361,11 +357,10 @@ namespace pix
 
 	int ObjectInput::GetVirtualPumpIndex(int sourceID, const std::string& axisName) const
 	{
-
-		for (int i = 0; i < virtualInputPumps_.size(); i++)
+		for (size_t i = 0; i < virtualInputPumps_.size(); i++)
 		{
-			if (virtualInputPumps_[i].GetSourceID() == sourceID && virtualInputPumps_[i].GetVirtualAxis()->GetName() == axisName)
-				return i;
+			if (virtualInputPumps_[i].GetSourceID() == sourceID && virtualInputPumps_[i].GetVirtualAxis().GetName() == axisName)
+				return (int)i;
 		}
 
 		return -1;
@@ -374,43 +369,43 @@ namespace pix
 
 	void ObjectInput::SyncPreviousInput()
 	{
-		for (int i = 0; i < virtualAxes_.size(); i++)
+		for (size_t i = 0; i < virtualAxes_.size(); i++)
 			virtualAxes_[i].BeginUpdate();
 	}
 
 	void ObjectInput::ResetAxisState()
 	{
-		for (int i = 0; i < virtualAxes_.size(); i++)
+		for (size_t i = 0; i < virtualAxes_.size(); i++)
 			virtualAxes_[i].SetAxisState(0.0f);
 	}
 
 	void ObjectInput::PumpInput()
 	{
-		for (int i = 0; i < keyboardInputPumps_.size(); i++)
+		for (size_t i = 0; i < keyboardInputPumps_.size(); i++)
 			keyboardInputPumps_[i].Pump();
 
-		for (int i = 0; i < mouseInputPumps_.size(); i++)
+		for (size_t i = 0; i < mouseInputPumps_.size(); i++)
 			mouseInputPumps_[i].Pump();
 
-		for (int i = 0; i < gamepadInputPumps_.size(); i++)
+		for (size_t i = 0; i < gamepadInputPumps_.size(); i++)
 			gamepadInputPumps_[i].Pump();
 
-		for (int i = 0; i < virtualInputPumps_.size(); i++)
+		for (size_t i = 0; i < virtualInputPumps_.size(); i++)
 			virtualInputPumps_[i].Pump();
 	}
 
 	void ObjectInput::RelinkPumpsToAxes()
 	{
-		for (int i = 0; i < keyboardInputPumps_.size(); i++)
+		for (size_t i = 0; i < keyboardInputPumps_.size(); i++)
 			keyboardInputPumps_[i].SetVirtualAxis(virtualAxes_[keyboardInputPumps_[i].GetCachedAxisID()]);
 
-		for (int i = 0; i < mouseInputPumps_.size(); i++)
+		for (size_t i = 0; i < mouseInputPumps_.size(); i++)
 			mouseInputPumps_[i].SetVirtualAxis(virtualAxes_[mouseInputPumps_[i].GetCachedAxisID()]);
 
-		for (int i = 0; i < gamepadInputPumps_.size(); i++)
+		for (size_t i = 0; i < gamepadInputPumps_.size(); i++)
 			gamepadInputPumps_[i].SetVirtualAxis(virtualAxes_[gamepadInputPumps_[i].GetCachedAxisID()]);
 
-		for (int i = 0; i < virtualInputPumps_.size(); i++)
+		for (size_t i = 0; i < virtualInputPumps_.size(); i++)
 			virtualInputPumps_[i].SetVirtualAxis(virtualAxes_[virtualInputPumps_[i].GetCachedAxisID()]);
 	}
 

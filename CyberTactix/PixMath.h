@@ -1,11 +1,10 @@
 #pragma once
 
-#include <SDL_stdinc.h>
+//#include <SDL_stdinc.h>
 
-#include <SDL.h>
+//#include <SDL.h>
 
-#include <vector>
-
+//#include <vector>
 #include <limits>
 #include <cmath>
 
@@ -86,22 +85,17 @@ namespace pix
 		return result;
 	}
 
-
-
-
-	/*
-	template<typename T> inline T AbsMax(T a, T b) 
+	// Returns a clamped value between min and max: min must be <= max
+	template<typename T> T GetClampedValue(T value, T min, T max)
 	{
-		return (std::abs(a) < std::abs(b)) ? b : a;
-	}
-	*/
+		if (value < min) return min;
 
-	inline float AbsMaxf(float a, float b)
-	{
-		return (std::abs(a) < std::abs(b)) ? b : a;
+		if (value > max) return max;
+
+		return value;
 	}
 
-
+	
 	//################################################################################ 2D TYPES #############################################################
 
 

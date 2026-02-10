@@ -85,7 +85,7 @@ namespace pix
 	// Philosophy:
 	// An input pump is the fundamental building block for streaming input. An input pump does not own the virtual axis, it just connects exactly 
 	// one source of input to exactly one virtual axis. The virtual axis must outlive the pump. By plugging input pumps in between the sources of input
-	// and the virtual axes a full n:n relationship (an input can connect to all axes, and an axis can be connected by all inputs) in connectivity can naturally be achieved.  
+	// and the virtual axes, a full n:n relationship (an input can connect to all axes, and an axis can be connected by all inputs) in connectivity can be achieved.  
 	class AbstractInputPump
 	{
 
@@ -124,7 +124,9 @@ namespace pix
 
 		PumpFunction GetPumpFunction() const;
 
-		VirtualAxis* GetVirtualAxis() const;
+		VirtualAxis& GetVirtualAxis();
+
+		const VirtualAxis& GetVirtualAxis() const;
 
 		int GetCachedAxisID() const;
 

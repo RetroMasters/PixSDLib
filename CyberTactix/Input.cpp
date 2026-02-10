@@ -1,5 +1,5 @@
 #include "Input.h"
-#include<algorithm>
+#include "ErrorLogger.h"
 
 namespace pix
 {
@@ -247,10 +247,7 @@ namespace pix
 		// SDL_GameControllerGetAxis() returns a value in the range [-32768, 32767]. Triggers, however, range from [0, 32767].
 		float axisValue = SDL_GameControllerGetAxis(gamepads_[gamepadIndex].GameController, axis) / float(SDL_JOYSTICK_AXIS_MAX);
 		
-		if (axisValue < -1.0f) axisValue = -1.0f; // Just to go sure 
-		else if (axisValue > 1.0f) axisValue = 1.0f;
-
-		return  axisValue;
+		return GetClampedValue(axisValue, -1.0f, 1.0f); // Clamp just to go sure 
 	}
 
 	void GamepadInput::StartRumble(int gamepadIndex, float force, int duration) 
