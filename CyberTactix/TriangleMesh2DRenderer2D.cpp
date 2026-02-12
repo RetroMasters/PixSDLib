@@ -208,7 +208,7 @@ namespace pix
 
 
 
-	void TriangleMesh2DRenderer2D::BeginBatch(const MoveableObject2D* camera, float interpolationAlpha, const Vector2f& renderTargetCenter) 
+	void TriangleMesh2DRenderer2D::BeginBatch(const MovableObject2D* camera, float interpolationAlpha, const Vector2f& renderTargetCenter) 
 	{
 		vertexBatch_.clear();
 

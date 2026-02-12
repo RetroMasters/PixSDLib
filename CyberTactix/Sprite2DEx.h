@@ -3,11 +3,17 @@
 #include "MoveableObject2D.h"
 #include "TriangleMesh2D.h"
 
-// SpriteEx is the basis class for a mesh-based object that can move in space.
 
 namespace pix
 {
-	class Sprite2DEx : public MoveableObject2D
+	// Sprite2DEx is a movable 2D object that references a TriangleMesh2D for rendering.
+	// Mesh is a non-owning pointer to immutable render data and may be nullptr.
+	// 
+	// Philosophy:
+	// Sprite2DEx is the foundation for a renderable 2D entity that can move in space,
+	// using a general TriangleMesh2D instead of a specialized SpriteMesh.
+	// It is a specialized optimization of Sprite2DExNode that does not participate in a transform hierarchy.
+	class Sprite2DEx : public MovableObject2D
 	{
 	public:
 
@@ -18,7 +24,7 @@ namespace pix
 
 		virtual ~Sprite2DEx()  = default;
 
-		const TriangleMesh2D* Mesh; //defines the "sprite-model" in model space
+		const TriangleMesh2D* Mesh; 
 
 	};
 

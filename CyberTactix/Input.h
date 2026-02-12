@@ -142,7 +142,7 @@ namespace pix
 
 
 		// Runs a simple rumble effect on a haptic device.
-		// The force of the rumble to play is clamped in range [0,1].
+		// The force of the rumble to play is clamped in range [0.0f,1.0f].
 		// The duration of the effect is measured in ms (a negative value means "infinite" duration).
 		void StartRumble(int gamepadIndex, float force, int duration);
 
@@ -158,7 +158,7 @@ namespace pix
 
 		bool IsButtonDown(int gamepadIndex, SDL_GameControllerButton button) const;
 	
-		// Returns a normalized axis value. Sticks are in range [-1,1]. Triggers are in range [0,1].
+		// Returns a normalized axis value. Sticks are in range [-1.0f,1.0f]. Triggers are in range [0.0f,1.0f].
 		float GetAxisValue(int gamepadIndex, SDL_GameControllerAxis axis) const;
 
 

@@ -306,7 +306,7 @@ namespace pix
 
 		Vector2d RotatePoint(const Vector2d& point) const
 		{
-			Vector2d xAxis(xAxis_); // Convert to Vector2d for later use
+			Vector2d xAxis(xAxis_); // Convert to Vector2d for use
 
 			return { xAxis.X * point.X - xAxis.Y * point.Y,
 					 xAxis.Y * point.X + xAxis.X * point.Y };
@@ -338,6 +338,8 @@ namespace pix
 		void ApplyToPoints(Vector2d* points, int count) const;
 
 		void ApplyToPoint(Vector2d& point) const;
+
+		void ApplyInverseToPoint(Vector2d& point);
 
 	};
 

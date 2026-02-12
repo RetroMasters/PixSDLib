@@ -106,7 +106,7 @@ namespace pix
 
 	void Transform2D::ApplyToPoint(Vector2d& point) const 
 	{
-		const Vector2d xAxis(Rotation.GetXAxis()); // Convert to Vector2D for upcoming use
+		const Vector2d xAxis(Rotation.GetXAxis()); // Convert to Vector2D for use
 
 		// Scale the current mesh point:
 		Vector2d transformedPoint = point * Vector2d(Scale);
@@ -116,6 +116,19 @@ namespace pix
 
 		// Position the transformed mesh point:
 		point = Position + transformedPoint;
+	}
+
+	void Transform2D::ApplyInverseToPoint(Vector2d& point) 
+	{
+		// Reverse translation
+		point -= Position;
+
+		// Reverse rotation
+		point = Rotation.GetInverse().RotatePoint(point);
+
+		// Reverse scale
+		point.X = DivideSafe(point.X, (double)Scale.X);
+		point.Y = DivideSafe(point.Y, (double)Scale.Y);
 	}
 
 

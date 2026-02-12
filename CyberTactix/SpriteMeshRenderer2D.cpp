@@ -286,7 +286,7 @@ namespace pix
 
 
 
-	void SpriteMeshRenderer2D::BeginBatch(const MoveableObject2D* camera, float interpolationAlpha, const Vector2f& renderTargetCenter) 
+	void SpriteMeshRenderer2D::BeginBatch(const MovableObject2D* camera, float interpolationAlpha, const Vector2f& renderTargetCenter) 
 	{
 		vertexBatch_.clear();
 

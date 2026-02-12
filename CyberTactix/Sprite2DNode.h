@@ -1,45 +1,63 @@
 #pragma once
 
+#include<vector>
 #include "MoveableObject2D.h"
 #include "SpriteMesh.h"
 
-//Sprite is the basis class for a sprite-based object that can move in space
+
 namespace pix
 {
-	class Sprite2DNode : public MoveableObject2D
+	// A Sprite2DNode instance is functionally a Sprite2D object that can participate in a transform hierarchy.
+	// - Non-owning: lifetime of parent/children is managed externally.
+	// - On destruction, the node detaches from its parent and re-roots its children in world space.
+	// - Hierarchy math assumes no rotated non-uniform scaling in the ancestor chain (uniform scale is safe).
+	// 
+	// NOTE: If you delete (also by changing their parent) children in a loop, use while(!children_.empty()) delete back(); or snapshot first, 
+	// because deleting a child shrinks the children vector.
+	// 
+	// Philosophy:
+	// Sprite2DNode is the minimal hierarchical renderable 2D entity that can move in space. 
+	// It does not own the parent or children. Thus, decisions about ownership are left to the caller to grant the respective flexibility.
+	class Sprite2DNode : public MovableObject2D
 	{
 	public:
 
-		Sprite2DNode() ;
+		Sprite2DNode();
 
-		Sprite2DNode(const SpriteMesh* mesh, const Transform2D& transform) ;
+		Sprite2DNode(const SpriteMesh* mesh, const Transform2D& transform);
 
-		Sprite2DNode(const SpriteMesh* mesh, const Transform2D& transform, const Transform2D& prevTransform) ;
+		Sprite2DNode(const SpriteMesh* mesh, const Transform2D& transform, const Transform2D& prevTransform);
 
-		Sprite2DNode(const SpriteMesh* mesh, const Vector2d& position, const Vector2f& scale = { 1.0f, 1.0f }, const Rotation2D& rotation = Rotation2D()) ;
+		Sprite2DNode(const SpriteMesh* mesh, const Vector2d& position, const Vector2f& scale = { 1.0f, 1.0f }, const Rotation2D& rotation = Rotation2D());
 
-		virtual ~Sprite2DNode() ;
+		// Prevent copying 
+		Sprite2DNode(const Sprite2DNode&) = delete;    
+		Sprite2DNode& operator= (const Sprite2DNode&) = delete;
 
+		// On destruction, parent and children become detached. The children become roots in world space,
+		// and this node is removed from its parent’s child list. 
+		virtual ~Sprite2DNode();
 
-		void SetParent(Sprite2DNode* newParent) ;
+		// Sets a new parent with proper detach management. newParent may be nullptr to set the root node with Transform in world space.
+		// If newParent is the current parent, this node, or a descendent of it, the parent won't change.
+		void SetParent(Sprite2DNode* newParent);
 
-		Sprite2DNode* GetParent() const ;
+		Sprite2DNode* GetParent() const;
 
-		const std::vector<Sprite2DNode*>& GetChildren() const ;
+		const std::vector<Sprite2DNode*>& GetChildren() const;
 
+		// Returns the effective single transform in world space. 
+		// A correct global transform is only guaranteed with UNIFORM scales.
+		Transform2D GetGlobalTransform() const;
 
-		Transform2D GetGlobalTransform() const ;
+		Transform2D GetGlobalPreviousTransform() const;
 
-		Transform2D GetGlobalPreviousTransform() const ;
-
-
-
-		const SpriteMesh* Mesh; //defines the "sprite-model" in model space
+		const SpriteMesh* Mesh; 
 
 	private:
 
 		Sprite2DNode* parent_;
-		std::vector<Sprite2DNode*> children_;  //TODO: has to be managed by methods
+		std::vector<Sprite2DNode*> children_;  
 
 	};
 

@@ -36,7 +36,7 @@ namespace pix
 		/// <param name="interpolation"></param>
 		/// <param name="camera"></param>
 		/// <param name="renderCenter"></param>
-		void BeginBatch(const MoveableObject2D* camera = nullptr, float interpolationAlpha = 1.0f, const Vector2f& renderTargetCenter = { 0.0f, 0.0f }) ;
+		void BeginBatch(const MovableObject2D* camera = nullptr, float interpolationAlpha = 1.0f, const Vector2f& renderTargetCenter = { 0.0f, 0.0f }) ;
 
 		/// <summary>
 		/// End() is specific to the SDL2-renderer: It restores an internal state that Begin() modifies to control render scaling.

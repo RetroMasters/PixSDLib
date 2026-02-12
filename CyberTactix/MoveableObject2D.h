@@ -2,28 +2,31 @@
 
 #include "PixMath.h"
 
-
-// MoveableObject is the basis class for an object that can move in space.
 namespace pix
 {
-	class MoveableObject2D
+	// MoveableObject2D is the base class for a spatial 2D object. It represents only a transform (position, scale, rotation).
+    // 
+    // Philosophy:
+    // MoveableObject2D is the foundation for 2D objects that can MOVE in space.
+    // It provides native support for visual motion interpolation by maintaining the previous transform state.
+	class MovableObject2D
 	{
 	public:
 
-		MoveableObject2D();
-		MoveableObject2D(const Transform2D& transform);
-		MoveableObject2D(const Transform2D& transform, const Transform2D& prevTransform);
-		MoveableObject2D(const Vector2d& position, const Vector2f& scale = { 1.0f, 1.0f }, const Rotation2D& rotation = Rotation2D());
+		MovableObject2D();
+		MovableObject2D(const Transform2D& transform);
+		MovableObject2D(const Transform2D& transform, const Transform2D& prevTransform);
+		MovableObject2D(const Vector2d& position, const Vector2f& scale = { 1.0f, 1.0f }, const Rotation2D& rotation = Rotation2D());
 
-		virtual ~MoveableObject2D() = default;
-
-		void UpdatePreviousTransform();
-
-		const Transform2D& GetPreviousTransform() const;
-
-
+		virtual ~MovableObject2D() = default;
 
 		Transform2D  Transform;
+
+		// Syncs previous transform state with the current one.
+		// Call BeginUpdate() once per update loop iteration before writing to Transform. This snapshots the transform for interpolation.
+		void BeginUpdate();
+
+		const Transform2D& GetPreviousTransform() const;
 
 	protected:
 

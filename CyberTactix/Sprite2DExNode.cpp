@@ -5,28 +5,28 @@
 namespace pix
 {
 
-	Sprite2DExNode::Sprite2DExNode()  : MoveableObject2D(),
+	Sprite2DExNode::Sprite2DExNode()  : MovableObject2D(),
 		Mesh(nullptr),
 		parent_(nullptr),
 		children_()
 	{
 	}
 
-	Sprite2DExNode::Sprite2DExNode(const TriangleMesh2D* mesh, const Transform2D& transform)  : MoveableObject2D(transform),
+	Sprite2DExNode::Sprite2DExNode(const TriangleMesh2D* mesh, const Transform2D& transform)  : MovableObject2D(transform),
 		Mesh(mesh),
 		parent_(nullptr),
 		children_()
 	{
 	}
 
-	Sprite2DExNode::Sprite2DExNode(const TriangleMesh2D* mesh, const Transform2D& transform, const Transform2D& prevTransform)  : MoveableObject2D(transform, prevTransform),
+	Sprite2DExNode::Sprite2DExNode(const TriangleMesh2D* mesh, const Transform2D& transform, const Transform2D& prevTransform)  : MovableObject2D(transform, prevTransform),
 		Mesh(mesh),
 		parent_(nullptr),
 		children_()
 	{
 	}
 
-	Sprite2DExNode::Sprite2DExNode(const TriangleMesh2D* mesh, const Vector2d& position, const Vector2f& scale, const Rotation2D& rotation)  : MoveableObject2D(position, scale, rotation),
+	Sprite2DExNode::Sprite2DExNode(const TriangleMesh2D* mesh, const Vector2d& position, const Vector2f& scale, const Rotation2D& rotation)  : MovableObject2D(position, scale, rotation),
 		Mesh(mesh),
 		parent_(nullptr),
 		children_()
@@ -35,11 +35,9 @@ namespace pix
 
 	Sprite2DExNode::~Sprite2DExNode() // Detach self from parent and children to ensure they remain in a valid state
 	{
-		const int childrenCount = children_.size();
-
 		SetParent(nullptr);
 
-		for (int i = 0; i < childrenCount; i++)
+		for (size_t i = 0; i < children_.size(); i++)
 		{
 			children_[i]->Transform = children_[i]->GetGlobalTransform();
 			children_[i]->prevTransform_ = children_[i]->GetGlobalPreviousTransform();
@@ -51,13 +49,23 @@ namespace pix
 	{
 		if (newParent == parent_) return;
 
+		// The new parent must not be this node or a descendant of it
+		Sprite2DExNode* currentParent = newParent;
+		while (currentParent)
+		{
+			if (currentParent == this) return;
+
+			currentParent = currentParent->parent_;
+		}
+
+		// Remove from current parent
 		if (parent_ != nullptr)
 		{
 			Transform = GetGlobalTransform();
 			prevTransform_ = GetGlobalPreviousTransform();
 
 			// Remove from current Parent:
-			for (int i = 0; i < parent_->children_.size(); i++)
+			for (size_t i = 0; i < parent_->children_.size(); i++)
 			{
 				if (parent_->children_[i] == this)
 				{
@@ -70,21 +78,21 @@ namespace pix
 		// Add to newParent:
 		if (newParent != nullptr)
 		{
-			const Transform2D newParentTransform = newParent->GetGlobalTransform();
-			const Transform2D newParentPrevTransform = newParent->GetGlobalPreviousTransform();
+			Transform2D newParentTransform = newParent->GetGlobalTransform();
+			Transform2D newParentPrevTransform = newParent->GetGlobalPreviousTransform();
 
-			Transform.Position -= newParentTransform.Position;                                       //TODO: Think about an Inverse Transform function
+			newParentTransform.ApplyInverseToPoint(Transform.Position);          
 			Transform.Rotation.AddRotation(newParentTransform.Rotation.GetInverse());
 			Transform.Scale = DivideSafe(Transform.Scale, newParentTransform.Scale);
 
-			prevTransform_.Position -= newParentPrevTransform.Position;
+			newParentPrevTransform.ApplyInverseToPoint(prevTransform_.Position);
 			prevTransform_.Rotation.AddRotation(newParentPrevTransform.Rotation.GetInverse());
 			prevTransform_.Scale = DivideSafe(prevTransform_.Scale, newParentPrevTransform.Scale);
 
 			newParent->children_.push_back(this);
 		}
 
-		// Make the newParent known to this node:
+		// Make newParent known to this node
 		parent_ = newParent;
 	}
 
@@ -108,7 +116,7 @@ namespace pix
 		Vector2f   scale = Transform.Scale;
 		Rotation2D rotation = Transform.Rotation;
 
-		// Transform to world space:
+		// Transform to world space
 		while (parent != nullptr)
 		{
 			scale *= parent->Transform.Scale;
@@ -129,7 +137,7 @@ namespace pix
 		Vector2f   scale = prevTransform_.Scale;
 		Rotation2D rotation = prevTransform_.Rotation;
 
-		// Transform to world space:
+		// Transform to world space
 		while (parent != nullptr)
 		{
 			scale *= parent->prevTransform_.Scale;

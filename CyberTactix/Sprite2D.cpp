@@ -4,22 +4,22 @@
 namespace pix
 {
 
-	Sprite2D::Sprite2D()  : MoveableObject2D(),
+	Sprite2D::Sprite2D()  : MovableObject2D(),
 		Mesh(nullptr)
 	{
 	}
 
-	Sprite2D::Sprite2D(const SpriteMesh* mesh, const Transform2D& transform)  : MoveableObject2D(transform),
+	Sprite2D::Sprite2D(const SpriteMesh* mesh, const Transform2D& transform)  : MovableObject2D(transform),
 		Mesh(mesh)
 	{
 	}
 
-	Sprite2D::Sprite2D(const SpriteMesh* mesh, const Transform2D& transform, const Transform2D& prevTransform)  : MoveableObject2D(transform, prevTransform),
+	Sprite2D::Sprite2D(const SpriteMesh* mesh, const Transform2D& transform, const Transform2D& prevTransform)  : MovableObject2D(transform, prevTransform),
 		Mesh(mesh)
 	{
 	}
 
-	Sprite2D::Sprite2D(const SpriteMesh* mesh, const Vector2d& position, const Vector2f& scale, const Rotation2D& rotation)  : MoveableObject2D(position, scale, rotation),
+	Sprite2D::Sprite2D(const SpriteMesh* mesh, const Vector2d& position, const Vector2f& scale, const Rotation2D& rotation)  : MovableObject2D(position, scale, rotation),
 		Mesh(mesh)
 	{
 	}

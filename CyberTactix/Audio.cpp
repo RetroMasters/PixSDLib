@@ -1,5 +1,6 @@
 #include "Audio.h"
 #include "ErrorLogger.h"
+#include "PixMath.h"
 
 namespace pix
 {
@@ -113,11 +114,8 @@ namespace pix
 
 	void Audio::SetMusicVolume(float volume)
 	{
-		if (volume < 0.0f) volume = 0.0f;
-		else if (volume > 1.0f) volume = 1.0f;
-
-		Mix_VolumeMusic((volume * MIX_MAX_VOLUME) * GetMasterVolume());
-		musicVolume_ = volume;
+		musicVolume_ = GetClampedValue(volume, 0.0f, 1.0f);
+		Mix_VolumeMusic((musicVolume_ * MIX_MAX_VOLUME) * GetMasterVolume());
 	}
 
 	void Audio::SetMusicRepeatCount(int loops)
@@ -226,10 +224,7 @@ namespace pix
 			return;
 		}
 
-		if (volume < 0.0f) volume = 0.0f;
-		if (volume > 1.0f) volume = 1.0f;
-
-		Mix_VolumeChunk(soundChunk, volume * MIX_MAX_VOLUME);
+		Mix_VolumeChunk(soundChunk, GetClampedValue(volume, 0.0f, 1.0f) * MIX_MAX_VOLUME);
 	}
 
 
@@ -259,19 +254,13 @@ namespace pix
 
 	void Audio::SetChannelVolume(float volume)
 	{
-		if (volume < 0.0f) volume = 0.0f;
-		if (volume > 1.0f) volume = 1.0f;
-
-		channelVolume_ = volume;
-		Mix_Volume(-1, (volume * MIX_MAX_VOLUME) * GetMasterVolume());
+		channelVolume_ = GetClampedValue(volume, 0.0f, 1.0f);
+		Mix_Volume(-1, (channelVolume_ * MIX_MAX_VOLUME) * GetMasterVolume());
 	}
 
 	void Audio::SetMasterVolume(float volume)
 	{
-		if (volume < 0.0f) volume = 0.0f;
-		if (volume > 1.0f) volume = 1.0f;
-
-		masterVolume_ = volume;
+		masterVolume_ = GetClampedValue(volume, 0.0f, 1.0f);
 
 		// Update physical volume
 		SetChannelVolume(GetChannelVolume()); 

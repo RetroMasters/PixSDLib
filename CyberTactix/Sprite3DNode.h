@@ -1,5 +1,6 @@
 #pragma once
 
+#include <vector>
 #include "MoveableObject3D.h"
 #include "SpriteMesh.h"
 

@@ -1,6 +1,6 @@
 #pragma once
 
-#include <vector>
+//#include<vector>
 #include "Texture.h"
 //#include "SpriteMesh.h"
 #include "PixMath.h"
@@ -24,6 +24,7 @@ namespace pix
 		Vector2f  UV;
 	};
 
+	// SpriteMesh defines the sprite model in model space
 	struct SpriteMesh
 	{
 		SpriteMesh()  = default;
