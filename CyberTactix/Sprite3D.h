@@ -4,10 +4,15 @@
 #include "SpriteMesh.h"
 
 
-//Sprite is the basis class for a single-textured object that can move in space
+// Sprite3D is a movable 3D object that references a SpriteMesh for rendering.
+// Mesh is non-owning and may be nullptr.
+// 
+// Philosophy:	
+// Sprite3D is the minimal and most optimized renderable 3D entity that can MOVE in space. 
+// It is the non-hierarchical optimization of Sprite3DNode.
 namespace pix
 {
-	class Sprite3D : public MoveableObject3D
+	class Sprite3D : public MovableObject3D
 	{
 	public:
 
@@ -17,11 +22,11 @@ namespace pix
 
 		Sprite3D(const SpriteMesh* mesh, const Transform3D& transform, const Transform3D& prevTransform);
 
-		Sprite3D(const SpriteMesh* mesh, const Vector3d& position, const Vector3f& scale = { 1.0f, 1.0f, 0.0f }, const Rotation3D& rotation = Rotation3D());
+		Sprite3D(const SpriteMesh* mesh, const Vector3d& position, const Vector3f& scale = { 1.0f, 1.0f, 1.0f }, const Rotation3D& rotation = Rotation3D());
 
 		virtual ~Sprite3D() = default;
 
-		const SpriteMesh* Mesh; //defines the "sprite-model" in model space
+		const SpriteMesh* Mesh; 
 	};
 
 }

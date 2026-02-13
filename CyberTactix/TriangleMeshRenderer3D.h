@@ -29,7 +29,7 @@ namespace pix
 		void Render(const Sprite3DEx& sprite) ;
 		void Render(const Sprite3DExNode& node) ;
 
-		void BeginBatch(const MoveableObject3D* camera, float interpolationAlpha, const Vector2f& renderTargetCenter, float verticalFOV = 60.0f) ;
+		void BeginBatch(const MovableObject3D* camera, float interpolationAlpha, const Vector2f& renderTargetCenter, float verticalFOV = 60.0f) ;
 		void RenderBatch(const Texture& boundTexture, TargetTexture* renderTarget) ;
 
 	private:

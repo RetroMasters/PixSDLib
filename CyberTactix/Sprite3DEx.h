@@ -3,11 +3,15 @@
 #include "MoveableObject3D.h"
 #include "TriangleMesh2D.h"
 
-
-//Sprite is the basis class for a single-textured object that can move in space
 namespace pix
 {
-	class Sprite3DEx : public MoveableObject3D
+	// Sprite3DEx is a movable 3D object that references a TriangleMesh2D for flat geometry rendering in 3D.
+	// Mesh is non-owning and may be nullptr.
+	// 
+	// Philosophy:
+	// Sprite3DEx is a minimal renderable 3D entity that can move in space, using a general TriangleMesh2D instead of SpriteMesh.
+	// It is the non-hierarchical optimization of Sprite3DExNode.
+	class Sprite3DEx : public MovableObject3D
 	{
 	public:
 
@@ -21,7 +25,7 @@ namespace pix
 
 		virtual ~Sprite3DEx() = default;
 
-		const TriangleMesh2D* Mesh; //defines the "sprite-model" in model space
+		const TriangleMesh2D* Mesh; 
 	};
 
 }

@@ -6,11 +6,11 @@
 namespace pix
 {
 	// Sprite2D is a movable 2D object that references a SpriteMesh for rendering.
-	// Mesh is a non-owning pointer to immutable render data and may be nullptr.
+	// Mesh is non-owning and may be nullptr.
 	// 
 	// Philosophy:
-	// Sprite2D is the minimal and most optimized renderable 2D entity that can move in space. 
-	// It is a specialized optimization of Sprite2DNode that does not participate in a transform hierarchy.
+	// Sprite2D is the minimal and most optimized renderable 2D entity that can MOVE in space. 
+	// It is the non-hierarchical optimization of Sprite2DNode.
 	class Sprite2D : public MovableObject2D
 	{
 	public:

@@ -32,11 +32,13 @@ namespace pix
 	{
 	}
 
-	Sprite2DNode::~Sprite2DNode()  // Detach self from parent and the children to ensure they remain in a valid state
+	Sprite2DNode::~Sprite2DNode()  
 	{
+		// Detaching self from parent
 		SetParent(nullptr);
 
-		for (size_t i = 0; i < children_.size(); i++)
+		// Detaching self from children can be optimized since this node gets destroyed anyway
+		for (size_t i = 0; i < children_.size(); i++) 
 		{
 			children_[i]->Transform = children_[i]->GetGlobalTransform();
 			children_[i]->prevTransform_ = children_[i]->GetGlobalPreviousTransform();

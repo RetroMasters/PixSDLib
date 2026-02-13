@@ -16,7 +16,7 @@ namespace pix
 	// because deleting a child shrinks the children vector.
 	// 
 	// Philosophy:
-	// Sprite2DNode is the minimal hierarchical renderable 2D entity that can move in space. 
+	// Sprite2DNode is the minimal hierarchical renderable 2D entity that can MOVE in space. 
 	// It does not own the parent or children. Thus, decisions about ownership are left to the caller to grant the respective flexibility.
 	class Sprite2DNode : public MovableObject2D
 	{
@@ -47,7 +47,7 @@ namespace pix
 		const std::vector<Sprite2DNode*>& GetChildren() const;
 
 		// Returns the effective single transform in world space. 
-		// A correct global transform is only guaranteed with UNIFORM scales.
+		 // Correct result is only guaranteed with no rotated non-uniform scaling in the ancestor chain (uniform scale is safe). 
 		Transform2D GetGlobalTransform() const;
 
 		Transform2D GetGlobalPreviousTransform() const;

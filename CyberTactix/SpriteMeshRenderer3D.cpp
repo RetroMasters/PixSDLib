@@ -273,7 +273,7 @@ namespace pix
 
 
 
-	void SpriteMeshRenderer3D::BeginBatch(const MoveableObject3D* camera, float interpolationAlpha, const Vector2f& renderTargetCenter, float verticalFOV) 
+	void SpriteMeshRenderer3D::BeginBatch(const MovableObject3D* camera, float interpolationAlpha, const Vector2f& renderTargetCenter, float verticalFOV) 
 	{
 		vertexBatch_.clear();
 

@@ -33,10 +33,12 @@ namespace pix
 	{
 	}
 
-	Sprite2DExNode::~Sprite2DExNode() // Detach self from parent and children to ensure they remain in a valid state
+	Sprite2DExNode::~Sprite2DExNode() 
 	{
+		// Detach self from parent
 		SetParent(nullptr);
 
+		// Detaching self from children can be optimized since this node gets destroyed anyway
 		for (size_t i = 0; i < children_.size(); i++)
 		{
 			children_[i]->Transform = children_[i]->GetGlobalTransform();
@@ -64,7 +66,7 @@ namespace pix
 			Transform = GetGlobalTransform();
 			prevTransform_ = GetGlobalPreviousTransform();
 
-			// Remove from current Parent:
+			// Remove from current Parent
 			for (size_t i = 0; i < parent_->children_.size(); i++)
 			{
 				if (parent_->children_[i] == this)
@@ -75,7 +77,7 @@ namespace pix
 			}
 		}
 
-		// Add to newParent:
+		// Add to newParent
 		if (newParent != nullptr)
 		{
 			Transform2D newParentTransform = newParent->GetGlobalTransform();

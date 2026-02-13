@@ -381,7 +381,7 @@ namespace pix
 
 	void Transform3D::ApplyToPoint(Vector3d& point) const 
 	{
-		// Convert to Vector3d for upcoming use:
+		// Convert to Vector3d for use:
 		const Vector3d scale(Scale);
 		const Vector3d xAxis(Rotation.GetXAxis());
 		const Vector3d yAxis(Rotation.GetYAxis());
@@ -396,5 +396,34 @@ namespace pix
 		// Position the point:
 		point += Position;
 	}
+
+	void Transform3D::ApplyInverseToPoint(Vector3d& point)
+	{
+		// Reverse translation
+		point -= Position;
+
+		// Reverse rotation
+		point = Rotation.GetInverse().RotatePoint(point);
+
+		// Reverse scale
+		point.X = DivideSafe(point.X, (double)Scale.X);
+		point.Y = DivideSafe(point.Y, (double)Scale.Y);
+		point.Z = DivideSafe(point.Z, (double)Scale.Z);
+	}
+
+	/*
+	void Transform2D::ApplyInverseToPoint(Vector2d& point)
+	{
+		// Reverse translation
+		point -= Position;
+
+		// Reverse rotation
+		point = Rotation.GetInverse().RotatePoint(point);
+
+		// Reverse scale
+		point.X = DivideSafe(point.X, (double)Scale.X);
+		point.Y = DivideSafe(point.Y, (double)Scale.Y);
+	}
+	*/
 
 }

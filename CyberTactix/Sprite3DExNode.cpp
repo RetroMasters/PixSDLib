@@ -1,45 +1,43 @@
 #include "Sprite3DExNode.h"
 
-#include "PixMath.h"
-
 namespace pix
 {
 
-	Sprite3DExNode::Sprite3DExNode() : MoveableObject3D(),
+	Sprite3DExNode::Sprite3DExNode() : MovableObject3D(),
 		Mesh(nullptr),
 		parent_(nullptr),
 		children_()
 	{
 	}
 
-	Sprite3DExNode::Sprite3DExNode(const TriangleMesh2D* mesh, const Transform3D& transform) : MoveableObject3D(transform),
+	Sprite3DExNode::Sprite3DExNode(const TriangleMesh2D* mesh, const Transform3D& transform) : MovableObject3D(transform),
 		Mesh(mesh),
 		parent_(nullptr),
 		children_()
 	{
 	}
 
-	Sprite3DExNode::Sprite3DExNode(const TriangleMesh2D* mesh, const Transform3D& transform, const Transform3D& prevTransform) : MoveableObject3D(transform, prevTransform),
+	Sprite3DExNode::Sprite3DExNode(const TriangleMesh2D* mesh, const Transform3D& transform, const Transform3D& prevTransform) : MovableObject3D(transform, prevTransform),
 		Mesh(mesh),
 		parent_(nullptr),
 		children_()
 	{
 	}
 
-	Sprite3DExNode::Sprite3DExNode(const TriangleMesh2D* mesh, const Vector3d& position, const Vector3f& scale, const Rotation3D& rotation) : MoveableObject3D(position, scale, rotation),
+	Sprite3DExNode::Sprite3DExNode(const TriangleMesh2D* mesh, const Vector3d& position, const Vector3f& scale, const Rotation3D& rotation) : MovableObject3D(position, scale, rotation),
 		Mesh(mesh),
 		parent_(nullptr),
 		children_()
 	{
 	}
 
-	Sprite3DExNode::~Sprite3DExNode() // Detach self from parent and children to ensure they remain in a valid state
+	Sprite3DExNode::~Sprite3DExNode() 
 	{
-		const int childrenCount = children_.size();
-
+		// Detaching self from parent
 		SetParent(nullptr);
 
-		for (int i = 0; i < childrenCount; i++)
+		// Detaching self from children can be optimized since this node gets destroyed anyway
+		for (size_t i = 0; i < children_.size(); i++)
 		{
 			children_[i]->Transform = children_[i]->GetGlobalTransform();
 			children_[i]->prevTransform_ = children_[i]->GetGlobalPrevTransform();
@@ -52,12 +50,21 @@ namespace pix
 	{
 		if (newParent == parent_) return;
 
+		// The new parent must not be this node or a descendant of it
+		Sprite3DExNode* currentParent = newParent;
+		while (currentParent)
+		{
+			if (currentParent == this) return;
+
+			currentParent = currentParent->parent_;
+		}
+
+		// Remove from current parent
 		if (parent_ != nullptr)
 		{
 			Transform = GetGlobalTransform();
 			prevTransform_ = GetGlobalPrevTransform();
 
-			// Remove from current Parent:
 			for (int i = 0; i < parent_->children_.size(); i++)
 			{
 				if (parent_->children_[i] == this)
@@ -68,24 +75,24 @@ namespace pix
 			}
 		}
 
-		// Add to newParent:
+		// Add to newParent
 		if (newParent != nullptr)
 		{
-			const Transform3D newParentTransform = newParent->GetGlobalTransform();
-			const Transform3D newParentPrevTransform = newParent->GetGlobalPrevTransform();
+			Transform3D newParentTransform = newParent->GetGlobalTransform();
+			Transform3D newParentPrevTransform = newParent->GetGlobalPrevTransform();
 
-			Vector3d position = Transform.Position - newParentTransform.Position;
-			Vector3f scale = DivideSafe(Transform.Scale, newParentTransform.Scale);
-			Transform = Transform3D(position, scale, newParentTransform.Rotation.ToLocalRotation(Transform.Rotation));
+			newParentTransform.ApplyInverseToPoint(Transform.Position);
+			Transform.Scale = DivideSafe(Transform.Scale, newParentTransform.Scale);
+			Transform.Rotation = newParentTransform.Rotation.ToLocalRotation(Transform.Rotation);
 
-			position = prevTransform_.Position - newParentPrevTransform.Position;
-			scale = DivideSafe(prevTransform_.Scale, newParentPrevTransform.Scale);
-			prevTransform_ = Transform3D(position, scale, newParentPrevTransform.Rotation.ToLocalRotation(prevTransform_.Rotation));
+			newParentPrevTransform.ApplyInverseToPoint(prevTransform_.Position);
+			prevTransform_.Scale = DivideSafe(prevTransform_.Scale, newParentPrevTransform.Scale);
+			prevTransform_.Rotation = newParentPrevTransform.Rotation.ToLocalRotation(prevTransform_.Rotation);
 
 			newParent->children_.push_back(this);
 		}
 
-		// Make the newParent known to this node:
+		// Make the newParent known to this node
 		parent_ = newParent;
 	}
 
@@ -111,7 +118,7 @@ namespace pix
 		Vector3f   scale = Transform.Scale;
 		Rotation3D rotation = Transform.Rotation;
 
-		// Transform to world space:
+		// Transform to world space
 		while (parent != nullptr)
 		{
 			const Transform3D& parentTransform = parent->Transform;
@@ -137,7 +144,7 @@ namespace pix
 		Rotation3D rotation = prevTransform_.Rotation;
 
 
-		// Transform to world space:
+		// Transform to world space
 		while (parent != nullptr)
 		{
 			const Transform3D& prevParentTransform = parent->prevTransform_;
@@ -153,6 +160,5 @@ namespace pix
 
 		return Transform3D(position, scale, rotation);
 	}
-
 
 }

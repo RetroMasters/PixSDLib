@@ -598,6 +598,8 @@ namespace pix
 
 		void ApplyToPoint(Vector3d& point) const;
 
+		void ApplyInverseToPoint(Vector3d& point);
+
 	};
 
 

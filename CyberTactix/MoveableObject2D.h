@@ -23,7 +23,8 @@ namespace pix
 		Transform2D  Transform;
 
 		// Syncs previous transform state with the current one.
-		// Call BeginUpdate() once per update loop iteration before writing to Transform. This snapshots the transform for interpolation.
+		// Call once per update tick before modifying Transform. 
+		// This snapshots the current transform into prevTransform_ for interpolation.
 		void BeginUpdate();
 
 		const Transform2D& GetPreviousTransform() const;

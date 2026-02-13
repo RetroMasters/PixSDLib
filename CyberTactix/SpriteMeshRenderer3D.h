@@ -32,7 +32,7 @@ namespace pix
 
 		//void BeginBatch(const Texture& boundTexture, TargetTexture* renderTarget = nullptr, float interpolation = 1.0f, const MoveableObject3D* camera = nullptr, const Vector2f& renderCenter = { 0.0f,0.0f }, float verticalFOV = 60.0f);
 
-		void BeginBatch(const MoveableObject3D* camera, float interpolationAlpha, const Vector2f& renderTargetCenter, float verticalFOV = 60.0f) ;
+		void BeginBatch(const MovableObject3D* camera, float interpolationAlpha, const Vector2f& renderTargetCenter, float verticalFOV = 60.0f) ;
 
 		void RenderBatch(const Texture& boundTexture, TargetTexture* renderTarget) ;
 
