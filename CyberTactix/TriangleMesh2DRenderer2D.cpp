@@ -52,7 +52,7 @@ namespace pix
 			destination.X = configuration_.RenderTargetCenter.X + destination.X;
 			destination.Y = configuration_.RenderTargetCenter.Y - destination.Y;
 
-			vertexBatch_.emplace_back(destination, vertices[i].Color, vertices[i].TexCoords);
+			vertexBatch_.emplace_back(destination, vertices[i].Color, vertices[i].UV);
 		}
 	}
 
@@ -104,7 +104,7 @@ namespace pix
 			destination.X = configuration_.RenderTargetCenter.X + destination.X;
 			destination.Y = configuration_.RenderTargetCenter.Y - destination.Y;
 
-			vertexBatch_.emplace_back(destination, vertices[i].Color, vertices[i].TexCoords);
+			vertexBatch_.emplace_back(destination, vertices[i].Color, vertices[i].UV);
 		}
 	}
 
@@ -152,7 +152,7 @@ namespace pix
 			destination.X = configuration_.RenderTargetCenter.X + destination.X;
 			destination.Y = configuration_.RenderTargetCenter.Y - destination.Y;
 
-			vertexBatch_.emplace_back(destination, vertices[i].Color, vertices[i].TexCoords);
+			vertexBatch_.emplace_back(destination, vertices[i].Color, vertices[i].UV);
 		}
 	}
 

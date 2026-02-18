@@ -161,7 +161,7 @@
     <ClCompile Include="SpriteMeshAnimatorUtils.cpp" />
     <ClCompile Include="SpriteMeshRenderer2D.cpp" />
     <ClCompile Include="SpriteMeshRenderer3D.cpp" />
-    <ClCompile Include="SpriteMeshUtils.cpp" />
+    <ClCompile Include="SpriteMeshOps.cpp" />
     <ClCompile Include="StreamingTexture.cpp" />
     <ClCompile Include="TargetTexture.cpp" />
     <ClCompile Include="TextTexture.cpp" />
@@ -200,11 +200,11 @@
     <ClInclude Include="SpriteMeshAnimatorUtils.h" />
     <ClInclude Include="SpriteMeshRenderer2D.h" />
     <ClInclude Include="SpriteMeshRenderer3D.h" />
-    <ClInclude Include="SpriteMeshUtils.h" />
+    <ClInclude Include="SpriteMeshOps.h" />
     <ClInclude Include="StreamingTexture.h" />
     <ClInclude Include="TargetTexture.h" />
-    <ClInclude Include="TexCoordsTypes.h" />
-    <ClInclude Include="TexCoordsUtils.h" />
+    <ClInclude Include="UV.h" />
+    <ClInclude Include="UVOps.h" />
     <ClInclude Include="TextTexture.h" />
     <ClInclude Include="Texture.h" />
     <ClInclude Include="TriangleMesh2D.h" />

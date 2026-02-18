@@ -1,18 +1,24 @@
 #pragma once
 
-//#include<vector>
-#include "Texture.h"
-//#include "SpriteMesh.h"
+#include <SDL.h>
 #include "PixMath.h"
-//#include "MathTypes3D.h"
 
 namespace pix
 {
+	// Vertex2D is a 2D vertex that stores a 2D position, Color, and UV-coordinates.
+	// 
+	// Philosophy:
+	// Vertex2D instances are points with attributes that define the SpriteMesh.
 	struct Vertex2D
 	{
-		Vertex2D()  : Position(0.0f, 0.0f), Color{ 255, 255, 255, 255 }, UV(0.0f, 0.0f) {}
+		Vertex2D(): 
+			Position(0.0f, 0.0f), 
+			Color{ 255, 255, 255, 255 },
+			UV(0.0f, 0.0f) 
+		{
+		}
 
-		Vertex2D(const Vector2f& position, const SDL_Color& color, const Vector2f& uv)  :
+		Vertex2D(Vector2f position, SDL_Color color, Vector2f uv):
 			Position(position),
 			Color(color),
 			UV(uv)
@@ -24,17 +30,23 @@ namespace pix
 		Vector2f  UV;
 	};
 
-	// SpriteMesh defines the sprite model in model space
+	// SpriteMesh is a quad of four Vertex2D vertices.
+	// Intended vertex order in the array: 0=TopLeft, 1=TopRight, 2=BottomRight, 3=BottomLeft.
+	//
+	// Philosophy:
+	// SpriteMesh defines the sprite model in model space.
 	struct SpriteMesh
 	{
+		static constexpr size_t VertexCount = 4;
+
 		SpriteMesh()  = default;
 
-		SpriteMesh(const Vertex2D& topLeft, const Vertex2D& topRight, const Vertex2D& bottomRight, const Vertex2D& bottomLeft)  :
+		SpriteMesh(const Vertex2D& topLeft, const Vertex2D& topRight, const Vertex2D& bottomRight, const Vertex2D& bottomLeft):
 			Vertices{ topLeft, topRight, bottomRight, bottomLeft }
 		{
 		}
 
-		Vertex2D Vertices[4];
+		Vertex2D Vertices[VertexCount];
 
 		Vertex2D& TopLeft()   { return Vertices[0]; }
 		Vertex2D& TopRight()   { return Vertices[1]; }
@@ -46,7 +58,6 @@ namespace pix
 		const Vertex2D& BottomRight() const  { return Vertices[2]; }
 		const Vertex2D& BottomLeft()  const  { return Vertices[3]; }
 
-		const Texture* MeshTexture = nullptr; //TODO: remove
 	};
 
 }

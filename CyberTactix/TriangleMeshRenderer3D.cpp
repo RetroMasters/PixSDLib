@@ -123,7 +123,7 @@ namespace pix
 			screenCoords += configuration_.RenderTargetCenter;
 
 			// Add transformed vertices to batch:
-			vertexBatch_.emplace_back(screenCoords, vertices[i].Color, vertices[i].TexCoords);
+			vertexBatch_.emplace_back(screenCoords, vertices[i].Color, vertices[i].UV);
 		}
 	}
 
@@ -184,7 +184,7 @@ namespace pix
 			screenCoords += configuration_.RenderTargetCenter;
 
 			// Add transformed vertices to batch:
-			vertexBatch_.emplace_back(screenCoords, vertices[i].Color, vertices[i].TexCoords);
+			vertexBatch_.emplace_back(screenCoords, vertices[i].Color, vertices[i].UV);
 		}
 
 	}
@@ -246,7 +246,7 @@ namespace pix
 			screenCoords += configuration_.RenderTargetCenter;
 
 			// Add transformed vertices to batch:
-			vertexBatch_.emplace_back(screenCoords, vertices[i].Color, vertices[i].TexCoords);
+			vertexBatch_.emplace_back(screenCoords, vertices[i].Color, vertices[i].UV);
 		}
 	}
 

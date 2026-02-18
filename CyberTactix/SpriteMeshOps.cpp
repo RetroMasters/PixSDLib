@@ -1,9 +1,9 @@
-#include "SpriteMeshUtils.h"
+#include "SpriteMeshOps.h"
 
 namespace pix
 {
 
-	SpriteMesh GetQuadMesh2D(Vector2f topLeftPosition, Vector2f bottomRightPosition, const UVRect& rectUV) 
+	SpriteMesh GetSpriteMesh(Vector2f topLeftPosition, Vector2f bottomRightPosition, const UVRect& rectUV) 
 	{
 		constexpr SDL_Color white = { 255, 255, 255, 255 };
 

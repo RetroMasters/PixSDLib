@@ -1,7 +1,7 @@
 #pragma once
 
 #include <SDL.h>
-#include "TexCoordsTypes.h"
+#include "UV.h"
 #include "SpriteMeshAnimator.h"
 
 
@@ -22,7 +22,7 @@ namespace pix
 	}
 
 	// Moves the startRect in the order of reading a book for a frameCount times (from left to right, and top to bottom)
-	std::vector <SpriteMeshUVKeyframe> GetFrameSequence(int texWidth, int texHeight, const PixelRect& startRect, int frameCount, float duration, SDL_RendererFlip flip = SDL_FLIP_NONE);
+	std::vector <SpriteMeshUVKeyframe> GetFrameSequence(int texWidth, int texHeight, const SDL_Rect& startRect, int frameCount, float duration, SDL_RendererFlip flip = SDL_FLIP_NONE);
 
 	
 

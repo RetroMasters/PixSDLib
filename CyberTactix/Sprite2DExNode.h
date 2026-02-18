@@ -37,7 +37,7 @@ namespace pix
 		// and this node is removed from its parent’s child list. 
 		virtual ~Sprite2DExNode() ;
 
-		// Sets a new parent with proper detach management. newParent may be nullptr to set the root node with Transform in world space.
+		// Sets a new parent with proper attach/detach management. newParent may be nullptr to set the root node with Transform in world space.
 		// If newParent is the current parent, this node, or a descendent of it, the parent won't change.
 		void SetParent(Sprite2DExNode* newParent) ;
 

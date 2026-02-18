@@ -63,6 +63,9 @@ namespace pix
 		if (pumpIndex < 0) return false;
 		
 		keyboardInputPumps_.erase(keyboardInputPumps_.begin() + pumpIndex);
+		//keyboardInputPumps_[pumpIndex] = keyboardInputPumps_.back();
+		//keyboardInputPumps_.pop_back();
+
 		return true;
 	}
 

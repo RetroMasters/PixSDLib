@@ -34,12 +34,6 @@
     <Filter Include="Header Files\PixSDLib\Misc">
       <UniqueIdentifier>{94bcde40-5519-40a9-8871-99f465bd3ab3}</UniqueIdentifier>
     </Filter>
-    <Filter Include="Header Files\PixSDLib\Rendering">
-      <UniqueIdentifier>{f057d085-de7b-45cd-962a-6fff3c09a2da}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="Header Files\PixSDLib\Rendering\Texture">
-      <UniqueIdentifier>{8c9117bd-cd29-4cae-9731-0f83ef7f278f}</UniqueIdentifier>
-    </Filter>
     <Filter Include="Source Files\PixSDLib\Rendering">
       <UniqueIdentifier>{93c06cb5-b5f5-4867-a0a6-ec1fd2abedff}</UniqueIdentifier>
     </Filter>
@@ -82,23 +76,11 @@
     <Filter Include="Source Files\PixSDLib\Entity\Entitty2D">
       <UniqueIdentifier>{25b4c9e4-69e7-4b7b-9045-86b9ea6a7acf}</UniqueIdentifier>
     </Filter>
-    <Filter Include="Header Files\PixSDLib\Rendering\Rendering2D">
-      <UniqueIdentifier>{05875e37-94a2-419d-b89e-138e6a99ea6a}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="Header Files\PixSDLib\Rendering\Rendering3D">
-      <UniqueIdentifier>{993ac2b3-712b-4583-b600-5358fb630099}</UniqueIdentifier>
-    </Filter>
     <Filter Include="Header Files\PixSDLib\Entity\Entity3D">
       <UniqueIdentifier>{08f8797d-881f-4b5d-8ddf-2f83db08924c}</UniqueIdentifier>
     </Filter>
     <Filter Include="Source Files\PixSDLib\Entity\Entity3D">
       <UniqueIdentifier>{cea7fd44-4159-471f-b010-8f088f676c7d}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="Header Files\PixSDLib\SpriteAnimation">
-      <UniqueIdentifier>{f6eb70cb-f973-4414-ac08-af8fdc57e934}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="Header Files\PixSDLib\SpriteAnimation\SpriteAnimation2D">
-      <UniqueIdentifier>{a4b5361d-e87b-4b39-a575-41143999a215}</UniqueIdentifier>
     </Filter>
     <Filter Include="Source Files\PixSDLib\SpriteAnimation">
       <UniqueIdentifier>{ea1c6590-7081-4e05-a750-a3132bdb5266}</UniqueIdentifier>
@@ -111,6 +93,27 @@
     </Filter>
     <Filter Include="Source Files\PixSDLib\Rendering\Rendering3D">
       <UniqueIdentifier>{2903a89a-e761-4f8e-8904-7d528f7424ac}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\PixSDLib\Graphics">
+      <UniqueIdentifier>{f057d085-de7b-45cd-962a-6fff3c09a2da}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\PixSDLib\Graphics\Texture">
+      <UniqueIdentifier>{8c9117bd-cd29-4cae-9731-0f83ef7f278f}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\PixSDLib\Graphics\Rendering2D">
+      <UniqueIdentifier>{05875e37-94a2-419d-b89e-138e6a99ea6a}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\PixSDLib\Graphics\Rendering3D">
+      <UniqueIdentifier>{993ac2b3-712b-4583-b600-5358fb630099}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\PixSDLib\Graphics\Geometry2D">
+      <UniqueIdentifier>{47cc36dd-6232-41e7-8155-79a5c4a0c0a1}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\PixSDLib\Graphics\Geometry3D">
+      <UniqueIdentifier>{c4100b91-1236-447a-b6a2-133a4053209b}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\PixSDLib\Graphics\SpriteAnimation2D">
+      <UniqueIdentifier>{a4b5361d-e87b-4b39-a575-41143999a215}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
   <ItemGroup>
@@ -216,7 +219,7 @@
     <ClCompile Include="InputPumps.cpp">
       <Filter>Source Files\PixSDLib\Input</Filter>
     </ClCompile>
-    <ClCompile Include="SpriteMeshUtils.cpp">
+    <ClCompile Include="SpriteMeshOps.cpp">
       <Filter>Source Files\PixSDLib\Rendering\Rendering2D</Filter>
     </ClCompile>
     <ClCompile Include="ObjectInput.cpp">
@@ -237,22 +240,22 @@
       <Filter>Header Files\PixSDLib\Singletons</Filter>
     </ClInclude>
     <ClInclude Include="Texture.h">
-      <Filter>Header Files\PixSDLib\Rendering\Texture</Filter>
+      <Filter>Header Files\PixSDLib\Graphics\Texture</Filter>
     </ClInclude>
     <ClInclude Include="TargetTexture.h">
-      <Filter>Header Files\PixSDLib\Rendering\Texture</Filter>
+      <Filter>Header Files\PixSDLib\Graphics\Texture</Filter>
     </ClInclude>
     <ClInclude Include="PixMath.h">
       <Filter>Header Files\PixSDLib\Math</Filter>
     </ClInclude>
     <ClInclude Include="ImageTexture.h">
-      <Filter>Header Files\PixSDLib\Rendering\Texture</Filter>
+      <Filter>Header Files\PixSDLib\Graphics\Texture</Filter>
     </ClInclude>
     <ClInclude Include="TextTexture.h">
-      <Filter>Header Files\PixSDLib\Rendering\Texture</Filter>
+      <Filter>Header Files\PixSDLib\Graphics\Texture</Filter>
     </ClInclude>
     <ClInclude Include="StreamingTexture.h">
-      <Filter>Header Files\PixSDLib\Rendering\Texture</Filter>
+      <Filter>Header Files\PixSDLib\Graphics\Texture</Filter>
     </ClInclude>
     <ClInclude Include="LaunchConfig.h">
       <Filter>Header Files\PixSDLib\Singletons</Filter>
@@ -296,15 +299,6 @@
     <ClInclude Include="Sprite2DExNode.h">
       <Filter>Header Files\PixSDLib\Entity\Entity2D</Filter>
     </ClInclude>
-    <ClInclude Include="SpriteMesh.h">
-      <Filter>Header Files\PixSDLib\Rendering\Rendering2D</Filter>
-    </ClInclude>
-    <ClInclude Include="TriangleMesh2D.h">
-      <Filter>Header Files\PixSDLib\Rendering\Rendering2D</Filter>
-    </ClInclude>
-    <ClInclude Include="TriangleMesh3D.h">
-      <Filter>Header Files\PixSDLib\Rendering\Rendering3D</Filter>
-    </ClInclude>
     <ClInclude Include="MoveableObject3D.h">
       <Filter>Header Files\PixSDLib\Entity\Entity3D</Filter>
     </ClInclude>
@@ -321,34 +315,43 @@
       <Filter>Header Files\PixSDLib\Entity\Entity3D</Filter>
     </ClInclude>
     <ClInclude Include="SpriteMeshAnimator.h">
-      <Filter>Header Files\PixSDLib\SpriteAnimation\SpriteAnimation2D</Filter>
+      <Filter>Header Files\PixSDLib\Graphics\SpriteAnimation2D</Filter>
     </ClInclude>
     <ClInclude Include="SpriteMeshAnimatorUtils.h">
-      <Filter>Header Files\PixSDLib\SpriteAnimation\SpriteAnimation2D</Filter>
-    </ClInclude>
-    <ClInclude Include="TexCoordsUtils.h">
-      <Filter>Header Files\PixSDLib\Rendering</Filter>
+      <Filter>Header Files\PixSDLib\Graphics\SpriteAnimation2D</Filter>
     </ClInclude>
     <ClInclude Include="SpriteMeshRenderer2D.h">
-      <Filter>Header Files\PixSDLib\Rendering\Rendering2D</Filter>
+      <Filter>Header Files\PixSDLib\Graphics\Rendering2D</Filter>
     </ClInclude>
     <ClInclude Include="TriangleMesh2DRenderer2D.h">
-      <Filter>Header Files\PixSDLib\Rendering\Rendering2D</Filter>
+      <Filter>Header Files\PixSDLib\Graphics\Rendering2D</Filter>
     </ClInclude>
     <ClInclude Include="SpriteMeshRenderer3D.h">
-      <Filter>Header Files\PixSDLib\Rendering\Rendering3D</Filter>
+      <Filter>Header Files\PixSDLib\Graphics\Rendering3D</Filter>
     </ClInclude>
     <ClInclude Include="TriangleMeshRenderer3D.h">
-      <Filter>Header Files\PixSDLib\Rendering\Rendering3D</Filter>
-    </ClInclude>
-    <ClInclude Include="TexCoordsTypes.h">
-      <Filter>Header Files\PixSDLib\Rendering</Filter>
-    </ClInclude>
-    <ClInclude Include="SpriteMeshUtils.h">
-      <Filter>Header Files\PixSDLib\Rendering\Rendering2D</Filter>
+      <Filter>Header Files\PixSDLib\Graphics\Rendering3D</Filter>
     </ClInclude>
     <ClInclude Include="ObjectInput.h">
       <Filter>Header Files\PixSDLib\Input</Filter>
+    </ClInclude>
+    <ClInclude Include="SpriteMesh.h">
+      <Filter>Header Files\PixSDLib\Graphics\Geometry2D</Filter>
+    </ClInclude>
+    <ClInclude Include="SpriteMeshOps.h">
+      <Filter>Header Files\PixSDLib\Graphics\Geometry2D</Filter>
+    </ClInclude>
+    <ClInclude Include="TriangleMesh2D.h">
+      <Filter>Header Files\PixSDLib\Graphics\Geometry2D</Filter>
+    </ClInclude>
+    <ClInclude Include="TriangleMesh3D.h">
+      <Filter>Header Files\PixSDLib\Graphics\Geometry3D</Filter>
+    </ClInclude>
+    <ClInclude Include="UV.h">
+      <Filter>Header Files\PixSDLib\Graphics\Geometry2D</Filter>
+    </ClInclude>
+    <ClInclude Include="UVOps.h">
+      <Filter>Header Files\PixSDLib\Graphics\Geometry2D</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

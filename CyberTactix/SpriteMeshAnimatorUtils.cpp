@@ -1,12 +1,12 @@
 
 #include "SpriteMeshAnimatorUtils.h"
-#include "TexCoordsUtils.h"
+#include "UVOps.h"
 
 
 namespace pix
 {
 
-	std::vector<SpriteMeshUVKeyframe> GetFrameSequence(int texWidth, int texHeight, const PixelRect& startRect, int frameCount, float duration, SDL_RendererFlip flip)
+	std::vector<SpriteMeshUVKeyframe> GetFrameSequence(int texWidth, int texHeight, const SDL_Rect& startRect, int frameCount, float duration, SDL_RendererFlip flip)
 	{
 		std::vector<SpriteMeshUVKeyframe> frameSequence;
 
@@ -21,7 +21,7 @@ namespace pix
 
 		UVRect uvRect = GetUVRect(Vector2f(texWidth, texHeight), startRect);
 
-		Vector2f uvRectSize = uvRect.GetSize();
+		Vector2f uvRectSize = GetSize(uvRect);
 
 
 		frame.UV[0] = uvRect.TopLeft;

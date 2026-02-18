@@ -1,43 +1,49 @@
 #pragma once
 
+#include<SDL.h>
 #include <vector>
-#include "Texture.h"
-//#include "SpriteMesh.h"
 #include "pixMath.h"
-//#include "MathTypes3D.h"
 
 namespace pix
 {
-
+	// Vertex2DEx is a 2D vertex that stores a 2D position, Color, UV-coordinates, and a 3D normal vector.
+	// 
+	// Philosophy:
+	// Vertex2DEx instances are points with attributes that define the TriangleMesh2D. 
+	// The normal vector can provide the illusion of a 3D surface for various effects.
 	struct Vertex2DEx
 	{
 		Vertex2DEx()  = default;
 
-		Vertex2DEx(const Vector2f& position, const SDL_Color& color, const Vector2f& texCoordinates, const Vector3f& normal)  :
+		Vertex2DEx(Vector2f position, SDL_Color color, Vector2f uv, Vector3f normal):
 			Position(position),
 			Color(color),
-			TexCoords(texCoordinates),
+			UV(uv),
 			Normal(normal)
 		{
 		}
 
 		Vector2f  Position;
 		SDL_Color Color;
-		Vector2f  TexCoords;
+		Vector2f  UV;
 		Vector3f  Normal;
 	};
 
 
-	/// <summary>
-	/// The mesh for MeshSprite
-	/// </summary>
+	// TriangleMesh2D is an arbitrary sequence of triangles, each composed of three consecutive Vertex2DEx vertices.
+	//
+	// Philosophy:
+	// TriangleMesh2D defines the sprite model in model space.
 	struct TriangleMesh2D
 	{
-		TriangleMesh2D()  = default;
+		TriangleMesh2D() = default;
 
-		std::vector<Vertex2DEx> Vertices; //defines the "sprite-model" in model space
+		TriangleMesh2D(const std::vector<Vertex2DEx>& vertices) :
+			Vertices(vertices)
+		{
+		}
 
-		const Texture* MeshTexture = nullptr; //TODO: remove
+		std::vector<Vertex2DEx> Vertices;
 	};
 
 }
