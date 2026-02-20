@@ -169,6 +169,7 @@
     <ClCompile Include="TriangleMesh2DRenderer2D.cpp" />
     <ClCompile Include="TriangleMeshRenderer3D.cpp" />
     <ClCompile Include="UpdateLoopScheduler.cpp" />
+    <ClCompile Include="UVOps.cpp" />
     <ClCompile Include="Window.cpp" />
   </ItemGroup>
   <ItemGroup>

@@ -9,23 +9,23 @@ namespace pix
 
 	struct SpriteMeshPositionKeyframe
 	{
-		Vector2f Positions[4];
+		Vector2f Positions[SpriteMesh::VertexCount];
 
-		float TickDuration = 0.0f;            //Normalized to the update period, so 1.0f is "one update long"
+		float TickDuration = 1.0f; // Normalized to the update period, so 1.0f is "one update long"
 	};
 
 	struct SpriteMeshColorKeyframe
 	{
-		SDL_Color Colors[4];
+		SDL_Color Colors[SpriteMesh::VertexCount];
 
-		float TickDuration = 0.0f;
+		float TickDuration = 1.0f;
 	};
 
 	struct SpriteMeshUVKeyframe
 	{
-		Vector2f UV[4];
+		Vector2f UV[SpriteMesh::VertexCount];
 
-		float TickDuration = 0.0f;
+		float TickDuration = 1.0f;
 	};
 
 
@@ -33,29 +33,58 @@ namespace pix
 	{
 	public:
 
-		SpriteMeshAnimator()  : frameSequence_(nullptr), elapsedTicks_(-1.0f), currentFrameIndex_(0), speedScale_(1.0f), isLooped_(true) {}
-		SpriteMeshAnimator(const std::vector<KeyframeType>* sequence)  : frameSequence_(sequence), elapsedTicks_(-1.0f), currentFrameIndex_(0), speedScale_(1.0f), isLooped_(true) {}
+		//###################################### INITIALIZATION ###################################
+
+		SpriteMeshAnimator(): 
+			frameSequence_(nullptr), 
+			targetMesh_(nullptr), 
+			elapsedTicks_(0.0f), 
+			currentFrameIndex_(0), 
+			speedScale_(1.0f), 
+			isLooped_(true) 
+		{
+		}
+
+		SpriteMeshAnimator(const std::vector<KeyframeType>* sequence, SpriteMesh* targetMesh = nullptr): 
+			frameSequence_(sequence), 
+			targetMesh_(targetMesh), 
+			elapsedTicks_(0.0f), 
+			currentFrameIndex_(0), 
+			speedScale_(1.0f), 
+			isLooped_(true) 
+		{
+		}
+
 		~SpriteMeshAnimator()  = default;
 
+		//###################################### FUNCTIONALITY ###################################
 
 		bool Update() 
 		{
-			if (frameSequence_ == nullptr || IsFinished() || currentFrameIndex_ >= frameSequence_->size()) return false;
+			if (!frameSequence_ || IsFinished()) return false; // IsFinished() == false ensures sequenceSize > 0
 
 			const KeyframeType* frame = &((*frameSequence_)[currentFrameIndex_]);
 
-			if (frame->TickDuration <= 0.0f) return false;
-
 			elapsedTicks_ += speedScale_;
 
-			int sequenceSize = frameSequence_->size();
+			size_t sequenceSize = frameSequence_->size();
 
+			size_t iterationCount = 0;
 			while (elapsedTicks_ >= frame->TickDuration && (isLooped_ || currentFrameIndex_ < (sequenceSize - 1)))
 			{
 				elapsedTicks_ -= frame->TickDuration;
 				currentFrameIndex_ = (currentFrameIndex_ + 1) % sequenceSize;
 				frame = &((*frameSequence_)[currentFrameIndex_]);
+
+				// Cap for pathological tick durations
+				if (++iterationCount > sequenceSize) 
+				{ 
+				  elapsedTicks_ = 0.0f; 
+				  break;
+				} 
 			}
+
+			if (targetMesh_) UpdateMesh(*targetMesh_);
 
 			return true;
 		}
@@ -70,12 +99,14 @@ namespace pix
 
 		void SetElapsedTicks(float elapsedTicks) 
 		{
+			if (elapsedTicks < 0.0f) elapsedTicks = 0.0f;
+
 			elapsedTicks_ = elapsedTicks;
 		}
 
-		bool SetCurrentFrameIndex(int index) 
+		bool SetCurrentFrameIndex(size_t index) 
 		{
-			if (frameSequence_ == nullptr || index >= frameSequence_->size() || index < 0) return false;
+			if (!frameSequence_ || index >= frameSequence_->size()) return false;
 
 			currentFrameIndex_ = index;
 
@@ -95,20 +126,32 @@ namespace pix
 				speedScale_ = 0.0f;
 		}
 
-		void SetFrameSequence(const std::vector<KeyframeType>* sequence) 
+		void SetFrameSequence(const std::vector<KeyframeType>* sequence)
 		{
-			if (sequence != nullptr && currentFrameIndex_ >= sequence->size())
-				currentFrameIndex_ = sequence->size() - 1;
-
 			frameSequence_ = sequence;
+
+			if (!frameSequence_ || frameSequence_->empty())
+			{
+				currentFrameIndex_ = 0;
+				return;
+			}
+
+			if (currentFrameIndex_ >= frameSequence_->size())
+				currentFrameIndex_ = frameSequence_->size() - 1;
 		}
 
+		void SetTargetMesh(SpriteMesh* targetMesh)
+		{
+			targetMesh_ = targetMesh;
+		}
 
-		//###################################################################################### CONST METHODS ############################################################
+		//###################################################################################### GETTERS ############################################################
 
 
 		bool IsFinished() const 
 		{
+			if (!frameSequence_ || frameSequence_->empty()) return true;
+
 			return !isLooped_ && currentFrameIndex_ + 1 == frameSequence_->size() && elapsedTicks_ >= (*frameSequence_)[currentFrameIndex_].TickDuration;
 		}
 
@@ -117,7 +160,7 @@ namespace pix
 			return elapsedTicks_;
 		}
 
-		int GetCurrentFrameIndex() const 
+		size_t GetCurrentFrameIndex() const 
 		{
 			return currentFrameIndex_;
 		}
@@ -134,7 +177,7 @@ namespace pix
 
 		const KeyframeType* GetCurrentFrame() const 
 		{
-			if (frameSequence_ == nullptr || currentFrameIndex_ >= frameSequence_->size()) return nullptr;
+			if (!frameSequence_ || currentFrameIndex_ >= frameSequence_->size()) return nullptr;
 
 			return &((*frameSequence_)[currentFrameIndex_]);
 		}
@@ -144,12 +187,18 @@ namespace pix
 			return frameSequence_;
 		}
 
+		SpriteMesh* GetTargetMesh() const
+		{
+			return targetMesh_;
+		}
+
 	private:
 
 		const std::vector<KeyframeType>* frameSequence_;
+		SpriteMesh* targetMesh_;
 
 		float elapsedTicks_;
-		int   currentFrameIndex_;
+		size_t   currentFrameIndex_;
 		float speedScale_;
 		bool  isLooped_;
 	};
@@ -161,12 +210,12 @@ namespace pix
 	template<>
 	inline bool SpriteMeshPositionAnimator::UpdateMesh(SpriteMesh& mesh) const 
 	{
-		if (frameSequence_ == nullptr || currentFrameIndex_ >= frameSequence_->size()) return false;
+		if (!frameSequence_ || currentFrameIndex_ >= frameSequence_->size()) return false;
 
-		const SpriteMeshPositionKeyframe* const currentFrame = &((*frameSequence_)[currentFrameIndex_]);
+		const SpriteMeshPositionKeyframe& currentFrame = (*frameSequence_)[currentFrameIndex_];
 
-		for (int i = 0; i < 4; i++)                                                  //TODO: do faster memory copy?
-			mesh.Vertices[i].Position = currentFrame->Positions[i];
+		for (size_t i = 0; i < SpriteMesh::VertexCount; i++)                                                
+			mesh.Vertices[i].Position = currentFrame.Positions[i];
 
 		return true;
 	}
@@ -174,12 +223,12 @@ namespace pix
 	template<>
 	inline bool SpriteMeshColorAnimator::UpdateMesh(SpriteMesh& mesh) const 
 	{
-		if (frameSequence_ == nullptr || currentFrameIndex_ >= frameSequence_->size()) return false;
+		if (!frameSequence_|| currentFrameIndex_ >= frameSequence_->size()) return false;
 
-		const SpriteMeshColorKeyframe* const currentFrame = &((*frameSequence_)[currentFrameIndex_]);
+		const SpriteMeshColorKeyframe& currentFrame = (*frameSequence_)[currentFrameIndex_];
 
-		for (int i = 0; i < 4; i++)
-			mesh.Vertices[i].Color = currentFrame->Colors[i];
+		for (size_t i = 0; i < SpriteMesh::VertexCount; i++)
+			mesh.Vertices[i].Color = currentFrame.Colors[i];
 
 		return true;
 	}
@@ -187,12 +236,12 @@ namespace pix
 	template<>
 	inline bool SpriteMeshUVAnimator::UpdateMesh(SpriteMesh& mesh) const 
 	{
-		if (frameSequence_ == nullptr || currentFrameIndex_ >= frameSequence_->size()) return false;
+		if (!frameSequence_ || currentFrameIndex_ >= frameSequence_->size()) return false;
 
-		const SpriteMeshUVKeyframe* const currentFrame = &((*frameSequence_)[currentFrameIndex_]);
+		const SpriteMeshUVKeyframe& currentFrame = (*frameSequence_)[currentFrameIndex_];
 
-		for (int i = 0; i < 4; i++)
-			mesh.Vertices[i].UV = currentFrame->UV[i];
+		for (size_t i = 0; i < SpriteMesh::VertexCount; i++)
+			mesh.Vertices[i].UV = currentFrame.UV[i];
 
 		return true;
 	}

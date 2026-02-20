@@ -1,22 +1,17 @@
 #pragma once
 
-#include <SDL.h>
+#include <SDL_pixels.h>
 #include "PixMath.h"
 
 namespace pix
 {
-	// Vertex2D is a 2D vertex that stores a 2D position, Color, and UV-coordinates.
+	// Vertex2D is a 2D vertex that stores a 2D position, Color, and UV coordinates.
 	// 
 	// Philosophy:
 	// Vertex2D instances are points with attributes that define the SpriteMesh.
 	struct Vertex2D
 	{
-		Vertex2D(): 
-			Position(0.0f, 0.0f), 
-			Color{ 255, 255, 255, 255 },
-			UV(0.0f, 0.0f) 
-		{
-		}
+		Vertex2D() = default;
 
 		Vertex2D(Vector2f position, SDL_Color color, Vector2f uv):
 			Position(position),
@@ -46,8 +41,6 @@ namespace pix
 		{
 		}
 
-		Vertex2D Vertices[VertexCount];
-
 		Vertex2D& TopLeft()   { return Vertices[0]; }
 		Vertex2D& TopRight()   { return Vertices[1]; }
 		Vertex2D& BottomRight()   { return Vertices[2]; }
@@ -57,6 +50,8 @@ namespace pix
 		const Vertex2D& TopRight()    const  { return Vertices[1]; }
 		const Vertex2D& BottomRight() const  { return Vertices[2]; }
 		const Vertex2D& BottomLeft()  const  { return Vertices[3]; }
+
+		Vertex2D Vertices[VertexCount];
 
 	};
 

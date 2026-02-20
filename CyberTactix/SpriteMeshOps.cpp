@@ -2,49 +2,61 @@
 
 namespace pix
 {
-
-	SpriteMesh GetSpriteMesh(Vector2f topLeftPosition, Vector2f bottomRightPosition, const UVRect& rectUV) 
+	SpriteMesh GetSpriteMesh(Vector2f topLeftPosition, Vector2f bottomRightPosition, UVRect uvRect, SDL_Color color)
 	{
-		constexpr SDL_Color white = { 255, 255, 255, 255 };
-
-		Vertex2D topLeft(Vector2f(topLeftPosition), white, rectUV.TopLeft);
-		Vertex2D topRight(Vector2f(bottomRightPosition.X, topLeftPosition.Y), white, Vector2f(rectUV.BottomRight.X, rectUV.TopLeft.Y));
-		Vertex2D bottomRight(Vector2f(bottomRightPosition), white, rectUV.BottomRight);
-		Vertex2D bottomLeft(Vector2f(topLeftPosition.X, bottomRightPosition.Y), white, Vector2f(rectUV.TopLeft.X, rectUV.BottomRight.Y));
+		Vertex2D topLeft(topLeftPosition, color, uvRect.TopLeft);
+		Vertex2D topRight(Vector2f(bottomRightPosition.X, topLeftPosition.Y), color, Vector2f(uvRect.BottomRight.X, uvRect.TopLeft.Y));
+		Vertex2D bottomRight(bottomRightPosition, color, uvRect.BottomRight);
+		Vertex2D bottomLeft(Vector2f(topLeftPosition.X, bottomRightPosition.Y), color, Vector2f(uvRect.TopLeft.X, uvRect.BottomRight.Y));
 
 		return SpriteMesh(topLeft, topRight, bottomRight, bottomLeft);
 	}
 
-	Vector2f GetBoundsSize(const SpriteMesh& mesh) 
+	SpriteMesh GetSpriteMesh(Vector2f topLeftPosition, Vector2f topRightPosition, Vector2f bottomRightPosition, Vector2f bottomLeftPosition, const UVQuad& uvQuad, SDL_Color color)
+	{
+		Vertex2D topLeft(topLeftPosition, color, uvQuad.TopLeft);
+		Vertex2D topRight(topRightPosition, color, uvQuad.TopRight);
+		Vertex2D bottomRight(bottomRightPosition, color, uvQuad.BottomRight);
+		Vertex2D bottomLeft(bottomLeftPosition, color, uvQuad.BottomLeft);
+
+		return SpriteMesh(topLeft, topRight, bottomRight, bottomLeft);
+	}
+
+	Vector2f GetBoundsSize(const SpriteMesh& mesh)
 	{
 		Vector2f min(mesh.BottomLeft().Position);
 		Vector2f max(mesh.TopRight().Position);
 
-		for (int i = 0; i < 4; i++)
-		{
-			if (mesh.Vertices[i].Position.X < min.X) min.X = mesh.Vertices[i].Position.X;
-			if (mesh.Vertices[i].Position.Y < min.Y) min.Y = mesh.Vertices[i].Position.Y;
-			if (mesh.Vertices[i].Position.X > max.X) max.X = mesh.Vertices[i].Position.X;
-			if (mesh.Vertices[i].Position.Y > max.Y) max.Y = mesh.Vertices[i].Position.Y;
-		}
-
+		if (mesh.TopLeft().Position.X < min.X) min.X = mesh.TopLeft().Position.X;
+		if (mesh.TopLeft().Position.Y < min.Y) min.Y = mesh.TopLeft().Position.Y;
+		if (mesh.TopRight().Position.X < min.X) min.X = mesh.TopRight().Position.X;
+		if (mesh.TopRight().Position.Y < min.Y) min.Y = mesh.TopRight().Position.Y;
+		if (mesh.BottomRight().Position.X < min.X) min.X = mesh.BottomRight().Position.X;
+		if (mesh.BottomRight().Position.Y < min.Y) min.Y = mesh.BottomRight().Position.Y;
+		
+		if (mesh.BottomRight().Position.X > max.X) max.X = mesh.BottomRight().Position.X;
+		if (mesh.BottomRight().Position.Y > max.Y) max.Y = mesh.BottomRight().Position.Y;
+		if (mesh.BottomLeft().Position.X > max.X) max.X = mesh.BottomLeft().Position.X;
+		if (mesh.BottomLeft().Position.Y > max.Y) max.Y = mesh.BottomLeft().Position.Y;
+		if (mesh.TopLeft().Position.X > max.X) max.X = mesh.TopLeft().Position.X;
+		if (mesh.TopLeft().Position.Y > max.Y) max.Y = mesh.TopLeft().Position.Y;
+		
 		return max - min;
 	}
 
-	void SetUV(SpriteMesh& mesh, const UVQuad& quadUV) 
+	void SetUV(SpriteMesh& mesh, UVRect uvRect)
 	{
-		mesh.TopLeft().UV = quadUV.TopLeft;
-		mesh.TopRight().UV = quadUV.TopRight;
-		mesh.BottomRight().UV = quadUV.BottomRight;
-		mesh.BottomLeft().UV = quadUV.BottomLeft;
+		mesh.TopLeft().UV = uvRect.TopLeft;
+		mesh.TopRight().UV = Vector2f(uvRect.BottomRight.X, uvRect.TopLeft.Y);
+		mesh.BottomRight().UV = uvRect.BottomRight;
+		mesh.BottomLeft().UV = Vector2f(uvRect.TopLeft.X, uvRect.BottomRight.Y);
 	}
 
-	void SetUV(SpriteMesh& mesh, const UVRect& rectUV) 
+	void SetUV(SpriteMesh& mesh, const UVQuad& uvQuad) 
 	{
-		mesh.TopLeft().UV = rectUV.TopLeft;
-		mesh.TopRight().UV = Vector2f(rectUV.BottomRight.X, rectUV.TopLeft.Y);
-		mesh.BottomRight().UV = rectUV.BottomRight;
-		mesh.BottomLeft().UV = Vector2f(rectUV.TopLeft.X, rectUV.BottomRight.Y);
+		mesh.TopLeft().UV = uvQuad.TopLeft;
+		mesh.TopRight().UV = uvQuad.TopRight;
+		mesh.BottomRight().UV = uvQuad.BottomRight;
+		mesh.BottomLeft().UV = uvQuad.BottomLeft;
 	}
-
 }

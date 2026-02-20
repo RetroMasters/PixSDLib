@@ -9,16 +9,16 @@ namespace pix
 {
 
 	template<typename KeyframeType>
-	inline bool ReverseSequence(SpriteMeshAnimator<KeyframeType>& animator, const std::vector<KeyframeType>* reversedFrames)
+	inline bool ReverseSequence(SpriteMeshAnimator<KeyframeType>& animator, const std::vector<KeyframeType>& reversedFrames)
 	{
 		const KeyframeType* currentFrame = animator.GetCurrentFrame();
 
-		if (currentFrame == nullptr || reversedFrames == nullptr) return false;
+		if (!currentFrame) return false;
 
 		animator.SetCurrentFrameIndex(animator.GetFrameSequence()->size() - 1 - animator.GetCurrentFrameIndex());
-		animator.SetElapsedTime(currentFrame->Duration - animator.GetElapsedTime());
+		animator.SetElapsedTime(currentFrame.Duration - animator.GetElapsedTime());
 
-		animator.SetFrameSequence(reversedFrames);
+		animator.SetFrameSequence(&reversedFrames);
 	}
 
 	// Moves the startRect in the order of reading a book for a frameCount times (from left to right, and top to bottom)
@@ -44,7 +44,5 @@ namespace pix
 	void FlipTexCoordsHorizontal(SpriteMeshUVKeyframe& frame);
 
 	void FlipTexCoordsVertical(SpriteMeshUVKeyframe& frame);
-
-	
 
 }

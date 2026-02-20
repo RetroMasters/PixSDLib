@@ -1,42 +1,60 @@
 #pragma once
 
+#include<SDL_pixels.h>
 #include <vector>
-#include "Texture.h"
-//#include "SpriteMesh.h"
 #include "PixMath.h"
-//#include "MathTypes3D.h"
 
 namespace pix
 {
+	// Vertex3D is a 3D vertex storing 3D position, Color, UV coordinates, and a 3D normal vector.
+    // 
+    // Philosophy:
+    // Vertex3D defines a point with rendering attributes used by TriangleMesh3D.
+    // The normal vector can provide the illusion of a 3D surface for lighting effects, or carry any other information.
 	struct Vertex3D
 	{
-		Vertex3D()  = default;
+		Vertex3D() = default;
 
-		Vertex3D(const Vector3f& position, const SDL_Color& color, const Vector2f& texCoordinates, const Vector3f& normal) :
+		Vertex3D(Vector3f position, SDL_Color color, Vector2f uv, Vector3f normal):
 			Position(position),
 			Color(color),
-			TexCoords(texCoordinates),
+			UV(uv),
 			Normal(normal)
 		{
 		}
 
 		Vector3f   Position;
 		SDL_Color  Color;
-		Vector2f   TexCoords;
+		Vector2f   UV;
 		Vector3f   Normal;
 	};
 
 
-	/// <summary>
-	/// The mesh for MeshSprite
-	/// </summary>
+	// TriangleMesh3D stores vertices for a 3D mesh composed of triangles.
+	// Each triangle is three consecutive Vertex3D entries.
+	//
+	// Philosophy:
+	// TriangleMesh3D defines a 3D model in model space.
 	struct TriangleMesh3D
 	{
 		TriangleMesh3D() = default;
+	 
+		TriangleMesh3D(const std::vector<Vertex3D>& vertices):
+			Vertices(vertices)
+		{
+		}
 
-		std::vector<Vertex3D> Vertices; //defines the "sprite-model" in model space
+		bool IsValid() const
+		{
+			return (Vertices.size() % 3) == 0;
+		}
 
-		const Texture* MeshTexture;
+		size_t GetTriangleCount() const
+		{
+			return Vertices.size() / 3;
+		}
+	
+		std::vector<Vertex3D> Vertices;
 	};
 
 }

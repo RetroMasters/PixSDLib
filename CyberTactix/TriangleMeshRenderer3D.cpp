@@ -65,7 +65,7 @@ namespace pix
 											 screenCoords.Y - vertexBatch_[end].Position.Y };
 
 				if (secondDirection.DotProduct(firstDirectionNormal) > 0.0f) // is front face
-					vertexBatch_.emplace_back(screenCoords, vertices[i].Color, vertices[i].TexCoords);
+					vertexBatch_.emplace_back(screenCoords, vertices[i].Color, vertices[i].UV);
 				else
 				{
 					vertexBatch_.pop_back();
@@ -73,7 +73,7 @@ namespace pix
 				}
 			}
 			else
-				vertexBatch_.emplace_back(screenCoords, vertices[i].Color, vertices[i].TexCoords);
+				vertexBatch_.emplace_back(screenCoords, vertices[i].Color, vertices[i].UV);
 		}
 
 	}
