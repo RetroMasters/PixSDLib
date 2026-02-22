@@ -124,9 +124,9 @@ namespace pix
 
 		PumpFunction GetPumpFunction() const;
 
-		VirtualAxis& GetVirtualAxis();
+		VirtualAxis& GetVirtualAxis() const;
 
-		const VirtualAxis& GetVirtualAxis() const;
+		//const VirtualAxis& GetVirtualAxis() const;
 
 		int GetCachedAxisID() const;
 

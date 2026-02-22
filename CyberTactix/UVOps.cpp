@@ -3,13 +3,14 @@
 
 namespace pix
 {
-	UVRect GetUVRect(Vector2f texSize, SDL_Rect rect)
+	UVRect GetUVRect(int texWidth, int texHeight, SDL_Rect rect)
 	{
-		if (texSize.X <= 0.0f || texSize.Y <= 0.0f)
+		if (texWidth <= 0 || texHeight <= 0)
 			return UVRect(0.0f, 0.0f, 0.0f, 0.0f);
 
 		const Vector2f topLeft((float)rect.x, (float)rect.y);
 		const Vector2f bottomRight((float)(rect.x + rect.w), (float)(rect.y + rect.h));
+		const Vector2f texSize((float)texWidth, (float)texHeight);
 
 		return UVRect(topLeft / texSize, bottomRight / texSize);
 	}
@@ -26,12 +27,12 @@ namespace pix
 
 	UVRect GetFlippedX(UVRect rect)
 	{
-		return UVRect(rect.GetTopRight(), rect.GetBottomLeft());
+		return UVRect(rect.TopRight(), rect.BottomLeft());
 	}
 
 	UVRect GetFlippedY(UVRect rect)
 	{
-		return UVRect(rect.GetBottomLeft(), rect.GetTopRight());
+		return UVRect(rect.BottomLeft(), rect.TopRight());
 	}
 
 	UVRect GetFlippedXY(UVRect rect)
@@ -39,50 +40,56 @@ namespace pix
 		return UVRect(rect.BottomRight, rect.TopLeft);
 	}
 
-	UVQuad GetUVQuad(UVRect rect)
+	bool IsRectInTexBounds(int texWidth, int texHeight, SDL_Rect rect)
 	{
-		return UVQuad(rect.TopLeft, rect.GetTopRight(), rect.BottomRight, rect.GetBottomLeft());
+		return (texWidth > 0 && texHeight > 0 && rect.w >= 0 && rect.h >= 0 &&
+			    rect.x >= 0 && rect.y >= 0 && rect.w <= texWidth - rect.x && rect.h <= texHeight - rect.y);
 	}
 
-	UVQuad GetUVQuad(Vector2f texSize, SDL_Rect rect)
+	UVQuad GetUVQuad(UVRect rect)
 	{
-		return GetUVQuad(GetUVRect(texSize, rect));
+		return UVQuad(rect.TopLeft, rect.TopRight(), rect.BottomRight, rect.BottomLeft());
+	}
+
+	UVQuad GetUVQuad(int texWidth, int texHeight, SDL_Rect rect)
+	{
+		return GetUVQuad(GetUVRect(texWidth, texHeight, rect));
 	}
 
 	Vector2f GetBoundsSize(const UVQuad& quad)
 	{
-		Vector2f min(quad.TopLeft);
-		Vector2f max(quad.BottomRight);
+		Vector2f min(quad.TopLeft());
+		Vector2f max(quad.BottomRight());
 
-		if (quad.TopRight.X < min.X) min.X = quad.TopRight.X;
-		if (quad.TopRight.Y < min.Y) min.Y = quad.TopRight.Y;
-		if (quad.BottomRight.X < min.X) min.X = quad.BottomRight.X;
-		if (quad.BottomRight.Y < min.Y) min.Y = quad.BottomRight.Y;
-		if (quad.BottomLeft.X < min.X) min.X = quad.BottomLeft.X;
-		if (quad.BottomLeft.Y < min.Y) min.Y = quad.BottomLeft.Y;
+		if (quad.TopRight().X < min.X) min.X = quad.TopRight().X;
+		if (quad.TopRight().Y < min.Y) min.Y = quad.TopRight().Y;
+		if (quad.BottomRight().X < min.X) min.X = quad.BottomRight().X;
+		if (quad.BottomRight().Y < min.Y) min.Y = quad.BottomRight().Y;
+		if (quad.BottomLeft().X < min.X) min.X = quad.BottomLeft().X;
+		if (quad.BottomLeft().Y < min.Y) min.Y = quad.BottomLeft().Y;
 
-		if (quad.BottomLeft.X > max.X) max.X = quad.BottomLeft.X;
-		if (quad.BottomLeft.Y > max.Y) max.Y = quad.BottomLeft.Y;
-		if (quad.TopLeft.X > max.X) max.X = quad.TopLeft.X;
-		if (quad.TopLeft.Y > max.Y) max.Y = quad.TopLeft.Y;
-		if (quad.TopRight.X > max.X) max.X = quad.TopRight.X;
-		if (quad.TopRight.Y > max.Y) max.Y = quad.TopRight.Y;
+		if (quad.BottomLeft().X > max.X) max.X = quad.BottomLeft().X;
+		if (quad.BottomLeft().Y > max.Y) max.Y = quad.BottomLeft().Y;
+		if (quad.TopLeft().X > max.X) max.X = quad.TopLeft().X;
+		if (quad.TopLeft().Y > max.Y) max.Y = quad.TopLeft().Y;
+		if (quad.TopRight().X > max.X) max.X = quad.TopRight().X;
+		if (quad.TopRight().Y > max.Y) max.Y = quad.TopRight().Y;
 
 		return max - min;
 	}
 
 	UVQuad GetFlippedX(const UVQuad& quad)
 	{
-		return UVQuad(quad.TopRight, quad.TopLeft, quad.BottomLeft, quad.BottomRight);
+		return UVQuad(quad.TopRight(), quad.TopLeft(), quad.BottomLeft(), quad.BottomRight());
 	}
 
 	UVQuad GetFlippedY(const UVQuad& quad)
 	{
-		return UVQuad(quad.BottomLeft, quad.BottomRight, quad.TopRight, quad.TopLeft);
+		return UVQuad(quad.BottomLeft(), quad.BottomRight(), quad.TopRight(), quad.TopLeft());
 	}
 
 	UVQuad GetFlippedXY(const UVQuad& quad)
 	{
-		return UVQuad(quad.BottomRight, quad.BottomLeft, quad.TopLeft, quad.TopRight);
+		return UVQuad(quad.BottomRight(), quad.BottomLeft(), quad.TopLeft(), quad.TopRight());
 	}
 }

@@ -14,10 +14,10 @@ namespace pix
 
 	SpriteMesh GetSpriteMesh(Vector2f topLeftPosition, Vector2f topRightPosition, Vector2f bottomRightPosition, Vector2f bottomLeftPosition, const UVQuad& uvQuad, SDL_Color color)
 	{
-		Vertex2D topLeft(topLeftPosition, color, uvQuad.TopLeft);
-		Vertex2D topRight(topRightPosition, color, uvQuad.TopRight);
-		Vertex2D bottomRight(bottomRightPosition, color, uvQuad.BottomRight);
-		Vertex2D bottomLeft(bottomLeftPosition, color, uvQuad.BottomLeft);
+		Vertex2D topLeft(topLeftPosition, color, uvQuad.TopLeft());
+		Vertex2D topRight(topRightPosition, color, uvQuad.TopRight());
+		Vertex2D bottomRight(bottomRightPosition, color, uvQuad.BottomRight());
+		Vertex2D bottomLeft(bottomLeftPosition, color, uvQuad.BottomLeft());
 
 		return SpriteMesh(topLeft, topRight, bottomRight, bottomLeft);
 	}
@@ -54,9 +54,9 @@ namespace pix
 
 	void SetUV(SpriteMesh& mesh, const UVQuad& uvQuad) 
 	{
-		mesh.TopLeft().UV = uvQuad.TopLeft;
-		mesh.TopRight().UV = uvQuad.TopRight;
-		mesh.BottomRight().UV = uvQuad.BottomRight;
-		mesh.BottomLeft().UV = uvQuad.BottomLeft;
+		mesh.TopLeft().UV = uvQuad.TopLeft();
+		mesh.TopRight().UV = uvQuad.TopRight();
+		mesh.BottomRight().UV = uvQuad.BottomRight();
+		mesh.BottomLeft().UV = uvQuad.BottomLeft();
 	}
 }

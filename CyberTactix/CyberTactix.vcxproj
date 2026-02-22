@@ -158,7 +158,7 @@
     <ClCompile Include="Sprite3DEx.cpp" />
     <ClCompile Include="Sprite3DExNode.cpp" />
     <ClCompile Include="Sprite3DNode.cpp" />
-    <ClCompile Include="SpriteMeshAnimatorUtils.cpp" />
+    <ClCompile Include="SpriteMeshAnimatorOps.cpp" />
     <ClCompile Include="SpriteMeshRenderer2D.cpp" />
     <ClCompile Include="SpriteMeshRenderer3D.cpp" />
     <ClCompile Include="SpriteMeshOps.cpp" />
@@ -198,7 +198,7 @@
     <ClInclude Include="Sprite3DNode.h" />
     <ClInclude Include="SpriteMesh.h" />
     <ClInclude Include="SpriteMeshAnimator.h" />
-    <ClInclude Include="SpriteMeshAnimatorUtils.h" />
+    <ClInclude Include="SpriteMeshAnimatorOps.h" />
     <ClInclude Include="SpriteMeshRenderer2D.h" />
     <ClInclude Include="SpriteMeshRenderer3D.h" />
     <ClInclude Include="SpriteMeshOps.h" />

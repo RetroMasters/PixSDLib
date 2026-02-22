@@ -9,6 +9,7 @@
 
 #include "ErrorLogger.h"
 #include "Window.h"
+#include "SpriteMeshAnimator.h"
 
 //#include <>
 
@@ -37,6 +38,12 @@ int main(int argc, char* argv[])
     pix::Window::Get().SetFullscreen(true);
 
     pix::ErrorLogger::Get().LogSDLError("LastSDLError");
+
+    pix::SpriteMeshPositionAnimator positionAnimator;
+    pix::SpriteMeshColorAnimator colorAnimator;
+    pix::SpriteMeshUVAnimator uvAnimator;
+
+    uvAnimator.Update();
 
     SDL_Delay(5000);
 

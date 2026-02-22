@@ -109,12 +109,7 @@ namespace pix
 			return pumpFunction_;
 		}
 
-		VirtualAxis& AbstractInputPump::GetVirtualAxis() 
-		{
-			return *virtualAxis_;
-		}
-
-		const VirtualAxis& AbstractInputPump::GetVirtualAxis() const
+		VirtualAxis& AbstractInputPump::GetVirtualAxis() const
 		{
 			return *virtualAxis_;
 		}

@@ -26,13 +26,13 @@ namespace pix
 	};
 
 	// SpriteMesh is a quad of four Vertex2D vertices.
-	// Intended vertex order in the array: 0=TopLeft, 1=TopRight, 2=BottomRight, 3=BottomLeft.
+	// Intended corner order in the array: 0=TopLeft, 1=TopRight, 2=BottomRight, 3=BottomLeft.
 	//
 	// Philosophy:
 	// SpriteMesh defines the sprite model in model space.
 	struct SpriteMesh
 	{
-		static constexpr size_t VertexCount = 4;
+		static constexpr size_t VERTEX_COUNT = 4;
 
 		SpriteMesh()  = default;
 
@@ -51,7 +51,7 @@ namespace pix
 		const Vertex2D& BottomRight() const  { return Vertices[2]; }
 		const Vertex2D& BottomLeft()  const  { return Vertices[3]; }
 
-		Vertex2D Vertices[VertexCount];
+		Vertex2D Vertices[VERTEX_COUNT];
 
 	};
 

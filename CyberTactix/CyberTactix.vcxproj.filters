@@ -76,12 +76,6 @@
     <Filter Include="Source Files\PixSDLib\Entity\Entity3D">
       <UniqueIdentifier>{cea7fd44-4159-471f-b010-8f088f676c7d}</UniqueIdentifier>
     </Filter>
-    <Filter Include="Source Files\PixSDLib\SpriteAnimation">
-      <UniqueIdentifier>{ea1c6590-7081-4e05-a750-a3132bdb5266}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="Source Files\PixSDLib\SpriteAnimation\SpriteAnimation2D">
-      <UniqueIdentifier>{6a91437b-c922-410f-9a9e-8593ac4efdf9}</UniqueIdentifier>
-    </Filter>
     <Filter Include="Header Files\PixSDLib\Graphics">
       <UniqueIdentifier>{f057d085-de7b-45cd-962a-6fff3c09a2da}</UniqueIdentifier>
     </Filter>
@@ -100,9 +94,6 @@
     <Filter Include="Header Files\PixSDLib\Graphics\Geometry3D">
       <UniqueIdentifier>{c4100b91-1236-447a-b6a2-133a4053209b}</UniqueIdentifier>
     </Filter>
-    <Filter Include="Header Files\PixSDLib\Graphics\SpriteAnimation2D">
-      <UniqueIdentifier>{a4b5361d-e87b-4b39-a575-41143999a215}</UniqueIdentifier>
-    </Filter>
     <Filter Include="Source Files\PixSDLib\Graphics">
       <UniqueIdentifier>{93c06cb5-b5f5-4867-a0a6-ec1fd2abedff}</UniqueIdentifier>
     </Filter>
@@ -117,6 +108,12 @@
     </Filter>
     <Filter Include="Source Files\PixSDLib\Graphics\Geometry2D">
       <UniqueIdentifier>{63476975-7ec0-4560-ab11-b537bc52822c}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\PixSDLib\Graphics\SpriteAnimation">
+      <UniqueIdentifier>{ea1c6590-7081-4e05-a750-a3132bdb5266}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\PixSDLib\Graphics\SpriteAnimation">
+      <UniqueIdentifier>{a4b5361d-e87b-4b39-a575-41143999a215}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
   <ItemGroup>
@@ -204,9 +201,6 @@
     <ClCompile Include="Sprite3DEx.cpp">
       <Filter>Source Files\PixSDLib\Entity\Entity3D</Filter>
     </ClCompile>
-    <ClCompile Include="SpriteMeshAnimatorUtils.cpp">
-      <Filter>Source Files\PixSDLib\SpriteAnimation\SpriteAnimation2D</Filter>
-    </ClCompile>
     <ClCompile Include="SpriteMeshRenderer2D.cpp">
       <Filter>Source Files\PixSDLib\Graphics\Rendering2D</Filter>
     </ClCompile>
@@ -230,6 +224,9 @@
     </ClCompile>
     <ClCompile Include="UVOps.cpp">
       <Filter>Source Files\PixSDLib\Graphics\Geometry2D</Filter>
+    </ClCompile>
+    <ClCompile Include="SpriteMeshAnimatorOps.cpp">
+      <Filter>Source Files\PixSDLib\Graphics\SpriteAnimation</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -321,10 +318,10 @@
       <Filter>Header Files\PixSDLib\Entity\Entity3D</Filter>
     </ClInclude>
     <ClInclude Include="SpriteMeshAnimator.h">
-      <Filter>Header Files\PixSDLib\Graphics\SpriteAnimation2D</Filter>
+      <Filter>Header Files\PixSDLib\Graphics\SpriteAnimation</Filter>
     </ClInclude>
-    <ClInclude Include="SpriteMeshAnimatorUtils.h">
-      <Filter>Header Files\PixSDLib\Graphics\SpriteAnimation2D</Filter>
+    <ClInclude Include="SpriteMeshAnimatorOps.h">
+      <Filter>Header Files\PixSDLib\Graphics\SpriteAnimation</Filter>
     </ClInclude>
     <ClInclude Include="SpriteMeshRenderer2D.h">
       <Filter>Header Files\PixSDLib\Graphics\Rendering2D</Filter>
