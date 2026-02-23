@@ -61,9 +61,9 @@ namespace pix
 		return (buttonFlags_ & SDL_BUTTON(button)) != 0;
 	}
 
-	Vector2i MouseInput::GetMousePosition() const
+	Vec2i MouseInput::GetMousePosition() const
 	{
-		return Vector2i(positionX_, positionY_);
+		return Vec2i(positionX_, positionY_);
 	}
 
 	int MouseInput::GetMousePositionX() const
@@ -76,9 +76,9 @@ namespace pix
 		return positionY_;
 	}
 
-	Vector2f MouseInput::GetWheelDelta() const
+	Vec2f MouseInput::GetWheelDelta() const
 	{
-		return Vector2f(wheelDeltaX_, wheelDeltaY_);
+		return Vec2f(wheelDeltaX_, wheelDeltaY_);
 	}
 
 	float MouseInput::GetWheelDeltaX() const

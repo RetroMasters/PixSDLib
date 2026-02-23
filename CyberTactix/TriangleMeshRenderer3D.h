@@ -29,7 +29,7 @@ namespace pix
 		void Render(const Sprite3DEx& sprite) ;
 		void Render(const Sprite3DExNode& node) ;
 
-		void BeginBatch(const MovableObject3D* camera, float interpolationAlpha, const Vector2f& renderTargetCenter, float verticalFOV = 60.0f) ;
+		void BeginBatch(const MovableObject3D* camera, float interpolationAlpha, const Vec2f& renderTargetCenter, float verticalFOV = 60.0f) ;
 		void RenderBatch(const Texture& boundTexture, TargetTexture* renderTarget) ;
 
 	private:
@@ -37,19 +37,19 @@ namespace pix
 		struct Configuration
 		{
 			float    InterpolationAlpha = 1.0f;
-			Vector2f RenderTargetCenter = { 0.0f , 0.0f };
+			Vec2f RenderTargetCenter = { 0.0f , 0.0f };
 
-			float      CameraDistanceToScreen = (1080 * 0.5f) / std::tan(60.0f * 0.5f * RADIANS_PER_DEGREE_F); //935.3f; 
-			Vector3d   InterpolatedCameraPosition = { 0.0 , 0.0, 0.0 };
+			float      CameraDistanceToScreen = (1080 * 0.5f) / std::tan(60.0f * 0.5f * (float)RADIANS_PER_DEGREE); //935.3f; 
+			Vec3   InterpolatedCameraPosition = { 0.0 , 0.0, 0.0 };
 			Rotation3D InterpolatedInversedCameraRotation;
-			Vector3f   InterpolatedCameraAxisZ = { 0.0f, 0.0f, 1.0f };
+			Vec3f   InterpolatedCameraAxisZ = { 0.0f, 0.0f, 1.0f };
 		};
 
 		Configuration configuration_;
 
 		std::vector<Vertex2D> vertexBatch_;
-		std::vector<Vector3d> pointBuffer1_;
-		std::vector<Vector3d> pointBuffer2_;
+		std::vector<Vec3> pointBuffer1_;
+		std::vector<Vec3> pointBuffer2_;
 
 		static constexpr float minDistanceToCamera_ = 0.5f;
 	};

@@ -18,7 +18,7 @@ namespace pix
 	{
 	}
 
-	Sprite2DEx::Sprite2DEx(const TriangleMesh2D* mesh, const Vector2d& position, const Vector2f& scale, const Rotation2D& rotation)  : MovableObject2D(position, scale, rotation),
+	Sprite2DEx::Sprite2DEx(const TriangleMesh2D* mesh, const Vec2& position, const Vec2f& scale, const Rotation2D& rotation)  : MovableObject2D(position, scale, rotation),
 		Mesh(mesh)
 	{
 	}

@@ -20,10 +20,10 @@ namespace pix
 		const Vertex2D* const vertices = mesh.Vertices;
 
 		// Compute distance-to-camera (in camera space float should provide sufficient precision):
-		Vector2f destinationCenter = Vector2f(transform.Position - configuration_.InterpolatedCameraPosition);
+		Vec2f destinationCenter = Vec2f(transform.Position - configuration_.InterpolatedCameraPosition);
 
 		// Apply camera rotation to distance-to-camera:
-		destinationCenter = configuration_.InterpolatedInversedCameraRotation.RotatePoint(destinationCenter);
+		configuration_.InterpolatedInversedCameraRotation.RotatePoint(destinationCenter);
 
 		// Apply camera zoom to distance-to-camera:
 		destinationCenter *= configuration_.InterpolatedCameraZoom;
@@ -32,19 +32,19 @@ namespace pix
 		//destinationCenter.Y = std::roundf(destinationCenter.Y);
 
 		// Precompute total (interpolated) scale vor vertices:
-		const Vector2f scale = transform.Scale * configuration_.InterpolatedCameraZoom;
+		const Vec2f scale = transform.Scale * configuration_.InterpolatedCameraZoom;
 
 		// Precompute total (interpolated) rotation for vertices:
-		Vector2f xAxis = transform.Rotation.GetXAxis();
-		xAxis = configuration_.InterpolatedInversedCameraRotation.RotatePoint(xAxis);
+		Vec2f xAxis = transform.Rotation.GetXAxis();
+		configuration_.InterpolatedInversedCameraRotation.RotatePoint(xAxis);
 
 		for (int i = 0; i < 4; i++)
 		{
 			// Scale the current mesh vertex:
-			Vector2f destination = vertices[i].Position * scale;
+			Vec2f destination = vertices[i].Position * scale;
 
 			// Rotate the current mesh vertex:
-			destination = RotatePointRaw(xAxis, destination);
+			RotatePointUnchecked(xAxis, destination);
 
 			// Translate to (scaled) camera space:
 			destination += destinationCenter;
@@ -62,28 +62,28 @@ namespace pix
 	{
 		const Vertex2D* const vertices = sprite.Mesh->Vertices;
 
-		Vector2d pos = sprite.Transform.Position;
-		const Vector2d& prevPos = sprite.GetPreviousTransform().Position;
-		Vector2f scale = sprite.Transform.Scale;
-		const Vector2f& prevScale = sprite.GetPreviousTransform().Scale;
-		Vector2f xAxis = sprite.Transform.Rotation.GetXAxis();
-		const Vector2f& prevXAxis = sprite.GetPreviousTransform().Rotation.GetXAxis();
+		Vec2 pos = sprite.Transform.Position;
+		const Vec2& prevPos = sprite.GetPreviousTransform().Position;
+		Vec2f scale = sprite.Transform.Scale;
+		const Vec2f& prevScale = sprite.GetPreviousTransform().Scale;
+		Vec2f xAxis = sprite.Transform.Rotation.GetXAxis();
+		const Vec2f& prevXAxis = sprite.GetPreviousTransform().Rotation.GetXAxis();
 
-		pos = InterpolateRaw(prevPos, pos, static_cast<double>(configuration_.InterpolationAlpha));
-		scale = InterpolateRaw(prevScale, scale, configuration_.InterpolationAlpha);
-		xAxis = InterpolateRaw(prevXAxis, xAxis, configuration_.InterpolationAlpha);
+		pos = GetInterpolatedUnchecked(prevPos, pos, (double)(configuration_.InterpolationAlpha));
+		scale = GetInterpolatedUnchecked(prevScale, scale, configuration_.InterpolationAlpha);
+		xAxis = GetInterpolatedUnchecked(prevXAxis, xAxis, configuration_.InterpolationAlpha);
 
 		// Precompute total (interpolated) scale vor vertices:
 		scale *= configuration_.InterpolatedCameraZoom;
 
 		// Precompute total (interpolated) rotation for vertices:
-		xAxis = configuration_.InterpolatedInversedCameraRotation.RotatePoint(xAxis);
+		configuration_.InterpolatedInversedCameraRotation.RotatePoint(xAxis);
 
 		// Compute distance-to-camera (in camera space float should provide sufficient precision):
-		Vector2f destinationCenter = Vector2f(pos - configuration_.InterpolatedCameraPosition);
+		Vec2f destinationCenter = Vec2f(pos - configuration_.InterpolatedCameraPosition);
 
 		// Apply camera rotation to distance-to-camera:
-		destinationCenter = configuration_.InterpolatedInversedCameraRotation.RotatePoint(destinationCenter);
+		configuration_.InterpolatedInversedCameraRotation.RotatePoint(destinationCenter);
 
 		// Apply camera zoom to distance-to-camera:
 		destinationCenter *= configuration_.InterpolatedCameraZoom;
@@ -94,10 +94,10 @@ namespace pix
 		for (int i = 0; i < 4; i++)
 		{
 			// Scale the current mesh vertex:
-			Vector2f destination = vertices[i].Position * scale;
+			Vec2f destination = vertices[i].Position * scale;
 
 			// Rotate the current mesh vertex:
-			destination = RotatePointRaw(xAxis, destination);
+			RotatePointUnchecked(xAxis, destination);
 
 			// Translate to (scaled) camera space:
 			destination += destinationCenter;
@@ -127,17 +127,17 @@ namespace pix
 		const Sprite2DNode* parent = &node;
 		const double interpolationAlphaD = static_cast<double>(configuration_.InterpolationAlpha); // Convert to double for later use
 
-		Vector2d vertexPoints[4] = { static_cast<Vector2d>(vertices[0].Position),  static_cast<Vector2d>(vertices[1].Position),
-									 static_cast<Vector2d>(vertices[2].Position),  static_cast<Vector2d>(vertices[3].Position) };
+		Vec2 vertexPoints[4] = { static_cast<Vec2>(vertices[0].Position),  static_cast<Vec2>(vertices[1].Position),
+									 static_cast<Vec2>(vertices[2].Position),  static_cast<Vec2>(vertices[3].Position) };
 
-		Vector2d previousVertexPoints[4] = { vertexPoints[0], vertexPoints[1], vertexPoints[2], vertexPoints[3] };
+		Vec2 previousVertexPoints[4] = { vertexPoints[0], vertexPoints[1], vertexPoints[2], vertexPoints[3] };
 
 
 		// Transform to world space:
 		while (parent != nullptr)
 		{
-			parent->Transform.ApplyToPoints(vertexPoints, 4);
-			parent->GetPreviousTransform().ApplyToPoints(previousVertexPoints, 4);
+			parent->Transform.TransformPoints(vertexPoints, 4);
+			parent->GetPreviousTransform().TransformPoints(previousVertexPoints, 4);
 			parent = parent->GetParent();
 		}
 
@@ -145,13 +145,13 @@ namespace pix
 		for (int i = 0; i < 4; i++)
 		{
 			// Interpolate world position:
-			vertexPoints[i] = InterpolateRaw(previousVertexPoints[i], vertexPoints[i], interpolationAlphaD);
+			vertexPoints[i] = GetInterpolatedUnchecked(previousVertexPoints[i], vertexPoints[i], interpolationAlphaD);
 
 			// Compute distance-to-camera:
-			Vector2f destination = Vector2f(vertexPoints[i] - configuration_.InterpolatedCameraPosition);
+			Vec2f destination = Vec2f(vertexPoints[i] - configuration_.InterpolatedCameraPosition);
 
 			// Apply camera rotation to distance-to-camera:
-			destination = configuration_.InterpolatedInversedCameraRotation.RotatePoint(destination);
+			configuration_.InterpolatedInversedCameraRotation.RotatePoint(destination);
 
 			// Apply camera zoom to distance-to-camera:
 			destination *= configuration_.InterpolatedCameraZoom;
@@ -171,17 +171,17 @@ namespace pix
 
 	
 
-	void SpriteMeshRenderer2D::Render(const SpriteMesh& mesh, const Vector2d& startPoint, const Vector2d& endPoint, float lineWidth) 
+	void SpriteMeshRenderer2D::Render(const SpriteMesh& mesh, const Vec2& startPoint, const Vec2& endPoint, float lineWidth) 
 	{
 		const Vertex2D* const vertices = mesh.Vertices;
 
 		// Compute distance-to-camera (in camera space float should provide sufficient precision):
-		Vector2f transformedStartPoint = Vector2f(startPoint - configuration_.InterpolatedCameraPosition);
-		Vector2f transformedEndPoint = Vector2f(endPoint - configuration_.InterpolatedCameraPosition);
+		Vec2f transformedStartPoint = Vec2f(startPoint - configuration_.InterpolatedCameraPosition);
+		Vec2f transformedEndPoint = Vec2f(endPoint - configuration_.InterpolatedCameraPosition);
 
 		// Apply camera rotation:
-		transformedStartPoint = configuration_.InterpolatedInversedCameraRotation.RotatePoint(transformedStartPoint);
-		transformedEndPoint = configuration_.InterpolatedInversedCameraRotation.RotatePoint(transformedEndPoint);
+		configuration_.InterpolatedInversedCameraRotation.RotatePoint(transformedStartPoint);
+		configuration_.InterpolatedInversedCameraRotation.RotatePoint(transformedEndPoint);
 
 		// Apply camera zoom:
 		transformedStartPoint *= configuration_.InterpolatedCameraZoom;
@@ -194,10 +194,10 @@ namespace pix
 		transformedEndPoint.X = configuration_.RenderTargetCenter.X + transformedEndPoint.X;
 		transformedEndPoint.Y = configuration_.RenderTargetCenter.Y - transformedEndPoint.Y;
 
-		const Vector2f scaledDirectionVector = (transformedStartPoint - transformedEndPoint).Normalize() * (lineWidth * 0.5f);
-		const Vector2f scaledDirectionVectorNormal = scaledDirectionVector.GetNormal();
+		const Vec2f scaledDirectionVector = (transformedStartPoint - transformedEndPoint).Normalize() * (lineWidth * 0.5f);
+		const Vec2f scaledDirectionVectorNormal = scaledDirectionVector.GetNormal();
 
-		Vector2f transformedVertex = transformedStartPoint - scaledDirectionVectorNormal;
+		Vec2f transformedVertex = transformedStartPoint - scaledDirectionVectorNormal;
 		vertexBatch_.emplace_back(transformedVertex, vertices[0].Color, vertices[0].UV);
 
 		transformedVertex = transformedEndPoint - scaledDirectionVectorNormal;
@@ -214,15 +214,15 @@ namespace pix
 
 
 
-	void SpriteMeshRenderer2D::RenderPixel(const SpriteMesh& mesh, const Vector2d& point, float pointWidth) 
+	void SpriteMeshRenderer2D::RenderPixel(const SpriteMesh& mesh, const Vec2& point, float pointWidth) 
 	{
 		const Vertex2D* const vertices = mesh.Vertices;
 
 		// Compute distance-to-camera (in camera space float should provide sufficient precision):
-		Vector2f transformedPoint = Vector2f(point - configuration_.InterpolatedCameraPosition);
+		Vec2f transformedPoint = Vec2f(point - configuration_.InterpolatedCameraPosition);
 
 		// Apply camera rotation:
-		transformedPoint = configuration_.InterpolatedInversedCameraRotation.RotatePoint(transformedPoint);
+		configuration_.InterpolatedInversedCameraRotation.RotatePoint(transformedPoint);
 
 		// Apply camera zoom:
 		transformedPoint *= configuration_.InterpolatedCameraZoom;
@@ -233,16 +233,16 @@ namespace pix
 
 		pointWidth *= 0.5f; // pointWidth is now the approximate radius around the actual point
 
-		Vector2f transformedVertex = Vector2f(transformedPoint.X - pointWidth, transformedPoint.Y - pointWidth);
+		Vec2f transformedVertex = Vec2f(transformedPoint.X - pointWidth, transformedPoint.Y - pointWidth);
 		vertexBatch_.emplace_back(transformedVertex, vertices[0].Color, vertices[0].UV);
 
-		transformedVertex = Vector2f(transformedPoint.X + pointWidth, transformedPoint.Y - pointWidth);
+		transformedVertex = Vec2f(transformedPoint.X + pointWidth, transformedPoint.Y - pointWidth);
 		vertexBatch_.emplace_back(transformedVertex, vertices[1].Color, vertices[1].UV);
 
-		transformedVertex = Vector2f(transformedPoint.X + pointWidth, transformedPoint.Y + pointWidth);
+		transformedVertex = Vec2f(transformedPoint.X + pointWidth, transformedPoint.Y + pointWidth);
 		vertexBatch_.emplace_back(transformedVertex, vertices[2].Color, vertices[2].UV);
 
-		transformedVertex = Vector2f(transformedPoint.X - pointWidth, transformedPoint.Y + pointWidth);
+		transformedVertex = Vec2f(transformedPoint.X - pointWidth, transformedPoint.Y + pointWidth);
 		vertexBatch_.emplace_back(transformedVertex, vertices[3].Color, vertices[3].UV);
 	}
 
@@ -286,7 +286,7 @@ namespace pix
 
 
 
-	void SpriteMeshRenderer2D::BeginBatch(const MovableObject2D* camera, float interpolationAlpha, const Vector2f& renderTargetCenter) 
+	void SpriteMeshRenderer2D::BeginBatch(const MovableObject2D* camera, float interpolationAlpha, const Vec2f& renderTargetCenter) 
 	{
 		vertexBatch_.clear();
 
@@ -302,16 +302,16 @@ namespace pix
 
 		if (camera != nullptr)
 		{
-			const Vector2d& position = camera->Transform.Position;
-			const Vector2d& previousPosition = camera->GetPreviousTransform().Position;
-			const Vector2f& zoom = camera->Transform.Scale;
-			const Vector2f& previousZoom = camera->GetPreviousTransform().Scale;
+			const Vec2& position = camera->Transform.Position;
+			const Vec2& previousPosition = camera->GetPreviousTransform().Position;
+			const Vec2f& zoom = camera->Transform.Scale;
+			const Vec2f& previousZoom = camera->GetPreviousTransform().Scale;
 			const Rotation2D& rotation = camera->Transform.Rotation;
 			const Rotation2D& previousRotation = camera->GetPreviousTransform().Rotation;
 
-			configuration_.InterpolatedCameraPosition = InterpolateRaw(previousPosition, position, static_cast<double>(interpolationAlpha));
-			configuration_.InterpolatedCameraZoom = InterpolateRaw(previousZoom, zoom, interpolationAlpha);
-			configuration_.InterpolatedInversedCameraRotation = Interpolate(previousRotation, rotation, interpolationAlpha).Inverse();
+			configuration_.InterpolatedCameraPosition = GetInterpolatedUnchecked(previousPosition, position, static_cast<double>(interpolationAlpha));
+			configuration_.InterpolatedCameraZoom = GetInterpolatedUnchecked(previousZoom, zoom, interpolationAlpha);
+			configuration_.InterpolatedInversedCameraRotation = GetInterpolated(previousRotation, rotation, interpolationAlpha).Inverse();
 		}
 	}
 

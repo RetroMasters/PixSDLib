@@ -15,7 +15,7 @@ namespace pix
 	{
 		Vertex3D() = default;
 
-		Vertex3D(Vector3f position, SDL_Color color, Vector2f uv, Vector3f normal):
+		Vertex3D(Vec3f position, SDL_Color color, Vec2f uv, Vec3f normal):
 			Position(position),
 			Color(color),
 			UV(uv),
@@ -23,10 +23,10 @@ namespace pix
 		{
 		}
 
-		Vector3f   Position;
+		Vec3f   Position;
 		SDL_Color  Color;
-		Vector2f   UV;
-		Vector3f   Normal;
+		Vec2f   UV;
+		Vec3f   Normal;
 	};
 
 

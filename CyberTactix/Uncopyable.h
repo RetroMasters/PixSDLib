@@ -2,20 +2,24 @@
 
 namespace pix
 {
-	/// <summary>
-	/// Derived class objects of this abstract class cannot be copied.
-	/// </summary>
+
+	// Philosophy:
+	// Derived class objects of this (effectively abstract) class cannot be copied
 	class Uncopyable
 	{
 	public:
-		Uncopyable(const Uncopyable&) = delete;                     // Prevent copying by delete (alternatively by being private without definition)
-		Uncopyable& operator= (const Uncopyable&) = delete;
-		//Uncopyable(Uncopyable&&) = delete;
-		//Uncopyable& operator= (Uncopyable&&) = delete;
 
-	protected:                    // abstract: allow construction/destruction of derived classes only
+		// Prevent copying by delete (alternatively by being private without definition)
+		Uncopyable(const Uncopyable&) = delete;                    
+		Uncopyable& operator= (const Uncopyable&) = delete;
+
+	protected:
+
+		// Allow construction/destruction of derived classes only
 		Uncopyable()  = default;
-		~Uncopyable()  = default;  // Not supposed to be handled by a base pointer -> no need for virtual
+
+		// Not supposed to be handled by a base pointer -> no need for virtual
+		~Uncopyable()  = default; 
 	};
 
 }

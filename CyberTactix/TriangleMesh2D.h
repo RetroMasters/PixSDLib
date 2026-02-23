@@ -15,7 +15,7 @@ namespace pix
 	{
 		Vertex2DEx()  = default;
 
-		Vertex2DEx(Vector2f position, SDL_Color color, Vector2f uv, Vector3f normal):
+		Vertex2DEx(Vec2f position, SDL_Color color, Vec2f uv, Vec3f normal):
 			Position(position),
 			Color(color),
 			UV(uv),
@@ -23,10 +23,10 @@ namespace pix
 		{
 		}
 
-		Vector2f  Position;
+		Vec2f  Position;
 		SDL_Color Color;
-		Vector2f  UV;
-		Vector3f  Normal;
+		Vec2f  UV;
+		Vec3f  Normal;
 	};
 
 	// TriangleMesh2D stores vertices for a 2D mesh composed of triangles.

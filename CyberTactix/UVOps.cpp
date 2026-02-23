@@ -8,16 +8,16 @@ namespace pix
 		if (texWidth <= 0 || texHeight <= 0)
 			return UVRect(0.0f, 0.0f, 0.0f, 0.0f);
 
-		const Vector2f topLeft((float)rect.x, (float)rect.y);
-		const Vector2f bottomRight((float)(rect.x + rect.w), (float)(rect.y + rect.h));
-		const Vector2f texSize((float)texWidth, (float)texHeight);
+		const Vec2f topLeft((float)rect.x, (float)rect.y);
+		const Vec2f bottomRight((float)(rect.x + rect.w), (float)(rect.y + rect.h));
+		const Vec2f texSize((float)texWidth, (float)texHeight);
 
 		return UVRect(topLeft / texSize, bottomRight / texSize);
 	}
 
-	Vector2f GetSize(UVRect rect)
+	Vec2f GetSize(UVRect rect)
 	{
-		Vector2f size = rect.BottomRight - rect.TopLeft;
+		Vec2f size = rect.BottomRight - rect.TopLeft;
 
 		if (size.X < 0.0f) size.X = -size.X;
 		if (size.Y < 0.0f) size.Y = -size.Y;
@@ -56,10 +56,10 @@ namespace pix
 		return GetUVQuad(GetUVRect(texWidth, texHeight, rect));
 	}
 
-	Vector2f GetBoundsSize(const UVQuad& quad)
+	Vec2f GetBoundsSize(const UVQuad& quad)
 	{
-		Vector2f min(quad.TopLeft());
-		Vector2f max(quad.BottomRight());
+		Vec2f min(quad.TopLeft());
+		Vec2f max(quad.BottomRight());
 
 		if (quad.TopRight().X < min.X) min.X = quad.TopRight().X;
 		if (quad.TopRight().Y < min.Y) min.Y = quad.TopRight().Y;

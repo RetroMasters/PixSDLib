@@ -81,13 +81,13 @@ namespace pix
 		// Returns true if the button is pressed, false otherwise
 		bool IsButtonDown(Button button) const;
 
-		Vector2i GetMousePosition() const; // Convenience function, but left here
+		Vec2i GetMousePosition() const; // Convenience function, but left here
 
 		int GetMousePositionX() const;
 
 		int GetMousePositionY() const;
 
-		Vector2f GetWheelDelta() const; // Convenience function, but left here
+		Vec2f GetWheelDelta() const; // Convenience function, but left here
 
 		float GetWheelDeltaX() const;
 

@@ -22,7 +22,7 @@ namespace pix
 		{
 		}
 
-		MovableObject3D::MovableObject3D(const Vector3d& position, const Vector3f& scale, const Rotation3D& rotation) :
+		MovableObject3D::MovableObject3D(const Vec3& position, const Vec3f& scale, const Rotation3D& rotation) :
 			Transform(position, scale, rotation),
 			prevTransform_(Transform)
 		{

@@ -19,7 +19,7 @@ namespace pix
 
 		MovableObject3D(const Transform3D& transform, const Transform3D& prevTransform);
 
-		MovableObject3D(const Vector3d& position, const Vector3f& scale = { 1.0f, 1.0f, 1.0f }, const Rotation3D& rotation = Rotation3D());
+		MovableObject3D(const Vec3& position, const Vec3f& scale = { 1.0f, 1.0f, 1.0f }, const Rotation3D& rotation = Rotation3D());
 
 		virtual ~MovableObject3D() = default;
 

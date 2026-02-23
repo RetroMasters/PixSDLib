@@ -29,9 +29,9 @@ namespace pix
 
 		void Render(const Sprite2DNode& node) ;
 
-		void Render(const SpriteMesh& mesh, const Vector2d& startPoint, const Vector2d& endPoint, float lineWidth) ;
+		void Render(const SpriteMesh& mesh, const Vec2& startPoint, const Vec2& endPoint, float lineWidth) ;
 
-		void RenderPixel(const SpriteMesh& mesh, const Vector2d& point, float pointWidth) ;
+		void RenderPixel(const SpriteMesh& mesh, const Vec2& point, float pointWidth) ;
 
 		/// <summary>
 		/// Begin() updates the configuration for each frame to render. Make render-calls between Begin() and End().
@@ -40,7 +40,7 @@ namespace pix
 		/// <param name="interpolation"></param>
 		/// <param name="camera"></param>
 		/// <param name="renderCenter"></param>
-		void BeginBatch(const MovableObject2D* camera = nullptr, float interpolationAlpha = 1.0f, const Vector2f& renderTargetCenter = { 0.0f, 0.0f }) ;
+		void BeginBatch(const MovableObject2D* camera = nullptr, float interpolationAlpha = 1.0f, const Vec2f& renderTargetCenter = { 0.0f, 0.0f }) ;
 
 		/// <summary>
 		/// End() is specific to the SDL2-renderer: It restores an internal state that Begin() modifies to control render scaling.
@@ -57,10 +57,10 @@ namespace pix
 		struct Configuration
 		{
 			float    InterpolationAlpha = 1.0f;
-			Vector2d InterpolatedCameraPosition = { 0.0,0.0 };
-			Vector2f InterpolatedCameraZoom = { 1.0f, 1.0f };
+			Vec2 InterpolatedCameraPosition = { 0.0,0.0 };
+			Vec2f InterpolatedCameraZoom = { 1.0f, 1.0f };
 			Rotation2D InterpolatedInversedCameraRotation;
-			Vector2f RenderTargetCenter = { 0.0f , 0.0f };
+			Vec2f RenderTargetCenter = { 0.0f , 0.0f };
 
 		};
 

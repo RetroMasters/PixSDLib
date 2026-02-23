@@ -22,7 +22,7 @@ namespace pix
 
 		Sprite3D(const SpriteMesh* mesh, const Transform3D& transform, const Transform3D& prevTransform);
 
-		Sprite3D(const SpriteMesh* mesh, const Vector3d& position, const Vector3f& scale = { 1.0f, 1.0f, 1.0f }, const Rotation3D& rotation = Rotation3D());
+		Sprite3D(const SpriteMesh* mesh, const Vec3& position, const Vec3f& scale = { 1.0f, 1.0f, 1.0f }, const Rotation3D& rotation = Rotation3D());
 
 		virtual ~Sprite3D() = default;
 

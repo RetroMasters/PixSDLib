@@ -18,7 +18,7 @@ namespace pix
 		{
 		}
 
-		Sprite3D::Sprite3D(const SpriteMesh* mesh, const Vector3d& position, const Vector3f& scale, const Rotation3D& rotation) : MovableObject3D(position, scale, rotation),
+		Sprite3D::Sprite3D(const SpriteMesh* mesh, const Vec3& position, const Vec3f& scale, const Rotation3D& rotation) : MovableObject3D(position, scale, rotation),
 			Mesh(mesh)
 		{
 		}

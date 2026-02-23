@@ -28,7 +28,7 @@ namespace pix
 
 		Sprite3DNode(const SpriteMesh* mesh, const Transform3D& transform, const Transform3D& prevTransform);
 
-		Sprite3DNode(const SpriteMesh* mesh, const Vector3d& position, const Vector3f& scale = { 1.0f, 1.0f, 1.0f }, const Rotation3D& rotation = Rotation3D());
+		Sprite3DNode(const SpriteMesh* mesh, const Vec3& position, const Vec3f& scale = { 1.0f, 1.0f, 1.0f }, const Rotation3D& rotation = Rotation3D());
 
 		// Prevent copying
 		Sprite3DNode(const Sprite3DNode&) = delete;

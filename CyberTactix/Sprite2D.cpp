@@ -19,7 +19,7 @@ namespace pix
 	{
 	}
 
-	Sprite2D::Sprite2D(const SpriteMesh* mesh, const Vector2d& position, const Vector2f& scale, const Rotation2D& rotation)  : MovableObject2D(position, scale, rotation),
+	Sprite2D::Sprite2D(const SpriteMesh* mesh, const Vec2& position, const Vec2f& scale, const Rotation2D& rotation)  : MovableObject2D(position, scale, rotation),
 		Mesh(mesh)
 	{
 	}

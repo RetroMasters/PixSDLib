@@ -16,7 +16,7 @@ namespace pix
 	UVRect GetUVRect(int texWidth, int texHeight, SDL_Rect rect);
 
 	// Returns the width and the height of the rect
-	Vector2f GetSize(UVRect rect);
+	Vec2f GetSize(UVRect rect);
 
 	// Returns a copy of rect with flipped X-coordinates
 	UVRect GetFlippedX(UVRect rect);
@@ -41,7 +41,7 @@ namespace pix
 	UVQuad GetUVQuad(int texWidth, int texHeight, SDL_Rect rect);
 
 	// Returns the width and the height of quad's bounding box
-	Vector2f GetBoundsSize(const UVQuad& quad);
+	Vec2f GetBoundsSize(const UVQuad& quad);
 	
 	// Returns a copy of quad with flipped X-coordinates
 	UVQuad GetFlippedX(const UVQuad& quad);

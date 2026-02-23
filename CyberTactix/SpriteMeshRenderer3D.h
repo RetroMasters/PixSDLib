@@ -28,11 +28,11 @@ namespace pix
 
 		void Render(const Sprite3DNode& node) ;
 
-		void Render(const SpriteMesh& mesh, const Vector3d& startPoint, const Vector3d& endPoint, float lineWidth) ;
+		void Render(const SpriteMesh& mesh, const Vec3& startPoint, const Vec3& endPoint, float lineWidth) ;
 
 		//void BeginBatch(const Texture& boundTexture, TargetTexture* renderTarget = nullptr, float interpolation = 1.0f, const MoveableObject3D* camera = nullptr, const Vector2f& renderCenter = { 0.0f,0.0f }, float verticalFOV = 60.0f);
 
-		void BeginBatch(const MovableObject3D* camera, float interpolationAlpha, const Vector2f& renderTargetCenter, float verticalFOV = 60.0f) ;
+		void BeginBatch(const MovableObject3D* camera, float interpolationAlpha, const Vec2f& renderTargetCenter, float verticalFOV = 60.0f) ;
 
 		void RenderBatch(const Texture& boundTexture, TargetTexture* renderTarget) ;
 
@@ -42,12 +42,12 @@ namespace pix
 		struct Configuration
 		{
 			float InterpolationAlpha = 1.0f;
-			Vector2f RenderTargetCenter = { 0.0f , 0.0f };
+			Vec2f RenderTargetCenter = { 0.0f , 0.0f };
 
-			float      CameraDistanceToScreen = (1080 * 0.5f) / std::tan(60.0f * 0.5f * RADIANS_PER_DEGREE_F); //935.3f; 
-			Vector3d   InterpolatedCameraPosition = { 0.0 , 0.0, 0.0 };
+			float      CameraDistanceToScreen = (1080 * 0.5f) / std::tan(60.0f * 0.5f * (float)RADIANS_PER_DEGREE); //935.3f; 
+			Vec3   InterpolatedCameraPosition = { 0.0 , 0.0, 0.0 };
 			Rotation3D InterpolatedInversedCameraRotation;
-			Vector3f   InterpolatedCameraAxisZ = { 0.0f, 0.0f, 1.0f };
+			Vec3f   InterpolatedCameraAxisZ = { 0.0f, 0.0f, 1.0f };
 		};
 
 

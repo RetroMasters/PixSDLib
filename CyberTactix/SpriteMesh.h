@@ -13,16 +13,16 @@ namespace pix
 	{
 		Vertex2D() = default;
 
-		Vertex2D(Vector2f position, SDL_Color color, Vector2f uv):
+		Vertex2D(Vec2f position, SDL_Color color, Vec2f uv):
 			Position(position),
 			Color(color),
 			UV(uv)
 		{
 		}
 
-		Vector2f  Position;
+		Vec2f  Position;
 		SDL_Color Color;
-		Vector2f  UV;
+		Vec2f  UV;
 	};
 
 	// SpriteMesh is a quad of four Vertex2D vertices.

@@ -74,7 +74,7 @@ namespace pix
 
 		bool IsVsync() const;
 
-		Vector2f GetRenderScale() const;
+		Vec2f GetRenderScale() const;
 
 		SDL_Renderer* GetSDLRenderer() const;
 

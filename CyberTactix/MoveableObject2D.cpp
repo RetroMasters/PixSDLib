@@ -21,7 +21,7 @@ namespace pix
 	{
 	}
 
-	MovableObject2D::MovableObject2D(const Vector2d& position, const Vector2f& scale, const Rotation2D& rotation)  :
+	MovableObject2D::MovableObject2D(const Vec2& position, const Vec2f& scale, const Rotation2D& rotation)  :
 		Transform{ position , scale, rotation },
 		prevTransform_{ Transform }
 	{

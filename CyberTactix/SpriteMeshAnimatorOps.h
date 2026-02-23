@@ -2,15 +2,20 @@
 
 #include <SDL_rect.h>
 #include <SDL_render.h>
-#include <vector>
+#include<vector>
 #include "SpriteMeshAnimator.h"
 
 
 namespace pix
 {
 
-	// Makes the animator switch to the reversedSequence, which is meant to be a copy of its current sequence in reverse.
-	// The animator's animation state is adjusted respectively so that the animation can advance continously, but in reverse direction.
+	// Switches the animator to reversedSequence.
+	// reversedSequence is typically the current frame sequence in reversed order,
+	// but may also contain additional frames.
+	// The current frame index and elapsed time within the keyframe are mirrored
+	// so that playback continues seamlessly in the opposite direction.
+	// If the new sequence is shorter, the frame index is clamped to a valid range.
+	// Returns true if the switch was performed (the sequence must be non-empty), false otherwise.
 	template<typename KeyframeType>
 	inline bool SwitchToReversedSequence(SpriteMeshAnimator<KeyframeType>& animator, const std::vector<KeyframeType>& reversedSequence)
 	{
@@ -18,10 +23,10 @@ namespace pix
 
 		const KeyframeType* currentFrame = animator.GetCurrentFrame();
 
-		if (!currentFrame) return false;
+		if (!currentFrame) return false; // An existing currentFrame ensures that the animator sequence is not empty
 
 		animator.SetCurrentFrameIndex(animator.GetFrameSequence()->size() - 1 - animator.GetCurrentFrameIndex());
-		animator.SetElapsedTime(currentFrame.Duration - animator.GetElapsedTicks());
+		animator.SetElapsedTicks(currentFrame->TickDuration - animator.GetElapsedTicks());
 
 		animator.SetFrameSequence(&reversedSequence);
 
@@ -37,6 +42,7 @@ namespace pix
 	// On failure (invalid inputs), returns an empty sequence.
 	// texWidth/texHeight are the texture size in pixels.
 	// Each keyframe's tick duration is set to tickDuration.
+	// flip flags can be combined (SDL_FLIP_HORIZONTAL | SDL_FLIP_VERTICAL) and are applied after sampling the sequence.
 	std::vector<SpriteMeshUVKeyframe> GetUVKeyframeSequence(int texWidth, int texHeight, const SDL_Rect& startRect, int frameCount, float tickDuration, SDL_RendererFlip flip = SDL_FLIP_NONE);
 
 	
@@ -45,17 +51,13 @@ namespace pix
 	template<typename KeyframeType>
 	inline std::vector<KeyframeType> GetReversedSequence(const std::vector<KeyframeType>& sequence)
 	{
-		if (sequence.empty()) return sequence;
-
-		std::vector<KeyframeType> reversedSequence(sequence.rbegin(), sequence.rend());
-
-		return reversedSequence;
+		return std::vector<KeyframeType>(sequence.rbegin(), sequence.rend());
 	}
 
 	// Flips the horizontal UV-coordinates of keyFrame
-	void FlipUVHorizontal(SpriteMeshUVKeyframe& keyFrame);
+	void FlipUVHorizontal(SpriteMeshUVKeyframe& keyframe);
 
 	// Flips the vertical UV-coordinates of keyFrame
-	void FlipUVVertical(SpriteMeshUVKeyframe& keyFrame);
+	void FlipUVVertical(SpriteMeshUVKeyframe& keyframe);
 
 }

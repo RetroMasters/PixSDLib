@@ -198,7 +198,7 @@ namespace pix
 			return;
 		}
 
-		interpolationAlpha_ = DivideSafe(updateLoopScheduler_->GetUnprocessedTime(),updateLoopScheduler_->GetUpdatePeriod());
+		interpolationAlpha_ = GetSafeDivision(updateLoopScheduler_->GetUnprocessedTime(),updateLoopScheduler_->GetUpdatePeriod());
 
 		if (interpolationAlpha_ < 0.0f) interpolationAlpha_ = 0.0f;
 		else if (interpolationAlpha_ > 1.0f) interpolationAlpha_ = 1.0f;

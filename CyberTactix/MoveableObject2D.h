@@ -16,7 +16,7 @@ namespace pix
 		MovableObject2D();
 		MovableObject2D(const Transform2D& transform);
 		MovableObject2D(const Transform2D& transform, const Transform2D& prevTransform);
-		MovableObject2D(const Vector2d& position, const Vector2f& scale = { 1.0f, 1.0f }, const Rotation2D& rotation = Rotation2D());
+		MovableObject2D(const Vec2& position, const Vec2f& scale = { 1.0f, 1.0f }, const Rotation2D& rotation = Rotation2D());
 
 		virtual ~MovableObject2D() = default;
 

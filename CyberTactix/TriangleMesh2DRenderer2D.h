@@ -36,7 +36,7 @@ namespace pix
 		/// <param name="interpolation"></param>
 		/// <param name="camera"></param>
 		/// <param name="renderCenter"></param>
-		void BeginBatch(const MovableObject2D* camera = nullptr, float interpolationAlpha = 1.0f, const Vector2f& renderTargetCenter = { 0.0f, 0.0f }) ;
+		void BeginBatch(const MovableObject2D* camera = nullptr, float interpolationAlpha = 1.0f, const Vec2f& renderTargetCenter = { 0.0f, 0.0f }) ;
 
 		/// <summary>
 		/// End() is specific to the SDL2-renderer: It restores an internal state that Begin() modifies to control render scaling.
@@ -52,10 +52,10 @@ namespace pix
 		struct Configuration
 		{
 			float    InterpolationAlpha = 1.0f;
-			Vector2d  InterpolatedCameraPosition = { 0.0,0.0 };
-			Vector2f InterpolatedCameraZoom = { 1.0f, 1.0f };
+			Vec2  InterpolatedCameraPosition = { 0.0,0.0 };
+			Vec2f InterpolatedCameraZoom = { 1.0f, 1.0f };
 			Rotation2D InterpolatedInversedCameraRotation;
-			Vector2f RenderTargetCenter = { 0.0f , 0.0f };
+			Vec2f RenderTargetCenter = { 0.0f , 0.0f };
 		};
 
 
@@ -65,8 +65,8 @@ namespace pix
 
 		std::vector<Vertex2D> vertexBatch_;
 
-		std::vector<Vector2d> pointBuffer1_;
-		std::vector<Vector2d> pointBuffer2_;
+		std::vector<Vec2> pointBuffer1_;
+		std::vector<Vec2> pointBuffer2_;
 	};
 
 }

@@ -192,9 +192,9 @@ namespace pix
 		return isVsync_;
 	}
 
-	Vector2f Renderer::GetRenderScale() const
+	Vec2f Renderer::GetRenderScale() const
 	{
-		Vector2f scale;
+		Vec2f scale;
 
 		SDL_RenderGetScale(sdlRenderer_, &scale.X, &scale.Y);
 

@@ -26,7 +26,7 @@ namespace pix
 	{
 	}
 
-	Sprite2DExNode::Sprite2DExNode(const TriangleMesh2D* mesh, const Vector2d& position, const Vector2f& scale, const Rotation2D& rotation)  : MovableObject2D(position, scale, rotation),
+	Sprite2DExNode::Sprite2DExNode(const TriangleMesh2D* mesh, const Vec2& position, const Vec2f& scale, const Rotation2D& rotation)  : MovableObject2D(position, scale, rotation),
 		Mesh(mesh),
 		parent_(nullptr),
 		children_()
@@ -83,13 +83,13 @@ namespace pix
 			Transform2D newParentTransform = newParent->GetGlobalTransform();
 			Transform2D newParentPrevTransform = newParent->GetGlobalPreviousTransform();
 
-			newParentTransform.ApplyInverseToPoint(Transform.Position);          
+			newParentTransform.InverseTransformPoint(Transform.Position);          
 			Transform.Rotation.AddRotation(newParentTransform.Rotation.GetInverse());
-			Transform.Scale = DivideSafe(Transform.Scale, newParentTransform.Scale);
+			Transform.Scale = GetSafeDivision(Transform.Scale, newParentTransform.Scale);
 
-			newParentPrevTransform.ApplyInverseToPoint(prevTransform_.Position);
+			newParentPrevTransform.InverseTransformPoint(prevTransform_.Position);
 			prevTransform_.Rotation.AddRotation(newParentPrevTransform.Rotation.GetInverse());
-			prevTransform_.Scale = DivideSafe(prevTransform_.Scale, newParentPrevTransform.Scale);
+			prevTransform_.Scale = GetSafeDivision(prevTransform_.Scale, newParentPrevTransform.Scale);
 
 			newParent->children_.push_back(this);
 		}
@@ -114,8 +114,8 @@ namespace pix
 	{
 		const Sprite2DExNode* parent = parent_;
 
-		Vector2d   position = Transform.Position;
-		Vector2f   scale = Transform.Scale;
+		Vec2   position = Transform.Position;
+		Vec2f   scale = Transform.Scale;
 		Rotation2D rotation = Transform.Rotation;
 
 		// Transform to world space
@@ -123,7 +123,7 @@ namespace pix
 		{
 			scale *= parent->Transform.Scale;
 			rotation.AddRotation(parent->Transform.Rotation);
-			parent->Transform.ApplyToPoint(position);
+			parent->Transform.TransformPoint(position);
 
 			parent = parent->parent_;
 		}
@@ -135,8 +135,8 @@ namespace pix
 	{
 		const Sprite2DExNode* parent = parent_;
 
-		Vector2d   position = prevTransform_.Position;
-		Vector2f   scale = prevTransform_.Scale;
+		Vec2   position = prevTransform_.Position;
+		Vec2f   scale = prevTransform_.Scale;
 		Rotation2D rotation = prevTransform_.Rotation;
 
 		// Transform to world space
@@ -144,7 +144,7 @@ namespace pix
 		{
 			scale *= parent->prevTransform_.Scale;
 			rotation.AddRotation(parent->prevTransform_.Rotation);
-			parent->prevTransform_.ApplyToPoint(position);
+			parent->prevTransform_.TransformPoint(position);
 
 			parent = parent->parent_;
 		}

@@ -22,22 +22,22 @@ namespace pix
 		{
 		}
 
-		UVQuad(Vector2f topLeft, Vector2f topRight, Vector2f bottomRight, Vector2f bottomLeft) :
+		UVQuad(Vec2f topLeft, Vec2f topRight, Vec2f bottomRight, Vec2f bottomLeft) :
 			UVs{topLeft, topRight, bottomRight, bottomLeft}
 		{
 		}
 		 
-		Vector2f& TopLeft() { return UVs[0]; }
-		Vector2f& TopRight() { return UVs[1]; }
-		Vector2f& BottomRight() { return UVs[2]; }
-		Vector2f& BottomLeft() { return UVs[3]; }
+		Vec2f& TopLeft() { return UVs[0]; }
+		Vec2f& TopRight() { return UVs[1]; }
+		Vec2f& BottomRight() { return UVs[2]; }
+		Vec2f& BottomLeft() { return UVs[3]; }
 
-		const Vector2f& TopLeft()     const { return UVs[0]; }
-		const Vector2f& TopRight()    const { return UVs[1]; }
-		const Vector2f& BottomRight() const { return UVs[2]; }
-		const Vector2f& BottomLeft()  const { return UVs[3]; }
+		const Vec2f& TopLeft()     const { return UVs[0]; }
+		const Vec2f& TopRight()    const { return UVs[1]; }
+		const Vec2f& BottomRight() const { return UVs[2]; }
+		const Vec2f& BottomLeft()  const { return UVs[3]; }
 
-		Vector2f UVs[UV_COUNT];
+		Vec2f UVs[UV_COUNT];
 	};
 
 
@@ -55,7 +55,7 @@ namespace pix
 		{
 		}
 
-		UVRect(Vector2f topLeft, Vector2f bottomRight): 
+		UVRect(Vec2f topLeft, Vec2f bottomRight): 
 			TopLeft(topLeft), 
 			BottomRight(bottomRight) 
 		{
@@ -67,12 +67,12 @@ namespace pix
 		{
 		}
 
-		Vector2f TopRight() const { return Vector2f(BottomRight.X, TopLeft.Y); }
+		Vec2f TopRight() const { return Vec2f(BottomRight.X, TopLeft.Y); }
 		
-		Vector2f BottomLeft() const { return Vector2f(TopLeft.X, BottomRight.Y); }
+		Vec2f BottomLeft() const { return Vec2f(TopLeft.X, BottomRight.Y); }
 
-		Vector2f TopLeft;
-		Vector2f BottomRight;
+		Vec2f TopLeft;
+		Vec2f BottomRight;
 	};
 
 }

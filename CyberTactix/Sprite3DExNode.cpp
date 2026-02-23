@@ -24,7 +24,7 @@ namespace pix
 	{
 	}
 
-	Sprite3DExNode::Sprite3DExNode(const TriangleMesh2D* mesh, const Vector3d& position, const Vector3f& scale, const Rotation3D& rotation) : MovableObject3D(position, scale, rotation),
+	Sprite3DExNode::Sprite3DExNode(const TriangleMesh2D* mesh, const Vec3& position, const Vec3f& scale, const Rotation3D& rotation) : MovableObject3D(position, scale, rotation),
 		Mesh(mesh),
 		parent_(nullptr),
 		children_()
@@ -81,12 +81,12 @@ namespace pix
 			Transform3D newParentTransform = newParent->GetGlobalTransform();
 			Transform3D newParentPrevTransform = newParent->GetGlobalPrevTransform();
 
-			newParentTransform.ApplyInverseToPoint(Transform.Position);
-			Transform.Scale = DivideSafe(Transform.Scale, newParentTransform.Scale);
+			newParentTransform.InverseTransformPoint(Transform.Position);
+			Transform.Scale = GetSafeDivision(Transform.Scale, newParentTransform.Scale);
 			Transform.Rotation = newParentTransform.Rotation.ToLocalRotation(Transform.Rotation);
 
-			newParentPrevTransform.ApplyInverseToPoint(prevTransform_.Position);
-			prevTransform_.Scale = DivideSafe(prevTransform_.Scale, newParentPrevTransform.Scale);
+			newParentPrevTransform.InverseTransformPoint(prevTransform_.Position);
+			prevTransform_.Scale = GetSafeDivision(prevTransform_.Scale, newParentPrevTransform.Scale);
 			prevTransform_.Rotation = newParentPrevTransform.Rotation.ToLocalRotation(prevTransform_.Rotation);
 
 			newParent->children_.push_back(this);
@@ -114,8 +114,8 @@ namespace pix
 	{
 		const Sprite3DExNode* parent = parent_;
 
-		Vector3d   position = Transform.Position;
-		Vector3f   scale = Transform.Scale;
+		Vec3   position = Transform.Position;
+		Vec3f   scale = Transform.Scale;
 		Rotation3D rotation = Transform.Rotation;
 
 		// Transform to world space
@@ -128,7 +128,7 @@ namespace pix
 
 			rotation.AddGlobalRotation(parentTransform.Rotation);
 
-			parentTransform.ApplyToPoint(position);
+			parentTransform.TransformPoint(position);
 			parent = parent->parent_;
 		}
 
@@ -139,8 +139,8 @@ namespace pix
 	{
 		const Sprite3DExNode* parent = parent_;
 
-		Vector3d   position = prevTransform_.Position;
-		Vector3f   scale = prevTransform_.Scale;
+		Vec3   position = prevTransform_.Position;
+		Vec3f   scale = prevTransform_.Scale;
 		Rotation3D rotation = prevTransform_.Rotation;
 
 
@@ -154,7 +154,7 @@ namespace pix
 
 			rotation.AddGlobalRotation(prevParentTransform.Rotation);
 
-			prevParentTransform.ApplyToPoint(position);
+			prevParentTransform.TransformPoint(position);
 			parent = parent->parent_;
 		}
 

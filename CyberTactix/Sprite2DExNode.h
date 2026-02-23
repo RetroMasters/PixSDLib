@@ -27,7 +27,7 @@ namespace pix
 
 		Sprite2DExNode(const TriangleMesh2D* mesh, const Transform2D& transform, const Transform2D& prevTransform) ;
 
-		Sprite2DExNode(const TriangleMesh2D* mesh, const Vector2d& position, const Vector2f& scale = { 1.0f, 1.0f }, const Rotation2D& rotation = Rotation2D()) ;
+		Sprite2DExNode(const TriangleMesh2D* mesh, const Vec2& position, const Vec2f& scale = { 1.0f, 1.0f }, const Rotation2D& rotation = Rotation2D()) ;
 
 		// Prevent copying 
 		Sprite2DExNode(const Sprite2DExNode&) = delete;

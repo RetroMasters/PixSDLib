@@ -2,17 +2,17 @@
 
 namespace pix
 {
-	SpriteMesh GetSpriteMesh(Vector2f topLeftPosition, Vector2f bottomRightPosition, UVRect uvRect, SDL_Color color)
+	SpriteMesh GetSpriteMesh(Vec2f topLeftPosition, Vec2f bottomRightPosition, UVRect uvRect, SDL_Color color)
 	{
 		Vertex2D topLeft(topLeftPosition, color, uvRect.TopLeft);
-		Vertex2D topRight(Vector2f(bottomRightPosition.X, topLeftPosition.Y), color, Vector2f(uvRect.BottomRight.X, uvRect.TopLeft.Y));
+		Vertex2D topRight(Vec2f(bottomRightPosition.X, topLeftPosition.Y), color, Vec2f(uvRect.BottomRight.X, uvRect.TopLeft.Y));
 		Vertex2D bottomRight(bottomRightPosition, color, uvRect.BottomRight);
-		Vertex2D bottomLeft(Vector2f(topLeftPosition.X, bottomRightPosition.Y), color, Vector2f(uvRect.TopLeft.X, uvRect.BottomRight.Y));
+		Vertex2D bottomLeft(Vec2f(topLeftPosition.X, bottomRightPosition.Y), color, Vec2f(uvRect.TopLeft.X, uvRect.BottomRight.Y));
 
 		return SpriteMesh(topLeft, topRight, bottomRight, bottomLeft);
 	}
 
-	SpriteMesh GetSpriteMesh(Vector2f topLeftPosition, Vector2f topRightPosition, Vector2f bottomRightPosition, Vector2f bottomLeftPosition, const UVQuad& uvQuad, SDL_Color color)
+	SpriteMesh GetSpriteMesh(Vec2f topLeftPosition, Vec2f topRightPosition, Vec2f bottomRightPosition, Vec2f bottomLeftPosition, const UVQuad& uvQuad, SDL_Color color)
 	{
 		Vertex2D topLeft(topLeftPosition, color, uvQuad.TopLeft());
 		Vertex2D topRight(topRightPosition, color, uvQuad.TopRight());
@@ -22,10 +22,10 @@ namespace pix
 		return SpriteMesh(topLeft, topRight, bottomRight, bottomLeft);
 	}
 
-	Vector2f GetBoundsSize(const SpriteMesh& mesh)
+	Vec2f GetBoundsSize(const SpriteMesh& mesh)
 	{
-		Vector2f min(mesh.BottomLeft().Position);
-		Vector2f max(mesh.TopRight().Position);
+		Vec2f min(mesh.BottomLeft().Position);
+		Vec2f max(mesh.TopRight().Position);
 
 		if (mesh.TopLeft().Position.X < min.X) min.X = mesh.TopLeft().Position.X;
 		if (mesh.TopLeft().Position.Y < min.Y) min.Y = mesh.TopLeft().Position.Y;
@@ -47,9 +47,9 @@ namespace pix
 	void SetUV(SpriteMesh& mesh, UVRect uvRect)
 	{
 		mesh.TopLeft().UV = uvRect.TopLeft;
-		mesh.TopRight().UV = Vector2f(uvRect.BottomRight.X, uvRect.TopLeft.Y);
+		mesh.TopRight().UV = Vec2f(uvRect.BottomRight.X, uvRect.TopLeft.Y);
 		mesh.BottomRight().UV = uvRect.BottomRight;
-		mesh.BottomLeft().UV = Vector2f(uvRect.TopLeft.X, uvRect.BottomRight.Y);
+		mesh.BottomLeft().UV = Vec2f(uvRect.TopLeft.X, uvRect.BottomRight.Y);
 	}
 
 	void SetUV(SpriteMesh& mesh, const UVQuad& uvQuad) 
