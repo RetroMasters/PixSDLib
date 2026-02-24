@@ -92,7 +92,7 @@ namespace pix
 		T X;
 		T Y;
 
-		// Is not initialized on purpose for potential performance gains and because any value can be valid
+		// Any value can be valid
 		Vector2() = default; 
 
 		Vector2(T x, T y): X(x), Y(y) {}
@@ -107,7 +107,7 @@ namespace pix
 			X += other.X;
 			Y += other.Y;
 
-			return (*this);
+			return *this;
 		}
 
 		Vector2 operator-() const 
@@ -125,7 +125,7 @@ namespace pix
 			X -= other.X;
 			Y -= other.Y;
 
-			return (*this);
+			return *this;
 		}
 
 		Vector2 operator* (const Vector2& other) const 
@@ -138,7 +138,7 @@ namespace pix
 			X *= other.X;
 			Y *= other.Y;
 
-			return (*this);
+			return *this;
 		}
 
 		Vector2 operator* (T factor) const
@@ -159,7 +159,7 @@ namespace pix
 			X *= factor;
 			Y *= factor;
 
-			return (*this);
+			return *this;
 		}
 
 		// Does not guard against divide-by-zero
@@ -174,7 +174,7 @@ namespace pix
 			X /= other.X;
 			Y /= other.Y;
 
-			return (*this);
+			return *this;
 		}
 
 		// Does not guard against divide-by-zero
@@ -189,7 +189,7 @@ namespace pix
 			X /= divisor;
 			Y /= divisor;
 
-			return (*this);
+			return *this;
 		}
 
 		bool operator==(const Vector2& other) const 
@@ -255,7 +255,7 @@ namespace pix
 
 
 	// Rotation2D represents a 2D-rotation by a 2D unit vector to enable efficient rotation operations.
-	// Rotation2D ensures the rotation is always valid. 
+	// Rotation2D ensures the rotation is always valid (the unity vector is maintained). 
 	class Rotation2D
 	{
 	public:
@@ -347,7 +347,7 @@ namespace pix
 		T Y;
 		T Z;
 
-		Vector3() {} 
+		Vector3() = default;
 
 		Vector3(T x, T y, T z): X(x), Y(y), Z(z) {}
 
@@ -362,7 +362,7 @@ namespace pix
 			Y += other.Y;
 			Z += other.Z;
 
-			return (*this);
+			return *this;
 		}
 
 		Vector3 operator-() const 
@@ -381,7 +381,7 @@ namespace pix
 			Y -= other.Y;
 			Z -= other.Z;
 
-			return (*this);
+			return *this;
 		}
 
 		Vector3 operator* (const Vector3& other) const
@@ -395,7 +395,7 @@ namespace pix
 			Y *= other.Y;
 			Z *= other.Z;
 
-			return (*this);
+			return *this;
 		}
 
 		Vector3 operator* (T factor) const
@@ -417,7 +417,7 @@ namespace pix
 			Y *= factor;
 			Z *= factor;
 
-			return (*this);
+			return *this;
 		}
 
 		// Does not guard against divide-by-zero
@@ -433,7 +433,7 @@ namespace pix
 			Y /= other.Y;
 			Z /= other.Z;
 
-			return (*this);
+			return *this;
 		}
 
 		// Does not guard against divide-by-zero
@@ -449,7 +449,7 @@ namespace pix
 			Y /= divisor;
 			Z /= divisor;
 
-			return (*this);
+			return *this;
 		}
 
 		bool operator==(const Vector3& other) const 
@@ -467,13 +467,14 @@ namespace pix
 			return X * v.X + Y * v.Y + Z * v.Z;
 		}
 
+		// To use in a left-handed coordinate system, just use v as is and negate the result (or flip operands: a x b = -(b x a)).
+		// v is applied on the right side. 
 		Vector3 GetCrossProduct(const Vector3& v) const
 		{
-			const T x = Z * v.Y - Y * v.Z;
-			const T y = X * v.Z - Z * v.X;
-			const T z = Y * v.X - X * v.Y;
+			const T x = Y * v.Z - Z * v.Y;
+			const T y = Z * v.X - X * v.Z;
+			const T z = X * v.Y - Y * v.X;
 
-			// Cross-product assumes righ-handed coordinate system, we have a left-handed one. Flip result to account for that.
 			return Vector3(x, y, z);
 		}
 
@@ -508,7 +509,7 @@ namespace pix
 			return *this;
 		}
 
-		//for explicit type conversion
+		// For explicit type conversion
 		template<typename T2> explicit operator Vector3<T2>() const 
 		{
 			return Vector3<T2>( (T2)X, (T2)Y, (T2)Z);
@@ -519,7 +520,9 @@ namespace pix
 	using Vec3f = Vector3<float>;
 
 
-
+	// Rotation3D represents a left-handed 3D-rotation by two perpendicular 3D unit vectors to enable efficient rotation operations.
+	// Rotation3D ensures the rotation is always valid (maintains perpendicular unit vectors). 
+	// Positive angles are added in mathematical (counterclockwise) direction).
 	class Rotation3D
 	{
 	public:
@@ -528,39 +531,61 @@ namespace pix
 
 		void SetToIdentity();
 
-		const Vec3f& GetXAxis() const;
 
-		const Vec3f& GetYAxis() const;
+		// The projection of the global coordinate system on this rotation
+		Rotation3D& Inverse();
 
-		Vec3f GetZAxis() const;
+		// In effect globalRotation.RotatePoint() applied to the xAxis and yAxis 
+		Rotation3D& AddGlobalRotation(const Rotation3D& globalRotation); 
 
-		Rotation3D& Inverse();// The projection of the global coordinate system on the member rotation
-
-		Rotation3D GetInverse() const; // The projection of the global coordinate system on the member rotation
-
-		Rotation3D ToLocalRotation(const Rotation3D& globalRotation) const;
-
-		Rotation3D& AddGlobalRotation(const Rotation3D& globalRotation); // Treat member rotation as two points to rotate
-
+		// In effect RotatePoint() applied to the localRotation axes
 		Rotation3D& AddLocalRotation(const Rotation3D& localRotation);// Treat localRotation as two rotated points
 
 		Rotation3D& AddGlobalRotation(Vec3f rotAxis, float degrees);
 
-		Rotation3D& AddGlobalRotationX(float degrees); // Treat like a 2D-rotation
+		Rotation3D& AddGlobalRotationX(float degrees); 
 
-		Rotation3D& AddGlobalRotationY(float degrees);// Treat like a 2D-rotation
+		Rotation3D& AddGlobalRotationY(float degrees);
 
-		Rotation3D& AddGlobalRotationZ(float degrees);// Treat like a 2D-rotation
+		Rotation3D& AddGlobalRotationZ(float degrees);
 
-		Rotation3D& AddLocalRotationX(float degrees);// Treat localRotation as a point to rotate
+		Rotation3D& AddLocalRotationX(float degrees);
 
-		Rotation3D& AddLocalRotationY(float degrees); // Treat localRotation as a point to rotate
+		Rotation3D& AddLocalRotationY(float degrees); 
 
-		Rotation3D& AddLocalRotationZ(float degrees);// Treat localRotation as two points to rotate
+		Rotation3D& AddLocalRotationZ(float degrees);
+
+
+
+		void RotatePoint(Vec3& point) const;
 
 		void RotatePoint(Vec3f& point) const;
 
-		void RotatePoint(Vec3& point) const;
+		void RotatePoints(Vec3* points, int count); // TODO
+
+		void RotatePoints(Vec3f* points, int count); // TODO
+
+
+		void InverseRotatePoint(Vec3& point) const;
+
+		void InverseRotatePoint(Vec3f& point) const;
+
+		void InverseRotatePoints(Vec3* points, int count); // TODO
+
+		void InverseRotatePoints(Vec3f* points, int count); // TODO
+
+
+		// The projection of globalRotation on this rotation
+		Rotation3D GetLocalRotation(const Rotation3D& globalRotation) const;
+
+		Rotation3D GetInverse() const; 
+
+		Vec3f GetXAxis() const;
+
+		Vec3f GetYAxis() const;
+
+		Vec3f GetZAxis() const;
+		
 
 
 		friend Rotation3D GetInterpolated(const Rotation3D& prevRotation, const Rotation3D& rotation, float interpolation);

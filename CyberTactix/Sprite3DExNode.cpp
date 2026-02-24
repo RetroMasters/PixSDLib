@@ -83,11 +83,11 @@ namespace pix
 
 			newParentTransform.InverseTransformPoint(Transform.Position);
 			Transform.Scale = GetSafeDivision(Transform.Scale, newParentTransform.Scale);
-			Transform.Rotation = newParentTransform.Rotation.ToLocalRotation(Transform.Rotation);
+			Transform.Rotation = newParentTransform.Rotation.GetLocalRotation(Transform.Rotation);
 
 			newParentPrevTransform.InverseTransformPoint(prevTransform_.Position);
 			prevTransform_.Scale = GetSafeDivision(prevTransform_.Scale, newParentPrevTransform.Scale);
-			prevTransform_.Rotation = newParentPrevTransform.Rotation.ToLocalRotation(prevTransform_.Rotation);
+			prevTransform_.Rotation = newParentPrevTransform.Rotation.GetLocalRotation(prevTransform_.Rotation);
 
 			newParent->children_.push_back(this);
 		}

@@ -202,28 +202,29 @@ namespace pix
 		yAxis_ = { 0.0f, 1.0f, 0.0f };
 	}
 
-	const Vec3f& Rotation3D::GetXAxis() const
+	Vec3f Rotation3D::GetXAxis() const
 	{
 		return xAxis_;
 	}
 
-	const Vec3f& Rotation3D::GetYAxis() const 
+	Vec3f Rotation3D::GetYAxis() const 
 	{
 		return yAxis_;
 	}
 
 	Vec3f Rotation3D::GetZAxis() const
 	{
-		return yAxis_.GetCrossProduct(xAxis_);
+		return xAxis_.GetCrossProduct(yAxis_);
 	}
 
 	Rotation3D& Rotation3D::Inverse()// The projection of the global coordinate system on the member rotation
 	{
 		const Vec3f zAxis = GetZAxis();
-		const Vec3f temp(xAxis_.X, yAxis_.X, zAxis.X);
 
+		const Vec3f invXAxis(xAxis_.X, yAxis_.X, zAxis.X);
 		yAxis_ = { xAxis_.Y, yAxis_.Y, zAxis.Y };
-		xAxis_ = temp;
+
+		xAxis_ = invXAxis;
 
 		return Normalize();
 	}
@@ -235,7 +236,7 @@ namespace pix
 		return Rotation3D(Vec3f(xAxis_.X, yAxis_.X, zAxis.X), Vec3f(xAxis_.Y, yAxis_.Y, zAxis.Y));
 	}
 
-	Rotation3D Rotation3D::ToLocalRotation(const Rotation3D& globalRotation) const 
+	Rotation3D Rotation3D::GetLocalRotation(const Rotation3D& globalRotation) const 
 	{
 		const Vec3f zAxis = GetZAxis();
 
@@ -250,23 +251,24 @@ namespace pix
 		return Rotation3D(rotationX, rotationY);
 	}
 
-	Rotation3D& Rotation3D::AddGlobalRotation(const Rotation3D& globalRotation) // Treat member rotation as two points to rotate
+	Rotation3D& Rotation3D::AddGlobalRotation(const Rotation3D& globalRotation) 
 	{
 		const Vec3f globalRotationZAxis = globalRotation.GetZAxis();
 
-		xAxis_ = globalRotation.xAxis_ * xAxis_.X + globalRotation.yAxis_ * xAxis_.Y + globalRotationZAxis * xAxis_.Z;
-		yAxis_ = globalRotation.xAxis_ * yAxis_.X + globalRotation.yAxis_ * yAxis_.Y + globalRotationZAxis * yAxis_.Z;
+		xAxis_ = globalRotation.xAxis_ * xAxis_.X + globalRotation.yAxis_ * xAxis_.Y + globalRotationZAxis * xAxis_.Z; // Rotate xAxis point
+		yAxis_ = globalRotation.xAxis_ * yAxis_.X + globalRotation.yAxis_ * yAxis_.Y + globalRotationZAxis * yAxis_.Z; // Rotate yAxis point
 
 		return Normalize();
 	}
 
-	Rotation3D& Rotation3D::AddLocalRotation(const Rotation3D& localRotation) // Treat localRotation as two rotated points
+	Rotation3D& Rotation3D::AddLocalRotation(const Rotation3D& localRotation) 
 	{
 		const Vec3f zAxis = GetZAxis();
-		const Vec3f temp = xAxis_ * localRotation.xAxis_.X + yAxis_ * localRotation.xAxis_.Y + zAxis * localRotation.xAxis_.Z;
 
+		const Vec3f newXAxis = xAxis_ * localRotation.xAxis_.X + yAxis_ * localRotation.xAxis_.Y + zAxis * localRotation.xAxis_.Z;
 		yAxis_ = xAxis_ * localRotation.yAxis_.X + yAxis_ * localRotation.yAxis_.Y + zAxis * localRotation.yAxis_.Z;
-		xAxis_ = temp;
+		
+		xAxis_ = newXAxis;
 
 		return Normalize();
 	}
@@ -277,9 +279,7 @@ namespace pix
 
 		const float squareLength = rotAxis.GetSquareLength();
 
-		if (squareLength < 0.1f || squareLength > 10.0f) return *this; // The threshold is arbitrary but sufficient to know that the rotAxis must be a bad input
-
-		//if (rotAxis.X == 0.0f && rotAxis.Y == 0.0f && rotAxis.Z == 0.0f) return *this;
+		if (squareLength < 0.1f || squareLength > 10.0f) return *this; // The threshold is arbitrary but sufficient to know that the rotAxis must be bad input
 
 		if (std::abs(rotAxis.Y) < std::abs(rotAxis.X) + std::abs(rotAxis.Z))
 		{
@@ -288,41 +288,39 @@ namespace pix
 
 			return AddGlobalRotation(inversedRotation).AddGlobalRotationX(degrees).AddGlobalRotation(rotation);
 		}
-		else
-		{
-			const Rotation3D rotation = Rotation3D(rotAxis, Vec3f(1.0f, 0.0f, 0.0f).Normalize());
-			const Rotation3D inversedRotation = rotation.GetInverse();
+		
+		const Rotation3D rotation = Rotation3D(rotAxis, Vec3f(1.0f, 0.0f, 0.0f).Normalize());
+		const Rotation3D inversedRotation = rotation.GetInverse();
 
-			return AddGlobalRotation(inversedRotation).AddGlobalRotationX(degrees).AddGlobalRotation(rotation);
-		}
+		return AddGlobalRotation(inversedRotation).AddGlobalRotationX(degrees).AddGlobalRotation(rotation);
 	}
 
 	Rotation3D& Rotation3D::AddGlobalRotationX(float degrees)  // Treat like a 2D-rotation
 	{
 		const float rad = degrees * (float)RADIANS_PER_DEGREE;
 
-		const float s = std::sinf(rad);
 		const float c = std::cosf(rad);
-
+		const float s = std::sinf(rad);
+	
 		xAxis_ = { xAxis_.X, -xAxis_.Z * s + xAxis_.Y * c, xAxis_.Z * c + xAxis_.Y * s };
 		yAxis_ = { yAxis_.X, -yAxis_.Z * s + yAxis_.Y * c, yAxis_.Z * c + yAxis_.Y * s };
 
 		return Normalize();
 	}
-
+	
 	Rotation3D& Rotation3D::AddGlobalRotationY(float degrees)// Treat like a 2D-rotation
 	{
 		const float rad = degrees * (float)RADIANS_PER_DEGREE;
 
-		const float s = std::sinf(rad);
 		const float c = std::cosf(rad);
-
+		const float s = std::sinf(rad);
+	
 		xAxis_ = { xAxis_.X * c + xAxis_.Z * s, xAxis_.Y, -xAxis_.X * s + xAxis_.Z * c };
 		yAxis_ = { yAxis_.X * c + yAxis_.Z * s, yAxis_.Y, -yAxis_.X * s + yAxis_.Z * c };
 
 		return Normalize();
 	}
-
+	
 	Rotation3D& Rotation3D::AddGlobalRotationZ(float degrees)// Treat like a 2D-rotation
 	{
 		const float rad = degrees * (float)RADIANS_PER_DEGREE;
@@ -334,7 +332,8 @@ namespace pix
 		yAxis_ = { yAxis_.X * c - yAxis_.Y * s, yAxis_.X * s + yAxis_.Y * c, yAxis_.Z };
 
 		return Normalize();
-	}	
+	}
+	
 
 	Rotation3D& Rotation3D::AddLocalRotationX(float degrees)// Treat localRotation as a point to rotate
 	{
@@ -343,8 +342,7 @@ namespace pix
 		const float s = std::sinf(rad);
 		const float c = std::cosf(rad);
 
-		const Vec3f zAxis = yAxis_.GetCrossProduct(xAxis_);
-		//yAxis_ = yAxis_ * s + z * (-c);  // localRotatX.Z = -c,  localRotX.Y = s
+		const Vec3f zAxis = xAxis_.GetCrossProduct(yAxis_);
 		yAxis_ = yAxis_ * c + zAxis * s;
 
 		return Normalize();
@@ -357,7 +355,7 @@ namespace pix
 		const float s = std::sinf(rad);
 		const float c = std::cosf(rad);
 
-		const Vec3f zAxis = yAxis_.GetCrossProduct(xAxis_);
+		const Vec3f zAxis = xAxis_.GetCrossProduct(yAxis_);
 		xAxis_ = xAxis_ * c + zAxis * (-s); // localRotX.X = c, localRotX.Z = -s
 
 		return Normalize();
@@ -387,10 +385,31 @@ namespace pix
 		// Convert to Vector3d
 		Vec3 xAxis(xAxis_);
 		Vec3 yAxis(yAxis_);
-		Vec3 axisZ(GetZAxis());
+		Vec3 zAxis(GetZAxis());
 
-		point = (xAxis * point.X) + (yAxis * point.Y) + (axisZ * point.Z);
+		point = (xAxis * point.X) + (yAxis * point.Y) + (zAxis * point.Z);
 	}
+
+	void Rotation3D::InverseRotatePoint(Vec3& point) const
+	{
+		Vec3f zAxis(GetZAxis());
+		const Vec3f invXAxis(xAxis_.X, yAxis_.X, zAxis.X);
+		const Vec3f invYAxis(xAxis_.Y, yAxis_.Y, zAxis.Y);
+		zAxis = invXAxis.GetCrossProduct(invYAxis);
+
+		point = ( (Vec3)invXAxis * point.X) + ( (Vec3)invYAxis * point.Y) + ( (Vec3)zAxis * point.Z);
+	}
+
+	void Rotation3D::InverseRotatePoint(Vec3f& point) const
+	{
+		Vec3f zAxis(GetZAxis());
+		const Vec3f invXAxis(xAxis_.X, yAxis_.X, zAxis.X);
+		const Vec3f invYAxis(xAxis_.Y, yAxis_.Y, zAxis.Y);
+		zAxis = invXAxis.GetCrossProduct(invYAxis);
+
+		point = (invXAxis * point.X) + (invYAxis * point.Y) + (zAxis * point.Z);
+	}
+
 
 	Rotation3D& Rotation3D::Normalize() 
 	{
