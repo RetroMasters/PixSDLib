@@ -117,7 +117,7 @@ namespace pix
 
 		void VirtualInputPump::SetSourceState(float state)
 		{
-			sourceState_ = GetClampedValue(state, -1.0f, 1.0f);
+			sourceState_ = GetClamped(state, -1.0f, 1.0f);
 		}
 
 		void VirtualInputPump::SetSourceID(int sourceID)

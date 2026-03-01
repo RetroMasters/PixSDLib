@@ -1,13 +1,7 @@
 #pragma once
 
-//#include <SDL_stdinc.h>
-
-//#include <SDL.h>
-
-//#include <vector>
 #include <limits>
 #include <cmath>
-
 
 namespace pix
 {
@@ -19,70 +13,6 @@ namespace pix
 	constexpr double RADIANS_PER_DEGREE = PI/180.0;
 	
 	constexpr double DEGREES_PER_RADIAN = 180.0/PI;
-
-	//################################################################################ GENERAL FUNCTIONS #############################################################
-
-	
-	// Returns max/lowest for nonzero numerator and zero denominator; returns 0 for 0/0 and other undefined results(NaN).
-	// Note: 0/0 = 0 is sound in practice for the primary purpose of games (e.g. the speed of a static object is still zero, regardless of time delta).
-	inline float GetSafeDivision(float numerator, float denominator)
-	{
-		if (denominator == 0.0f)
-		{	
-			if (numerator > 0.0f) return std::numeric_limits<float>::max();		
-			if (numerator < 0.0f) return std::numeric_limits<float>::lowest();
-
-			return 0.0f; // 0/0 = 0
-		}
-
-		float result = numerator / denominator;
-
-		if (!std::isfinite(result))
-		{
-			if (result > 0.0f) return std::numeric_limits<float>::max();
-			if (result < 0.0f) return std::numeric_limits<float>::lowest();
-
-			return 0.0f;
-		}
-
-		return result;
-	}
-	
-	// Returns max/lowest for nonzero numerator and zero denominator; returns 0 for 0/0 and other undefined results(NaN).
-	// Note: 0/0 = 0 is sound in practice for the primary purpose of games (e.g. the speed of a static object is still zero, regardless of time delta).
-	inline double GetSafeDivision(double numerator, double denominator)
-	{
-		if (denominator == 0.0)
-		{
-			if (numerator > 0.0) return std::numeric_limits<double>::max();
-			if (numerator < 0.0) return std::numeric_limits<double>::lowest();
-
-			return 0.0; // 0/0 = 0
-		}
-
-		double result = numerator / denominator;
-
-		if (!std::isfinite(result))
-		{
-			if (result > 0.0) return std::numeric_limits<double>::max();
-			if (result < 0.0) return std::numeric_limits<double>::lowest();
-
-			return 0.0;
-		}
-
-		return result;
-	}
-
-	// Returns a clamped value between min and max: min must be <= max
-	template<typename T> T GetClampedValue(T value, T min, T max)
-	{
-		if (value < min) return min;
-
-		if (value > max) return max;
-
-		return value;
-	}
-
 	
 	//################################################################################ 2D TYPES #############################################################
 
@@ -254,8 +184,18 @@ namespace pix
 	using Vec2i = Vector2<int>;
 
 
-	// Rotation2D represents a 2D-rotation by a 2D unit vector to enable efficient rotation operations.
-	// Rotation2D ensures the rotation is always valid (the unity vector is maintained). 
+
+	// Rotation2D represents a 2D rotation using a single unit vector (its local X axis). 
+	// The local Y axis is derived automatically as the perpendicular (normal) to X axis, so the two axes always form a perpendicular coordinate frame.
+	//
+	// Positive rotation angles are counterclockwise.
+	//
+	// The rotation is always kept valid and numerically stable:
+	// after every mutating operation (except for Inverse()) the X axis is re-normalized to prevent floating-point drift from accumulating over time.
+	//
+	// Philosophy:
+	// The rotation is just the direction of the local X axis. 
+	// Rotating a point means expressing it in this rotated coordinate frame so the rotation operations become performant.
 	class Rotation2D
 	{
 	public:
@@ -298,7 +238,7 @@ namespace pix
 
 		
 
-		friend Rotation2D GetInterpolated(Rotation2D prevRotation, Rotation2D rotation, float interpolation);
+		friend Rotation2D GetInterpolated(Rotation2D startRotation, Rotation2D endRotation, float alpha);
 
 	private:
 
@@ -308,8 +248,17 @@ namespace pix
 		Vec2f xAxis_;
 	};
 
-	// Transform2D represents a 2D affine transform (scale, rotation, translation) in local or world space.
-    // Transform order: scale -> rotate -> translate.
+
+
+	// Transform2D represents a 2D affine transform (scale, rotation, translation) in either local or world space.
+	// Transform order: scale -> rotate -> translate.
+	//
+	// Philosophy:
+	// Transform2D contains only the minimal data required to describe the position, orientation, and scale of a 2D object in a given space.
+	// 
+	// It has no knowledge of hierarchy or parent-child relationships.
+	// Hierarchical structure is defined externally (e.g., by sprite nodes),
+	// keeping this type lightweight and reusable without additional overhead.
 	struct Transform2D
 	{
 		Transform2D();
@@ -318,13 +267,13 @@ namespace pix
 
 		// Applies the transform to points.
 		// points must be non-null when count > 0. Caller must ensure count does not exceed the array length.
-		void TransformPoints(Vec2* points, int count) const;
+		void TransformPoints(Vec2* points, size_t count) const;
 
 		void TransformPoint(Vec2& point) const;
 
 		// Applies the inverse transform to points.
 		// points must be non-null when count > 0. Caller must ensure count does not exceed the array length.
-		void InverseTransformPoints(Vec2* points, int count) const;
+		void InverseTransformPoints(Vec2* points, size_t count) const;
 
 		void InverseTransformPoint(Vec2& point) const;
 
@@ -333,10 +282,7 @@ namespace pix
 		Vec2 Position;
 		Vec2f Scale;
 		Rotation2D Rotation;
-
 	};
-
-
 
 	//################################################################################### 3D TYPES ##################################################################
 
@@ -467,7 +413,8 @@ namespace pix
 			return X * v.X + Y * v.Y + Z * v.Z;
 		}
 
-		// To use in a left-handed coordinate system, just use v as is and negate the result (or flip operands: a x b = -(b x a)).
+		// Standard cross product. In a left-handed world convention, you may negate the result
+        // when you want the cross product to follow a right-handed orientation convention.
 		// v is applied on the right side. 
 		Vector3 GetCrossProduct(const Vector3& v) const
 		{
@@ -493,7 +440,7 @@ namespace pix
 		{
 			const T length = GetLength();
 
-			if (length > 0.0f)
+			if (length > (T)0)
 			{
 				X /= length;
 				Y /= length;
@@ -501,9 +448,9 @@ namespace pix
 			}
 			else
 			{
-				X = 0.0f;
-				Y = 0.0f;
-				Z = 0.0f;
+				X = (T)0;
+				Y = (T)0;
+				Z = (T)0;
 			}
 
 			return *this;
@@ -520,9 +467,20 @@ namespace pix
 	using Vec3f = Vector3<float>;
 
 
-	// Rotation3D represents a left-handed 3D-rotation by two perpendicular 3D unit vectors to enable efficient rotation operations.
-	// Rotation3D ensures the rotation is always valid (maintains perpendicular unit vectors). 
-	// Positive angles are added in mathematical (counterclockwise) direction).
+
+	// Rotation3D represents a 3D rotation using two perpendicular unit vectors (its local X and Y axes).
+    // The third axis (Z) is derived automatically via the cross product, so the three axes always form
+    // a perpendicular coordinate frame (in linear algebra: an orthonormal basis).
+	// 
+	// Positive rotation angles follow the mathematical rule:
+	// counterclockwise when looking along the positive direction of the rotation axis.
+	// 
+	// The rotation is always kept valid and numerically stable:
+	// after every mutating operation the axes are re-normalized to prevent floating-point drift from accumulating over time.
+	//
+	// Philosoophy:
+	// The rotation is represented by the direction of the local X and Y axis.
+	// Rotating a point means expressing that point in this rotated coordinate frame so the rotation operations become performant.
 	class Rotation3D
 	{
 	public:
@@ -532,14 +490,12 @@ namespace pix
 		void SetToIdentity();
 
 
-		// The projection of the global coordinate system on this rotation
+
+		// The projection of the global coordinate system on this rotation vectors (in linear algebra: equivalent to transposing the orthonormal basis)
 		Rotation3D& Inverse();
 
 		// In effect globalRotation.RotatePoint() applied to the xAxis and yAxis 
 		Rotation3D& AddGlobalRotation(const Rotation3D& globalRotation); 
-
-		// In effect RotatePoint() applied to the localRotation axes
-		Rotation3D& AddLocalRotation(const Rotation3D& localRotation);// Treat localRotation as two rotated points
 
 		Rotation3D& AddGlobalRotation(Vec3f rotAxis, float degrees);
 
@@ -548,6 +504,9 @@ namespace pix
 		Rotation3D& AddGlobalRotationY(float degrees);
 
 		Rotation3D& AddGlobalRotationZ(float degrees);
+
+		// In effect RotatePoint() applied to the localRotation axes
+		Rotation3D& AddLocalRotation(const Rotation3D& localRotation);
 
 		Rotation3D& AddLocalRotationX(float degrees);
 
@@ -559,24 +518,22 @@ namespace pix
 
 		void RotatePoint(Vec3& point) const;
 
-		void RotatePoint(Vec3f& point) const;
-
-		void RotatePoints(Vec3* points, int count); // TODO
-
-		void RotatePoints(Vec3f* points, int count); // TODO
-
+		void RotatePoints(Vec3* points, int count) const; 
 
 		void InverseRotatePoint(Vec3& point) const;
 
+		void InverseRotatePoints(Vec3* points, int count) const; 
+
+		void RotatePoint(Vec3f& point) const;
+
+		void RotatePoints(Vec3f* points, int count) const;
+
 		void InverseRotatePoint(Vec3f& point) const;
 
-		void InverseRotatePoints(Vec3* points, int count); // TODO
+		void InverseRotatePoints(Vec3f* points, int count) const;
 
-		void InverseRotatePoints(Vec3f* points, int count); // TODO
-
-
-		// The projection of globalRotation on this rotation
-		Rotation3D GetLocalRotation(const Rotation3D& globalRotation) const;
+		// Returns globalRotation expressed in this rotation's local coordinate space (equivalent to adding the inverse to globalRotation).
+		Rotation3D GetLocalRotationOf(const Rotation3D& globalRotation) const;
 
 		Rotation3D GetInverse() const; 
 
@@ -588,20 +545,27 @@ namespace pix
 		
 
 
-		friend Rotation3D GetInterpolated(const Rotation3D& prevRotation, const Rotation3D& rotation, float interpolation);
+		friend Rotation3D GetInterpolated(const Rotation3D& startRotation, const Rotation3D& endRotation, float alpha);
 
 	private:
 
-		Rotation3D(const Vec3f& rotationX, const Vec3f& rotationY);
+		Rotation3D(Vec3f rotationX, Vec3f rotationY); // Used for AddGlobalRotation(Vec3f rotAxis, float degrees)
 
 		Rotation3D& Normalize();
 
 		Vec3f xAxis_;
 		Vec3f yAxis_;
 	};
-
-	// Transform3D represents a 3D affine transform (scale, rotation, translation) in local or world space.
+	
+	// Transform3D represents a 3D affine transform (scale, rotation, translation) in either local or world space.
 	// Transform order: scale -> rotate -> translate.
+	//
+	// Philosophy:
+	// Transform3D contains only the minimal data required to describe the position, orientation, and scale of a 3D object in a given space.
+	// 
+	// It has no knowledge of hierarchy or parent-child relationships.
+	// Hierarchical structure is defined externally (e.g., by sprite nodes),
+	// keeping this type lightweight and reusable without additional overhead.
 	class Transform3D
 	{
 	public:
@@ -609,7 +573,6 @@ namespace pix
 		Transform3D();
 
 		Transform3D(const Vec3& position, Vec3f scale = { 1.0f, 1.0f, 1.0f }, const Rotation3D& rotation = Rotation3D());
-
 
 		// Applies the transform to points.
 		// points must be non-null when count > 0. Caller must ensure count does not exceed the array length.
@@ -623,23 +586,53 @@ namespace pix
 
 		void InverseTransformPoint(Vec3& point) const;
 
-		
-
 		Vec3 Position;
 		Vec3f Scale;
 		Rotation3D Rotation;
 	};
 
+	//################################################################################ GENERAL FUNCTIONS #############################################################
 
-	//################################################################ UTILS FOR 2D TYPES ###################################################
+	// Returns max/lowest for nonzero numerator and zero denominator; returns 0 for 0/0 and other undefined results(NaN).
+	// Note: 0/0 = 0 is sound in practice for the primary purpose of games (e.g. the speed of a static object is still zero, regardless of time delta).
+	float GetSafeDivision(float numerator, float denominator);
 
+	// Returns max/lowest for nonzero numerator and zero denominator; returns 0 for 0/0 and other undefined results(NaN).
+	// Note: 0/0 = 0 is sound in practice for the primary purpose of games (e.g. the speed of a static object is still zero, regardless of time delta).
+	double GetSafeDivision(double numerator, double denominator);
 
-	
+	// Returns a clamped value between min and max: min <= max must hold
+	template<typename T> T GetClamped(T value, T min, T max)
+	{
+		if (value < min) return min;
+
+		if (value > max) return max;
+
+		return value;
+	}
+
+	//################################################################ 2D TYPE OPERATIONS ###################################################
+
+	// Returns an interpolated rotation by interpolating between the difference vector with interpolationAlpha as transitional value in the range [0.0f, 1.0f].
+	// Works best for small angle differences of few degrees. If the rotations are above 90 degrees then endRotation is returned. 
+
+	Transform2D GetInterpolated(const Transform2D& startTransform, const Transform2D& endTransform, float interpolationAlpha);
+
+	Rotation2D GetInterpolated(Rotation2D startRotation, Rotation2D endRotation, float interpolationAlpha);
+
+	template<typename T> inline void RotatePointUnchecked(const Vector2<T>& xAxis, Vector2<T>& point)
+	{
+		point = { xAxis.X * point.X - xAxis.Y * point.Y,
+				  xAxis.Y * point.X + xAxis.X * point.Y };
+	}
+
+	// Componentwise GetSafeDivision(float) or GetSafeDivision(double)
 	template<typename T> inline Vector2<T> GetSafeDivision(const Vector2<T>& numeratorVector, const Vector2<T>& denominatorVector) 
 	{
 		return Vector2<T>(GetSafeDivision(numeratorVector.X, denominatorVector.X), GetSafeDivision(numeratorVector.Y, denominatorVector.Y));
 	}
 	
+	// Componentwise GetSafeDivision(float) or GetSafeDivision(double)
 	template<typename T> inline Vector2<T> GetSafeDivision(const Vector2<T>& numeratorVector, T denominator)
 	{
 		return Vector2<T>(GetSafeDivision(numeratorVector.X, denominator), GetSafeDivision(numeratorVector.Y, denominator));
@@ -650,39 +643,19 @@ namespace pix
 		return startVector + (endVector - startVector) * alpha;
 	}
 
-	inline Rotation2D GetInterpolated(Rotation2D startRotation, Rotation2D endRotation, float alpha) 
-	{
-		const Vec2f xAxis = endRotation.GetXAxis();
-		const Vec2f previousXAxis = startRotation.GetXAxis();
+	//################################################################ 3D TYPE OPERATIONS ###################################################
 
-		alpha = GetClampedValue(alpha, 0.0f, 1.0f);
+	// Returns an interpolated rotation by interpolating between the difference vectors with interpolationAlpha as transitional value in the range [0.0f, 1.0f].
+	// Works best for small angle differences of few degrees. If the rotations are above 90 degrees then endRotation is returned. 
+	Rotation3D GetInterpolated(const Rotation3D& startRotation, const Rotation3D& endRotation, float interpolationAlpha);
 
-		// If rotation is more than 90° apart, return the target rotation directly
-		if (xAxis.GetDotProduct(previousXAxis) < 0.0f)
-			return Rotation2D(endRotation);
-
-		Vec2f interpolatedRotX = GetInterpolatedUnchecked(previousXAxis, xAxis, alpha);
-		interpolatedRotX.Normalize();
-
-		return Rotation2D(interpolatedRotX.X, interpolatedRotX.Y);
-	}
-
-	
-	template<typename T> inline void RotatePointUnchecked(const Vector2<T>& xAxis, Vector2<T>& point) 
-	{
-		point = { xAxis.X * point.X - xAxis.Y * point.Y,
-				  xAxis.Y * point.X + xAxis.X * point.Y };
-	}
-	
-
-	//################################################################ UTILS FOR 3D TYPES ###################################################
-
-
+	// Componentwise GetSafeDivision(float) or GetSafeDivision(double)
 	template<typename T> inline Vector3<T> GetSafeDivision(const Vector3<T>& numeratorVector, const Vector3<T>& denominatorVector)
 	{
 		return Vector3<T>(GetSafeDivision(numeratorVector.X, denominatorVector.X), GetSafeDivision(numeratorVector.Y, denominatorVector.Y), GetSafeDivision(numeratorVector.Z, denominatorVector.Z));
 	}
 
+	// Componentwise GetSafeDivision(float) or GetSafeDivision(double)
 	template<typename T> inline Vector3<T> GetSafeDivision(const Vector3<T>& numeratorVector, T denominator)
 	{
 		return Vector3<T>(GetSafeDivision(numeratorVector.X, denominator), GetSafeDivision(numeratorVector.Y, denominator), GetSafeDivision(numeratorVector.Z, denominator));
@@ -692,27 +665,5 @@ namespace pix
 	{
 		return startVector + (endVector - startVector) * alpha;
 	}
-
-	inline Rotation3D GetInterpolated(const Rotation3D& prevRotation, const Rotation3D& rotation, float interpolationAlpha) 
-	{
-		const Vec3f& xAxis = rotation.GetXAxis();
-		const Vec3f& yAxis = rotation.GetYAxis();
-		const Vec3f& previousXAxis = prevRotation.GetXAxis();
-		const Vec3f& previousYAxis = prevRotation.GetYAxis();
-
-		interpolationAlpha = GetClampedValue(interpolationAlpha, 0.0f, 1.0f);
-
-		// 90+ degrees is more than enough for interpolation to not make much sense
-		if ((xAxis.GetDotProduct(previousXAxis) < 0.0f) || (yAxis.GetDotProduct(previousYAxis) < 0.0f))
-			return Rotation3D(rotation);
-
-		const Vec3f interpolatedRotX = GetInterpolatedUnchecked(previousXAxis, xAxis, interpolationAlpha);
-		const Vec3f interpolatedRotY = GetInterpolatedUnchecked(previousYAxis, yAxis, interpolationAlpha);
-
-		return Rotation3D(interpolatedRotX, interpolatedRotY);
-	}
-
-
-
 
 }

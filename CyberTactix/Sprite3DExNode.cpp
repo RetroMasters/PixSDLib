@@ -82,12 +82,14 @@ namespace pix
 			Transform3D newParentPrevTransform = newParent->GetGlobalPrevTransform();
 
 			newParentTransform.InverseTransformPoint(Transform.Position);
+			//Transform.Rotation.AddGlobalRotation(newParentTransform.Rotation.GetInverse());
+			Transform.Rotation = newParentTransform.Rotation.GetLocalRotationOf(Transform.Rotation);
 			Transform.Scale = GetSafeDivision(Transform.Scale, newParentTransform.Scale);
-			Transform.Rotation = newParentTransform.Rotation.GetLocalRotation(Transform.Rotation);
-
+			
 			newParentPrevTransform.InverseTransformPoint(prevTransform_.Position);
+			//prevTransform_.Rotation.AddGlobalRotation(newParentPrevTransform.Rotation.GetInverse());
+			prevTransform_.Rotation = newParentPrevTransform.Rotation.GetLocalRotationOf(prevTransform_.Rotation);
 			prevTransform_.Scale = GetSafeDivision(prevTransform_.Scale, newParentPrevTransform.Scale);
-			prevTransform_.Rotation = newParentPrevTransform.Rotation.GetLocalRotation(prevTransform_.Rotation);
 
 			newParent->children_.push_back(this);
 		}

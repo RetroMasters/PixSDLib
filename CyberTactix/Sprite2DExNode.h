@@ -47,10 +47,10 @@ namespace pix
 		const std::vector<Sprite2DExNode*>& GetChildren() const ;
 
 		// Returns the effective single transform in world space. 
-		// Correct result is only guaranteed with no rotated non-uniform scaling in the ancestor chain (uniform scale is safe). 
+		// Correct result is only guaranteed with no rotated non-uniform scaling in the ancestor chain (rotated uniform scale is safe). 
 		Transform2D GetGlobalTransform() const ;
 
-		Transform2D GetGlobalPreviousTransform() const ;
+		Transform2D GetPrevGlobalTransform() const ;
 
 
 		const TriangleMesh2D* Mesh; 

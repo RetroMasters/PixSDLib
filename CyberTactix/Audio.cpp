@@ -114,7 +114,7 @@ namespace pix
 
 	void Audio::SetMusicVolume(float volume)
 	{
-		musicVolume_ = GetClampedValue(volume, 0.0f, 1.0f);
+		musicVolume_ = GetClamped(volume, 0.0f, 1.0f);
 		Mix_VolumeMusic((musicVolume_ * MIX_MAX_VOLUME) * GetMasterVolume());
 	}
 
@@ -224,7 +224,7 @@ namespace pix
 			return;
 		}
 
-		Mix_VolumeChunk(soundChunk, GetClampedValue(volume, 0.0f, 1.0f) * MIX_MAX_VOLUME);
+		Mix_VolumeChunk(soundChunk, GetClamped(volume, 0.0f, 1.0f) * MIX_MAX_VOLUME);
 	}
 
 
@@ -254,13 +254,13 @@ namespace pix
 
 	void Audio::SetChannelVolume(float volume)
 	{
-		channelVolume_ = GetClampedValue(volume, 0.0f, 1.0f);
+		channelVolume_ = GetClamped(volume, 0.0f, 1.0f);
 		Mix_Volume(-1, (channelVolume_ * MIX_MAX_VOLUME) * GetMasterVolume());
 	}
 
 	void Audio::SetMasterVolume(float volume)
 	{
-		masterVolume_ = GetClampedValue(volume, 0.0f, 1.0f);
+		masterVolume_ = GetClamped(volume, 0.0f, 1.0f);
 
 		// Update physical volume
 		SetChannelVolume(GetChannelVolume()); 

@@ -41,7 +41,7 @@ namespace pix
 		for (size_t i = 0; i < children_.size(); i++) 
 		{
 			children_[i]->Transform = children_[i]->GetGlobalTransform();
-			children_[i]->prevTransform_ = children_[i]->GetGlobalPreviousTransform();
+			children_[i]->prevTransform_ = children_[i]->GetPrevGlobalTransform();
 
 			children_[i]->parent_ = nullptr;
 		}
@@ -64,7 +64,7 @@ namespace pix
 		if (parent_)
 		{
 			Transform = GetGlobalTransform();
-			prevTransform_ = GetGlobalPreviousTransform();
+			prevTransform_ = GetPrevGlobalTransform();
 
 			for (size_t i = 0; i < parent_->children_.size(); i++)
 			{
@@ -80,7 +80,7 @@ namespace pix
 		if (newParent)
 		{
 			Transform2D newParentTransform = newParent->GetGlobalTransform();
-			Transform2D newParentPrevTransform = newParent->GetGlobalPreviousTransform();
+			Transform2D newParentPrevTransform = newParent->GetPrevGlobalTransform();
 
 			newParentTransform.InverseTransformPoint(Transform.Position);
 			Transform.Rotation.AddRotation(newParentTransform.Rotation.GetInverse());
@@ -130,7 +130,7 @@ namespace pix
 		return Transform2D(position, scale, rotation);
 	}
 
-	Transform2D Sprite2DNode::GetGlobalPreviousTransform() const 
+	Transform2D Sprite2DNode::GetPrevGlobalTransform() const 
 	{
 		const Sprite2DNode* parent = parent_;
 

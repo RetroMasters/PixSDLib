@@ -1,14 +1,11 @@
 #include "SpriteMeshRenderer2D.h"
 #include "Renderer.h"
-
+#include "PixMath.h"
 
 namespace pix
 {
 
-	SpriteMeshRenderer2D::SpriteMeshRenderer2D(int initialVertexBatchSize)  :
-		configuration_(),
-		vertexBatch_(),
-		vertexIndices_()
+	SpriteMeshRenderer2D::SpriteMeshRenderer2D(int initialVertexBatchSize)
 	{
 		vertexBatch_.reserve(initialVertexBatchSize);
 		vertexIndices_.reserve((initialVertexBatchSize * 3) / 2);
@@ -19,11 +16,18 @@ namespace pix
 	{
 		const Vertex2D* const vertices = mesh.Vertices;
 
+		// Precompute total (interpolated) scale vor vertices:
+		const Vec2f scale = transform.Scale * configuration_.InterpolatedCameraZoom;
+
+		// Precompute total (interpolated) rotation for vertices:
+		Vec2f xAxis = transform.Rotation.GetXAxis();
+		configuration_.InterpolatedCameraRotation.InverseRotatePoint(xAxis);
+
 		// Compute distance-to-camera (in camera space float should provide sufficient precision):
 		Vec2f destinationCenter = Vec2f(transform.Position - configuration_.InterpolatedCameraPosition);
 
 		// Apply camera rotation to distance-to-camera:
-		configuration_.InterpolatedInversedCameraRotation.RotatePoint(destinationCenter);
+		configuration_.InterpolatedCameraRotation.InverseRotatePoint(destinationCenter);
 
 		// Apply camera zoom to distance-to-camera:
 		destinationCenter *= configuration_.InterpolatedCameraZoom;
@@ -31,14 +35,7 @@ namespace pix
 		//destinationCenter.X = std::roundf(destinationCenter.X); // Snapping pixel art games
 		//destinationCenter.Y = std::roundf(destinationCenter.Y);
 
-		// Precompute total (interpolated) scale vor vertices:
-		const Vec2f scale = transform.Scale * configuration_.InterpolatedCameraZoom;
-
-		// Precompute total (interpolated) rotation for vertices:
-		Vec2f xAxis = transform.Rotation.GetXAxis();
-		configuration_.InterpolatedInversedCameraRotation.RotatePoint(xAxis);
-
-		for (int i = 0; i < 4; i++)
+		for (size_t i = 0; i < SpriteMesh::VERTEX_COUNT; i++)
 		{
 			// Scale the current mesh vertex:
 			Vec2f destination = vertices[i].Position * scale;
@@ -58,100 +55,82 @@ namespace pix
 		}
 	}
 
-	void SpriteMeshRenderer2D::Render(const Sprite2D& sprite) 
+	void SpriteMeshRenderer2D::Render(const Sprite2D& sprite)
 	{
+		if (!sprite.Mesh) return;
+
 		const Vertex2D* const vertices = sprite.Mesh->Vertices;
 
-		Vec2 pos = sprite.Transform.Position;
-		const Vec2& prevPos = sprite.GetPreviousTransform().Position;
-		Vec2f scale = sprite.Transform.Scale;
-		const Vec2f& prevScale = sprite.GetPreviousTransform().Scale;
-		Vec2f xAxis = sprite.Transform.Rotation.GetXAxis();
-		const Vec2f& prevXAxis = sprite.GetPreviousTransform().Rotation.GetXAxis();
+		// Interpolate transform
+		Transform2D interpolatedTransform = GetInterpolated(sprite.GetPreviousTransform(), sprite.Transform, configuration_.InterpolationAlpha);
 
-		pos = GetInterpolatedUnchecked(prevPos, pos, (double)(configuration_.InterpolationAlpha));
-		scale = GetInterpolatedUnchecked(prevScale, scale, configuration_.InterpolationAlpha);
-		xAxis = GetInterpolatedUnchecked(prevXAxis, xAxis, configuration_.InterpolationAlpha);
+		// Precompute total (interpolated) scale for vertices
+		interpolatedTransform.Scale *= configuration_.InterpolatedCameraZoom; // Misusing as a temporary for total scale is fine here 
 
-		// Precompute total (interpolated) scale vor vertices:
-		scale *= configuration_.InterpolatedCameraZoom;
+		// Precompute total (interpolated) rotation for vertices
+		Vec2f xAxis = interpolatedTransform.Rotation.GetXAxis();
+		configuration_.InterpolatedCameraRotation.InverseRotatePoint(xAxis); // Rotation of raw X axis avoids normalization step
 
-		// Precompute total (interpolated) rotation for vertices:
-		configuration_.InterpolatedInversedCameraRotation.RotatePoint(xAxis);
+		// World -> camera space of mesh center (in camera space float provides sufficient precision)
+		Vec2f destinationCenter = Vec2f(interpolatedTransform.Position - configuration_.InterpolatedCameraPosition);
 
-		// Compute distance-to-camera (in camera space float should provide sufficient precision):
-		Vec2f destinationCenter = Vec2f(pos - configuration_.InterpolatedCameraPosition);
+		// Apply inverse camera rotation
+		configuration_.InterpolatedCameraRotation.InverseRotatePoint(destinationCenter);
 
-		// Apply camera rotation to distance-to-camera:
-		configuration_.InterpolatedInversedCameraRotation.RotatePoint(destinationCenter);
-
-		// Apply camera zoom to distance-to-camera:
+		// Apply camera zoom
 		destinationCenter *= configuration_.InterpolatedCameraZoom;
 
-		//destinationCenter.X = std::roundf(destinationCenter.X); // Snapping pixel art games
-		//destinationCenter.Y = std::roundf(destinationCenter.Y);
-
-		for (int i = 0; i < 4; i++)
+		// Transform to render target
+		for (size_t i = 0; i < SpriteMesh::VERTEX_COUNT; i++)
 		{
-			// Scale the current mesh vertex:
-			Vec2f destination = vertices[i].Position * scale;
+			// Scale vertex
+			Vec2f destination = vertices[i].Position * interpolatedTransform.Scale;
 
-			// Rotate the current mesh vertex:
+			// Rotate vertex
 			RotatePointUnchecked(xAxis, destination);
 
-			// Translate to (scaled) camera space:
+			// Translate vertex
 			destination += destinationCenter;
 
-			// Position on render target:
+			// Camera space -> render target (SDL is Y-down)
 			destination.X = configuration_.RenderTargetCenter.X + destination.X;
 			destination.Y = configuration_.RenderTargetCenter.Y - destination.Y;
 
-			// Achieve resolution independence: Scale from logical size to the current target resolution (as logical size is only applied to the "null-target" in SDL2).
-			//destination *= configuration_.RenderScale;  
-
 			vertexBatch_.emplace_back(destination, vertices[i].Color, vertices[i].UV);
-
-			//verticesBatch_.push_back( Vertex2D(configuration_.RenderCenter.X + destination.X, configuration_.RenderCenter.Y - destination.Y, vertices[i].color, vertices[i].tex_coord.x, vertices[i].tex_coord.y));
 		}
 	}
-
-
-
-
-	
 
 
 	void SpriteMeshRenderer2D::Render(const Sprite2DNode& node) 
 	{
 		const Vertex2D* const vertices = node.Mesh->Vertices;
 		const Sprite2DNode* parent = &node;
-		const double interpolationAlphaD = static_cast<double>(configuration_.InterpolationAlpha); // Convert to double for later use
+		const double interpolationAlpha = static_cast<double>(configuration_.InterpolationAlpha); // Convert to double for use
 
-		Vec2 vertexPoints[4] = { static_cast<Vec2>(vertices[0].Position),  static_cast<Vec2>(vertices[1].Position),
-									 static_cast<Vec2>(vertices[2].Position),  static_cast<Vec2>(vertices[3].Position) };
+		Vec2 vertexPoints[SpriteMesh::VERTEX_COUNT] = { Vec2(vertices[0].Position), Vec2(vertices[1].Position),
+							     Vec2(vertices[2].Position), Vec2(vertices[3].Position) };
 
-		Vec2 previousVertexPoints[4] = { vertexPoints[0], vertexPoints[1], vertexPoints[2], vertexPoints[3] };
-
+		Vec2 prevVertexPoints[SpriteMesh::VERTEX_COUNT] = { vertexPoints[0], vertexPoints[1], vertexPoints[2], vertexPoints[3] };
 
 		// Transform to world space:
 		while (parent != nullptr)
 		{
-			parent->Transform.TransformPoints(vertexPoints, 4);
-			parent->GetPreviousTransform().TransformPoints(previousVertexPoints, 4);
+			parent->Transform.TransformPoints(vertexPoints, SpriteMesh::VERTEX_COUNT);
+			parent->GetPreviousTransform().TransformPoints(prevVertexPoints, SpriteMesh::VERTEX_COUNT);
 			parent = parent->GetParent();
 		}
 
 		// Transform to render target:
-		for (int i = 0; i < 4; i++)
+		for (size_t i = 0; i < SpriteMesh::VERTEX_COUNT; i++)
 		{
 			// Interpolate world position:
-			vertexPoints[i] = GetInterpolatedUnchecked(previousVertexPoints[i], vertexPoints[i], interpolationAlphaD);
+			vertexPoints[i] = GetInterpolatedUnchecked(prevVertexPoints[i], vertexPoints[i], interpolationAlpha);
 
 			// Compute distance-to-camera:
 			Vec2f destination = Vec2f(vertexPoints[i] - configuration_.InterpolatedCameraPosition);
 
 			// Apply camera rotation to distance-to-camera:
-			configuration_.InterpolatedInversedCameraRotation.RotatePoint(destination);
+			configuration_.InterpolatedCameraRotation.InverseRotatePoint(destination);
 
 			// Apply camera zoom to distance-to-camera:
 			destination *= configuration_.InterpolatedCameraZoom;
@@ -169,9 +148,55 @@ namespace pix
 
 	}
 
-	
+	void SpriteMeshRenderer2D::RenderFast(const Sprite2DNode& node)
+	{
+		if (!node.Mesh) return;
 
-	void SpriteMeshRenderer2D::Render(const SpriteMesh& mesh, const Vec2& startPoint, const Vec2& endPoint, float lineWidth) 
+		const Vertex2D* const vertices = node.Mesh->Vertices;
+
+		Transform2D globalTransform = node.GetGlobalTransform();
+		Transform2D prevGlobalTransform = node.GetPrevGlobalTransform();
+
+		// Interpolate global transform
+		globalTransform = GetInterpolated(prevGlobalTransform, globalTransform, configuration_.InterpolationAlpha);
+
+		// Precompute total (interpolated) scale for vertices
+		globalTransform.Scale *= configuration_.InterpolatedCameraZoom; // Misusing as a temporary for total scale is fine here 
+
+		// Precompute total (interpolated) rotation for vertices
+		Vec2f xAxis = globalTransform.Rotation.GetXAxis();
+		configuration_.InterpolatedCameraRotation.InverseRotatePoint(xAxis); // Rotation of raw X axis avoids normalization step
+
+		// World -> camera space of mesh center (in camera space float provides sufficient precision)
+		Vec2f destinationCenter = Vec2f(globalTransform.Position - configuration_.InterpolatedCameraPosition);
+
+		// Apply inverse camera rotation
+		configuration_.InterpolatedCameraRotation.InverseRotatePoint(destinationCenter);
+
+		// Apply camera zoom
+		destinationCenter *= configuration_.InterpolatedCameraZoom;
+
+		// Transform to render target
+		for (size_t i = 0; i < SpriteMesh::VERTEX_COUNT; i++)
+		{
+			// Scale vertex
+			Vec2f destination = vertices[i].Position * globalTransform.Scale;
+
+			// Rotate vertex
+			RotatePointUnchecked(xAxis, destination);
+
+			// Translate vertex
+			destination += destinationCenter;
+
+			// Camera space -> render target (SDL is Y-down)
+			destination.X = configuration_.RenderTargetCenter.X + destination.X;
+			destination.Y = configuration_.RenderTargetCenter.Y - destination.Y;
+
+			vertexBatch_.emplace_back(destination, vertices[i].Color, vertices[i].UV);
+		}
+	}
+
+	void SpriteMeshRenderer2D::RenderLine(const SpriteMesh& mesh, const Vec2& startPoint, const Vec2& endPoint, float lineWidth) 
 	{
 		const Vertex2D* const vertices = mesh.Vertices;
 
@@ -180,8 +205,8 @@ namespace pix
 		Vec2f transformedEndPoint = Vec2f(endPoint - configuration_.InterpolatedCameraPosition);
 
 		// Apply camera rotation:
-		configuration_.InterpolatedInversedCameraRotation.RotatePoint(transformedStartPoint);
-		configuration_.InterpolatedInversedCameraRotation.RotatePoint(transformedEndPoint);
+		configuration_.InterpolatedCameraRotation.InverseRotatePoint(transformedStartPoint);
+		configuration_.InterpolatedCameraRotation.InverseRotatePoint(transformedEndPoint);
 
 		// Apply camera zoom:
 		transformedStartPoint *= configuration_.InterpolatedCameraZoom;
@@ -222,7 +247,7 @@ namespace pix
 		Vec2f transformedPoint = Vec2f(point - configuration_.InterpolatedCameraPosition);
 
 		// Apply camera rotation:
-		configuration_.InterpolatedInversedCameraRotation.RotatePoint(transformedPoint);
+		configuration_.InterpolatedCameraRotation.InverseRotatePoint(transformedPoint);
 
 		// Apply camera zoom:
 		transformedPoint *= configuration_.InterpolatedCameraZoom;
@@ -279,23 +304,15 @@ namespace pix
 	}
 	*/
 
-
-
-
-
-
-
-
 	void SpriteMeshRenderer2D::BeginBatch(const MovableObject2D* camera, float interpolationAlpha, const Vec2f& renderTargetCenter) 
 	{
 		vertexBatch_.clear();
 
-		if (interpolationAlpha > 1.0f)      interpolationAlpha = 1.0f;
-		else if (interpolationAlpha < 0.0f) interpolationAlpha = 0.0f;
+		interpolationAlpha = GetClamped(interpolationAlpha, 0.0f, 1.0f);
 
 		configuration_.InterpolatedCameraPosition = { 0.0, 0.0 };
 		configuration_.InterpolatedCameraZoom = { 1.0f, 1.0f };
-		configuration_.InterpolatedInversedCameraRotation.SetToIdentity();
+		configuration_.InterpolatedCameraRotation.SetToIdentity();
 		configuration_.InterpolationAlpha = interpolationAlpha;
 		configuration_.RenderTargetCenter.X = renderTargetCenter.X;
 		configuration_.RenderTargetCenter.Y = Renderer::Get().GetLogicalResolutionHeight() - renderTargetCenter.Y;
@@ -311,7 +328,7 @@ namespace pix
 
 			configuration_.InterpolatedCameraPosition = GetInterpolatedUnchecked(previousPosition, position, static_cast<double>(interpolationAlpha));
 			configuration_.InterpolatedCameraZoom = GetInterpolatedUnchecked(previousZoom, zoom, interpolationAlpha);
-			configuration_.InterpolatedInversedCameraRotation = GetInterpolated(previousRotation, rotation, interpolationAlpha).Inverse();
+			configuration_.InterpolatedCameraRotation = GetInterpolated(previousRotation, rotation, interpolationAlpha);
 		}
 	}
 
@@ -319,39 +336,36 @@ namespace pix
 	{
 		UpdateVertexIndices();
 
-		//SDL_RenderGeometry(SDLRenderer::Get(), configuration_.BoundTexture->Get(), verticesBatch_.data(), verticesBatch_.size(), vertexIndexArray_.data(), (verticesBatch_.size() * 3) / 2);
-
 		const Vertex2D* const vertexArray = vertexBatch_.data();
 
-		Renderer& systemRenderer = Renderer::Get();
+		Renderer& renderer = Renderer::Get();
 
-		systemRenderer.SetRenderTarget(renderTarget);
+		renderer.SetRenderTarget(renderTarget);
 
-		int width, height;
-		renderTarget->GetSize(width, height);
+		Vec2f cachedRenderScale = renderer.GetRenderScale(); // Cache current render scale
 
 		if (renderTarget != nullptr)
-			systemRenderer.SetRenderScale(float(width) / systemRenderer.GetLogicalResolutionWidth(),
-				float(height) / systemRenderer.GetLogicalResolutionHeight());
+		{
+			int width, height;
+			renderTarget->GetSize(width, height);
 
-		//SDL_RenderGeometryRaw(SystemRenderer::Get().GetSDLRenderer(),configuration_.BoundTexture->Get(), &(vertexArray->Position.X), 20, &(vertexArray->Color), 20, &(vertexArray->TexCoordinates.X), 20, verticesBatch_.size(),
-		//	vertexIndexArray_.data(), (verticesBatch_.size() * 3) / 2, 4);
+			renderer.SetRenderScale(float(width) / renderer.GetLogicalResolutionWidth(), float(height) / renderer.GetLogicalResolutionHeight());
+		}
+		
+		constexpr int stride = sizeof(Vertex2D);
 
-		systemRenderer.RenderGeometryRaw(boundTexture, &(vertexArray->Position.X), 20, &(vertexArray->Color), 20, &(vertexArray->UV.X), 20, vertexBatch_.size(),
+		renderer.RenderGeometryRaw(boundTexture, &(vertexArray->Position.X), stride, &(vertexArray->Color), stride, &(vertexArray->UV.X), stride, vertexBatch_.size(),
 			vertexIndices_.data(), (vertexBatch_.size() * 3) / 2, 4);
+
+		renderer.SetRenderScale(cachedRenderScale.X, cachedRenderScale.Y); // Restore cached render scale
 	}
 
-
-
-
-	/// <summary>
-	/// First triangle: 0-3-1
-	/// Second triangle: 1-3-2
-	/// Vertex layout:
-	/// 0--1
-	/// |  |
-	/// 3--2
-	/// </summary>
+	// First triangle: 0-3-1
+	// Second triangle: 1-3-2
+	// Vertex layout:
+	// 0--1
+	// |  |
+	// 3--2
 	void SpriteMeshRenderer2D::UpdateVertexIndices() 
 	{
 		if (vertexIndices_.size() >= (vertexBatch_.size() * 3) / 2)
