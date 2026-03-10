@@ -1,7 +1,5 @@
 #include "TriangleMeshRenderer3D.h"
-
-#include <iostream>
-
+#include "Renderer.h"
 
 namespace pix
 {
@@ -16,34 +14,36 @@ namespace pix
 	void TriangleMeshRenderer3D::Render(const TriangleMesh3D& mesh, const Transform3D& transform) 
 	{
 		const std::vector<Vertex3D>& vertices = mesh.Vertices;
-		const int vertexCount = vertices.size();
-		const Vec3f meshCenterDistanceFromCamera = Vec3f(transform.Position - configuration_.InterpolatedCameraPosition);
-		const Vec3f axisZ = transform.Rotation.GetZAxis(); // Precompute for later use
+		const size_t vertexCount = vertices.size();
 
-		//Transform to camera space:
-		for (int i = 0; i < vertexCount; i++)
+		// World -> camera space of mesh center (in camera space float provides sufficient precision)
+		const Vec3f destinationCenter = Vec3f(transform.Position - configuration_.InterpolatedCameraPosition);
+		const Vec3f axisZ = transform.Rotation.GetZAxis(); // Precompute for use
+
+		//Transform to camera space
+		for (size_t i = 0; i < vertexCount; i++)
 		{
 			Vec3f vertexPoint = vertices[i].Position;
 
-			// Scale the mesh point:
+			// Scale vertex
 			vertexPoint *= transform.Scale;
 
-			// Rotate the mesh point:
+			// Rotate vertex
 			vertexPoint = (transform.Rotation.GetXAxis() * vertexPoint.X) + (transform.Rotation.GetYAxis() * vertexPoint.Y) + (axisZ * vertexPoint.Z);
 
 			// Compute distance to camera:
-			vertexPoint += meshCenterDistanceFromCamera;
+			vertexPoint += destinationCenter;
 
 			// Project to camera space:
 			const float z = configuration_.InterpolatedCameraAxisZ.GetDotProduct(vertexPoint);
 			if (z < minDistanceToCamera_)
 			{
-				int removeCount = i % 3;
+				size_t removeCount = i % 3;
 
-				for (int j = removeCount; j > 0; j--)
+				for (size_t j = removeCount; j > 0; j--)
 					vertexBatch_.pop_back();
 
-				i += (2 - removeCount);
+				i += ((size_t)2 - removeCount);
 
 				continue;
 			}
@@ -252,7 +252,7 @@ namespace pix
 
 
 
-	void TriangleMeshRenderer3D::BeginBatch(const MovableObject3D* camera, float interpolationAlpha, const Vec2f& renderTargetCenter, float verticalFOV) 
+	void TriangleMeshRenderer3D::BeginBatch(const MovableObject3D* camera, float interpolationAlpha, Vec2f renderTargetCenter, float verticalFOV) 
 	{
 		vertexBatch_.clear();
 

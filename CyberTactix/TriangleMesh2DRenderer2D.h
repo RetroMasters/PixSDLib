@@ -9,7 +9,7 @@
 
 namespace pix
 {
-	// TriangleMesh2DRenderer2D batches and renders TriangleMesh2D-based objects to a render target.
+	// TriangleMesh2DRenderer2D batches and renders TriangleMesh2D-based 2D objects to a render target.
 	//
 	// Coordinate spaces:
 	// - World space: X right, Y up.
@@ -26,7 +26,7 @@ namespace pix
 	//
 	// Usage:
 	// 1) Call BeginBatch() once per frame (or whenever configuration changes).
-	// 2) Call Render(...) to submit meshes/sprites to the batch.
+	// 2) Call Render() to submit meshes/sprites to the batch.
 	// 3) Call RenderBatch() to draw all submitted geometry.
 	class TriangleMesh2DRenderer2D
 	{

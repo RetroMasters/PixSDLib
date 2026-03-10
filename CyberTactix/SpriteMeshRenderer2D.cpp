@@ -1,6 +1,5 @@
 #include "SpriteMeshRenderer2D.h"
 #include "Renderer.h"
-#include "PixMath.h"
 
 namespace pix
 {
@@ -16,41 +15,41 @@ namespace pix
 	{
 		const Vertex2D* const vertices = mesh.Vertices;
 
-		// Precompute total (interpolated) scale vor vertices:
+		// Precompute total (interpolated) scale for vertices
 		const Vec2f scale = transform.Scale * configuration_.InterpolatedCameraZoom;
 
-		// Precompute total (interpolated) rotation for vertices:
+		// Precompute total (interpolated) rotation for vertices
 		Vec2f xAxis = transform.Rotation.GetXAxis();
 		configuration_.InterpolatedCameraRotation.InverseRotatePoint(xAxis);
 
-		// Compute distance-to-camera (in camera space float should provide sufficient precision):
+		// World -> camera space of mesh center (in camera space float provides sufficient precision)
 		Vec2f destinationCenter = Vec2f(transform.Position - configuration_.InterpolatedCameraPosition);
 
-		// Apply camera rotation to distance-to-camera:
+		// Apply inverse camera rotation
 		configuration_.InterpolatedCameraRotation.InverseRotatePoint(destinationCenter);
 
-		// Apply camera zoom to distance-to-camera:
+		// Apply camera zoom
 		destinationCenter *= configuration_.InterpolatedCameraZoom;
 
 		//destinationCenter.X = std::roundf(destinationCenter.X); // Snapping pixel art games
 		//destinationCenter.Y = std::roundf(destinationCenter.Y);
 
+		// Transform to render target
 		for (size_t i = 0; i < SpriteMesh::VERTEX_COUNT; i++)
 		{
-			// Scale the current mesh vertex:
+			// Scale vertex
 			Vec2f destination = vertices[i].Position * scale;
 
-			// Rotate the current mesh vertex:
+			// Rotate vertex
 			RotatePointUnchecked(xAxis, destination);
 
-			// Translate to (scaled) camera space:
+			// Translate vertex
 			destination += destinationCenter;
 
-			// Position on render target
+			// Camera space -> render target (SDL is Y-down)
 			destination.X = configuration_.RenderTargetCenter.X + destination.X;
 			destination.Y = configuration_.RenderTargetCenter.Y - destination.Y;
 
-			// Add to vertices batch:
 			vertexBatch_.emplace_back(destination, vertices[i].Color, vertices[i].UV);
 		}
 	}
@@ -103,6 +102,8 @@ namespace pix
 
 	void SpriteMeshRenderer2D::Render(const Sprite2DNode& node) 
 	{
+		if (!node.Mesh) return;
+
 		const Vertex2D* const vertices = node.Mesh->Vertices;
 		const Sprite2DNode* parent = &node;
 		const double interpolationAlpha = static_cast<double>(configuration_.InterpolationAlpha); // Convert to double for use
@@ -112,37 +113,36 @@ namespace pix
 
 		Vec2 prevVertexPoints[SpriteMesh::VERTEX_COUNT] = { vertexPoints[0], vertexPoints[1], vertexPoints[2], vertexPoints[3] };
 
-		// Transform to world space:
-		while (parent != nullptr)
+		// Transform to world space
+		while (parent)
 		{
 			parent->Transform.TransformPoints(vertexPoints, SpriteMesh::VERTEX_COUNT);
 			parent->GetPreviousTransform().TransformPoints(prevVertexPoints, SpriteMesh::VERTEX_COUNT);
 			parent = parent->GetParent();
 		}
 
-		// Transform to render target:
+		// Transform to render target
 		for (size_t i = 0; i < SpriteMesh::VERTEX_COUNT; i++)
 		{
-			// Interpolate world position:
+			// Interpolate world position
 			vertexPoints[i] = GetInterpolatedUnchecked(prevVertexPoints[i], vertexPoints[i], interpolationAlpha);
 
-			// Compute distance-to-camera:
+			// World -> camera space (in camera space float provides sufficient precision)
 			Vec2f destination = Vec2f(vertexPoints[i] - configuration_.InterpolatedCameraPosition);
 
-			// Apply camera rotation to distance-to-camera:
+			// Apply camera rotation
 			configuration_.InterpolatedCameraRotation.InverseRotatePoint(destination);
 
-			// Apply camera zoom to distance-to-camera:
+			// Apply camera zoom
 			destination *= configuration_.InterpolatedCameraZoom;
 
-			// Position on render target:
+			// Camera space -> render target (SDL is Y-down)
 			destination.X = configuration_.RenderTargetCenter.X + destination.X;
 			destination.Y = configuration_.RenderTargetCenter.Y - destination.Y;
 
 			//destination.X = std::roundf(destination.X); // Snapping for pixel art games
 			//destination.Y = std::roundf(destination.Y);
 
-			// Add to vertices batch:
 			vertexBatch_.emplace_back(destination, vertices[i].Color, vertices[i].UV);
 		}
 
@@ -196,82 +196,85 @@ namespace pix
 		}
 	}
 
-	void SpriteMeshRenderer2D::RenderLine(const SpriteMesh& mesh, const Vec2& startPoint, const Vec2& endPoint, float lineWidth) 
+	void SpriteMeshRenderer2D::RenderLine(const SpriteMesh& mesh, Vec2 startPoint, Vec2 endPoint, float lineWidth) 
 	{
 		const Vertex2D* const vertices = mesh.Vertices;
 
-		// Compute distance-to-camera (in camera space float should provide sufficient precision):
+		// World -> camera space of mesh center (in camera space float provides sufficient precision)
 		Vec2f transformedStartPoint = Vec2f(startPoint - configuration_.InterpolatedCameraPosition);
 		Vec2f transformedEndPoint = Vec2f(endPoint - configuration_.InterpolatedCameraPosition);
 
-		// Apply camera rotation:
+		// Apply inverse camera rotation
 		configuration_.InterpolatedCameraRotation.InverseRotatePoint(transformedStartPoint);
 		configuration_.InterpolatedCameraRotation.InverseRotatePoint(transformedEndPoint);
 
-		// Apply camera zoom:
+		// Apply camera zoom
 		transformedStartPoint *= configuration_.InterpolatedCameraZoom;
 		transformedEndPoint *= configuration_.InterpolatedCameraZoom;
 
-		// Transform to screen space:
+		// Camera space -> render target (SDL is Y-down)
 		transformedStartPoint.X = configuration_.RenderTargetCenter.X + transformedStartPoint.X;
 		transformedStartPoint.Y = configuration_.RenderTargetCenter.Y - transformedStartPoint.Y;
 
+		// Camera space -> render target (SDL is Y-down)
 		transformedEndPoint.X = configuration_.RenderTargetCenter.X + transformedEndPoint.X;
 		transformedEndPoint.Y = configuration_.RenderTargetCenter.Y - transformedEndPoint.Y;
 
-		const Vec2f scaledDirectionVector = (transformedStartPoint - transformedEndPoint).Normalize() * (lineWidth * 0.5f);
-		const Vec2f scaledDirectionVectorNormal = scaledDirectionVector.GetNormal();
+		const Vec2f scaledDirection = (transformedEndPoint - transformedStartPoint).Normalize() * (lineWidth * 0.5f);
+		const Vec2f scaledDirectionNormal = scaledDirection.GetNormal();
 
-		Vec2f transformedVertex = transformedStartPoint - scaledDirectionVectorNormal;
-		vertexBatch_.emplace_back(transformedVertex, vertices[0].Color, vertices[0].UV);
+		// TopLeft corner
+		Vec2f corner = transformedStartPoint + scaledDirectionNormal;
+		vertexBatch_.emplace_back(corner, vertices[0].Color, vertices[0].UV);
 
-		transformedVertex = transformedEndPoint - scaledDirectionVectorNormal;
-		vertexBatch_.emplace_back(transformedVertex, vertices[1].Color, vertices[1].UV);
+		// TopRight corner
+		corner = transformedEndPoint + scaledDirectionNormal;
+		vertexBatch_.emplace_back(corner, vertices[1].Color, vertices[1].UV);
 
-		transformedVertex = transformedEndPoint + scaledDirectionVectorNormal;
-		vertexBatch_.emplace_back(transformedVertex, vertices[2].Color, vertices[2].UV);
+		// BottomRight corner
+		corner = transformedEndPoint - scaledDirectionNormal;
+		vertexBatch_.emplace_back(corner, vertices[2].Color, vertices[2].UV);
 
-		transformedVertex = transformedStartPoint + scaledDirectionVectorNormal;
-		vertexBatch_.emplace_back(transformedVertex, vertices[3].Color, vertices[3].UV);
+		// BottomLeft corner
+		corner = transformedStartPoint - scaledDirectionNormal;
+		vertexBatch_.emplace_back(corner, vertices[3].Color, vertices[3].UV);
 	}
 
-
-
-
-
-	void SpriteMeshRenderer2D::RenderPixel(const SpriteMesh& mesh, const Vec2& point, float pointWidth) 
+	void SpriteMeshRenderer2D::RenderPoint(const SpriteMesh& mesh, Vec2 point, float pointWidth) 
 	{
 		const Vertex2D* const vertices = mesh.Vertices;
 
-		// Compute distance-to-camera (in camera space float should provide sufficient precision):
+		// World -> camera space of mesh center (in camera space float provides sufficient precision)
 		Vec2f transformedPoint = Vec2f(point - configuration_.InterpolatedCameraPosition);
 
-		// Apply camera rotation:
+		// Apply camera rotation
 		configuration_.InterpolatedCameraRotation.InverseRotatePoint(transformedPoint);
 
-		// Apply camera zoom:
+		// Apply camera zoom
 		transformedPoint *= configuration_.InterpolatedCameraZoom;
 
-		// Transform to screen space:
+		// Camera space -> render target (SDL is Y-down)
 		transformedPoint.X = configuration_.RenderTargetCenter.X + transformedPoint.X;
 		transformedPoint.Y = configuration_.RenderTargetCenter.Y - transformedPoint.Y;
 
-		pointWidth *= 0.5f; // pointWidth is now the approximate radius around the actual point
+		pointWidth *= 0.5f; // PointWidth is now the approximate radius of the point in logical screen space
 
-		Vec2f transformedVertex = Vec2f(transformedPoint.X - pointWidth, transformedPoint.Y - pointWidth);
-		vertexBatch_.emplace_back(transformedVertex, vertices[0].Color, vertices[0].UV);
+		// TopLeft corner
+		Vec2f corner = Vec2f(transformedPoint.X - pointWidth, transformedPoint.Y - pointWidth);
+		vertexBatch_.emplace_back(corner, vertices[0].Color, vertices[0].UV);
 
-		transformedVertex = Vec2f(transformedPoint.X + pointWidth, transformedPoint.Y - pointWidth);
-		vertexBatch_.emplace_back(transformedVertex, vertices[1].Color, vertices[1].UV);
+		// TopRight corner
+		corner = Vec2f(transformedPoint.X + pointWidth, transformedPoint.Y - pointWidth);
+		vertexBatch_.emplace_back(corner, vertices[1].Color, vertices[1].UV);
 
-		transformedVertex = Vec2f(transformedPoint.X + pointWidth, transformedPoint.Y + pointWidth);
-		vertexBatch_.emplace_back(transformedVertex, vertices[2].Color, vertices[2].UV);
+		// BottomRight corner
+		corner = Vec2f(transformedPoint.X + pointWidth, transformedPoint.Y + pointWidth);
+		vertexBatch_.emplace_back(corner, vertices[2].Color, vertices[2].UV);
 
-		transformedVertex = Vec2f(transformedPoint.X - pointWidth, transformedPoint.Y + pointWidth);
-		vertexBatch_.emplace_back(transformedVertex, vertices[3].Color, vertices[3].UV);
+		// BottomLeft corner
+		corner = Vec2f(transformedPoint.X - pointWidth, transformedPoint.Y + pointWidth);
+		vertexBatch_.emplace_back(corner, vertices[3].Color, vertices[3].UV);
 	}
-
-
 
 	/*
 	void QuadMesh2DRenderer2D::RenderPixel(const QuadMesh2D& mesh, const Vector2d& point, float pointWidth)  //Perfekte Precision dank manuellen snapping
@@ -304,7 +307,7 @@ namespace pix
 	}
 	*/
 
-	void SpriteMeshRenderer2D::BeginBatch(const MovableObject2D* camera, float interpolationAlpha, const Vec2f& renderTargetCenter) 
+	void SpriteMeshRenderer2D::BeginBatch(const MovableObject2D* camera, float interpolationAlpha, Vec2f renderTargetCenter) 
 	{
 		vertexBatch_.clear();
 
@@ -317,7 +320,7 @@ namespace pix
 		configuration_.RenderTargetCenter.X = renderTargetCenter.X;
 		configuration_.RenderTargetCenter.Y = Renderer::Get().GetLogicalResolutionHeight() - renderTargetCenter.Y;
 
-		if (camera != nullptr)
+		if (camera)
 		{
 			const Vec2& position = camera->Transform.Position;
 			const Vec2& previousPosition = camera->GetPreviousTransform().Position;
@@ -334,6 +337,8 @@ namespace pix
 
 	void SpriteMeshRenderer2D::RenderBatch(const Texture& boundTexture, TargetTexture* renderTarget) 
 	{
+		if (vertexBatch_.empty()) return;
+
 		UpdateVertexIndices();
 
 		const Vertex2D* const vertexArray = vertexBatch_.data();
@@ -344,7 +349,7 @@ namespace pix
 
 		Vec2f cachedRenderScale = renderer.GetRenderScale(); // Cache current render scale
 
-		if (renderTarget != nullptr)
+		if (renderTarget)
 		{
 			int width, height;
 			renderTarget->GetSize(width, height);
@@ -371,7 +376,7 @@ namespace pix
 		if (vertexIndices_.size() >= (vertexBatch_.size() * 3) / 2)
 			return;
 
-		const int finalSpriteIndex = vertexBatch_.size() - 4;
+		const int finalSpriteIndex = int(vertexBatch_.size()) - 4;
 
 		const int startIndex = (vertexIndices_.size() * 2) / 3;
 

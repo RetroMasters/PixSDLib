@@ -18,6 +18,13 @@ namespace pix
 		const std::vector<Vertex2DEx>& vertices = mesh.Vertices; //reference to vertices for convenience
 		const size_t vertexCount = vertices.size();
 
+		// Precompute total (interpolated) scale for vertices 
+		const Vec2f scale = transform.Scale * configuration_.InterpolatedCameraZoom;
+
+		// Precompute total (interpolated) rotation for vertices
+		Vec2f xAxis = transform.Rotation.GetXAxis();
+		configuration_.InterpolatedCameraRotation.InverseRotatePoint(xAxis); // Rotation of raw X axis avoids normalization step
+
 		// World -> camera space of mesh center (in camera space float provides sufficient precision)
 		Vec2f destinationCenter = Vec2f(transform.Position - configuration_.InterpolatedCameraPosition);
 
@@ -26,13 +33,6 @@ namespace pix
 
 		// Apply camera zoom
 		destinationCenter *= configuration_.InterpolatedCameraZoom;
-
-		// Precompute total scale for vertices: 
-		const Vec2f scale = transform.Scale * configuration_.InterpolatedCameraZoom;
-
-		// Precompute total (interpolated) rotation for vertices:
-		Vec2f xAxis = transform.Rotation.GetXAxis(); 
-		configuration_.InterpolatedCameraRotation.InverseRotatePoint(xAxis); // Rotation of raw X axis avoids normalization step
 
 		for (size_t i = 0; i < vertexCount; i++)
 		{
@@ -125,7 +125,7 @@ namespace pix
 		pointBuffer2_ = pointBuffer1_;
 
 		// Transform to world space
-		while (parent != nullptr)
+		while (parent)
 		{
 			parent->Transform.TransformPoints(pointBuffer1_.data(), pointBuffer1_.size());
 			parent->GetPreviousTransform().TransformPoints(pointBuffer2_.data(), pointBuffer2_.size());
@@ -217,7 +217,7 @@ namespace pix
 		configuration_.RenderTargetCenter.X = renderTargetCenter.X;
 		configuration_.RenderTargetCenter.Y = Renderer::Get().GetLogicalResolutionHeight() - renderTargetCenter.Y;
 
-		if (camera != nullptr)
+		if (camera)
 		{
 			const Vec2& position = camera->Transform.Position;
 			const Vec2& previousPosition = camera->GetPreviousTransform().Position;
@@ -244,7 +244,7 @@ namespace pix
 
 		Vec2f cachedRenderScale = renderer.GetRenderScale(); // Cache current render scale
 
-		if (renderTarget != nullptr)
+		if (renderTarget)
 		{
 			int width, height;
 			renderTarget->GetSize(width, height);

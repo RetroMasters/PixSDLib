@@ -1,6 +1,6 @@
 #pragma once
 
-#include <SDL.h>
+#include <vector>
 #include "PixMath.h"
 #include "TargetTexture.h"
 #include "SpriteMesh.h"
@@ -9,7 +9,7 @@
 
 namespace pix
 {
-	// SpriteMeshRenderer2D batches and renders SpriteMesh-based objects to a render target.
+	// SpriteMeshRenderer2D batches and renders SpriteMesh-based 2D objects to a render target.
 	//
 	// Coordinate spaces:
 	// - World space: X right, Y up.
@@ -26,25 +26,25 @@ namespace pix
 	//
 	// Usage:
 	// 1) Call BeginBatch() once per frame (or whenever configuration changes).
-	// 2) Call Render(...) to submit meshes/sprites to the batch.
+	// 2) Call Render() to submit meshes/sprites to the batch.
 	// 3) Call RenderBatch() to draw all submitted geometry.
 	class SpriteMeshRenderer2D
 	{
 
 	public:
 
-		SpriteMeshRenderer2D(int initialVertexBatchSize = 100000) ;
-		virtual ~SpriteMeshRenderer2D()  = default;
+		SpriteMeshRenderer2D(int initialVertexBatchSize = 100000);
+		~SpriteMeshRenderer2D()  = default;
 
-		// Renders SpriteMesh2D using the specified world transform.
+		// Renders SpriteMesh using the specified world transform.
 		// This is the most performant rendering path when the final transform
 		// is already available (e.g., static meshes or externally computed transform).
-		void Render(const SpriteMesh& mesh, const Transform2D& transform) ;
+		void Render(const SpriteMesh& mesh, const Transform2D& transform);
 
 		// Renders a Sprite2D using interpolated transform state.
 		// The sprite's previous and current transforms are interpolated using the interpolation factor specified in BeginBatch().
 		// This is the typical rendering path for moving sprites without hierarchical parent transforms.
-		void Render(const Sprite2D& sprite) ;
+		void Render(const Sprite2D& sprite);
 
 		// Transforms the node hierarchy to world space and renders it using interpolated transform state.
 		// This is the most general rendering path but also the least performant.
@@ -58,10 +58,15 @@ namespace pix
 		// evaluation can be reduced to a single composed transform, improving performance.
 		void RenderFast(const Sprite2DNode& node);
 
+		// Renders a line between the world-space positions startPoint and endPoint by stretching the mesh along the segment.
+		// lineWidth is specified in logical screen pixels. Fractional values are supported and influence rasterization/rounding.
+		// If lineWidth is negative (not intended), the generated corner ordering is flipped.
+		void RenderLine(const SpriteMesh& mesh, Vec2 startPoint, Vec2 endPoint, float lineWidth);
 
-		void RenderLine(const SpriteMesh& mesh, const Vec2& startPoint, const Vec2& endPoint, float lineWidth) ;
-
-		void RenderPixel(const SpriteMesh& mesh, const Vec2& point, float pointWidth) ;
+		// Renders a point centered at the specified world-space position with size = pointSize.
+		// pointSize is specified in logical screen pixels. Fractional values are supported and influence rasterization/rounding.
+		// If pointSize is negative (not intended), the generated corner ordering is flipped.
+		void RenderPoint(const SpriteMesh& mesh, const Vec2 point, float pointSize);
 
 		// Clears the current batch and updates the rendering configuration.
 		// After calling BeginBatch(), subsequent Render() calls append geometry to the batch, transformed according to this configuration.
@@ -70,7 +75,7 @@ namespace pix
 		// - camera: Optional world-space camera (position/rotation/scale = zoom).
 		// - interpolationAlpha: Interpolation factor in [0.0f, 1.0f] used for previous -> current transform blending.
 		// - renderTargetCenter: Logical render-target coordinate that corresponds to camera-space origin.
-		void BeginBatch(const MovableObject2D* camera = nullptr, float interpolationAlpha = 1.0f, const Vec2f& renderTargetCenter = { 0.0f, 0.0f }) ;
+		void BeginBatch(const MovableObject2D* camera = nullptr, float interpolationAlpha = 1.0f, Vec2f renderTargetCenter = { 0.0f, 0.0f });
 
 		// Renders the current batch to the specified render target using the given texture.
 		// If renderTarget is nullptr, rendering is performed to the default back buffer.
@@ -79,27 +84,27 @@ namespace pix
 		// Note: 
 		// Render target is renderer-global state. This function sets the render target
 		// and does not restore the previous one (sticky render state contract).
-		void RenderBatch(const Texture& boundTexture, TargetTexture* renderTarget) ;
+		void RenderBatch(const Texture& boundTexture, TargetTexture* renderTarget);
 
 	private:
 
 
 		struct Configuration
 		{
-			float    InterpolationAlpha = 1.0f;
-			Vec2 InterpolatedCameraPosition = { 0.0,0.0 };
+			float InterpolationAlpha = 1.0f;
+			Vec2 InterpolatedCameraPosition = { 0.0, 0.0 };
 			Vec2f InterpolatedCameraZoom = { 1.0f, 1.0f };
 			Rotation2D InterpolatedCameraRotation;
-			Vec2f RenderTargetCenter = { 0.0f , 0.0f };
+			Vec2f RenderTargetCenter = { 0.0f, 0.0f };
 
 		};
 
-		void UpdateVertexIndices() ;
+		void UpdateVertexIndices();
 
 		Configuration configuration_;
 
 		std::vector<Vertex2D> vertexBatch_;
-		std::vector<int>      vertexIndices_;
+		std::vector<int> vertexIndices_;
 
 	};
 

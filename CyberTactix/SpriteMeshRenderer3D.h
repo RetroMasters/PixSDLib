@@ -44,19 +44,18 @@ namespace pix
 			float InterpolationAlpha = 1.0f;
 			Vec2f RenderTargetCenter = { 0.0f , 0.0f };
 
-			float      CameraDistanceToScreen = (1080 * 0.5f) / std::tan(60.0f * 0.5f * (float)RADIANS_PER_DEGREE); //935.3f; 
-			Vec3   InterpolatedCameraPosition = { 0.0 , 0.0, 0.0 };
+			float CameraDistanceToScreen = (1080 * 0.5f) / std::tan(60.0f * 0.5f * (float)RADIANS_PER_DEGREE); //935.3f; 
+			Vec3 InterpolatedCameraPosition = { 0.0 , 0.0, 0.0 };
 			Rotation3D InterpolatedInversedCameraRotation;
-			Vec3f   InterpolatedCameraAxisZ = { 0.0f, 0.0f, 1.0f };
+			Vec3f InterpolatedCameraAxisZ = { 0.0f, 0.0f, 1.0f };
 		};
-
 
 		void UpdateVertexIndices() ;
 
 		Configuration configuration_;
 
 		std::vector<Vertex2D> vertexBatch_;
-		std::vector<int>      vertexIndices_;
+		std::vector<int> vertexIndices_;
 
 		static constexpr float minDistanceToCamera_ = 0.5f;
 	};
