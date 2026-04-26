@@ -322,16 +322,9 @@ namespace pix
 
 		if (camera)
 		{
-			const Vec2& position = camera->Transform.Position;
-			const Vec2& previousPosition = camera->GetPreviousTransform().Position;
-			const Vec2f& zoom = camera->Transform.Scale;
-			const Vec2f& previousZoom = camera->GetPreviousTransform().Scale;
-			const Rotation2D& rotation = camera->Transform.Rotation;
-			const Rotation2D& previousRotation = camera->GetPreviousTransform().Rotation;
-
-			configuration_.InterpolatedCameraPosition = GetInterpolatedUnchecked(previousPosition, position, static_cast<double>(interpolationAlpha));
-			configuration_.InterpolatedCameraZoom = GetInterpolatedUnchecked(previousZoom, zoom, interpolationAlpha);
-			configuration_.InterpolatedCameraRotation = GetInterpolated(previousRotation, rotation, interpolationAlpha);
+			configuration_.InterpolatedCameraPosition = GetInterpolatedUnchecked(camera->GetPreviousTransform().Position, camera->Transform.Position, (double)interpolationAlpha);
+			configuration_.InterpolatedCameraZoom = GetInterpolatedUnchecked(camera->GetPreviousTransform().Scale, camera->Transform.Scale, interpolationAlpha);
+			configuration_.InterpolatedCameraRotation = GetInterpolated(camera->GetPreviousTransform().Rotation, camera->Transform.Rotation, interpolationAlpha);
 		}
 	}
 

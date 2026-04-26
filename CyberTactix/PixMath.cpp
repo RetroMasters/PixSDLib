@@ -618,6 +618,15 @@ namespace pix
 		return Rotation2D(interpolatedRotX.X, interpolatedRotX.Y);
 	}
 
+	Transform3D GetInterpolated(const Transform3D& startTransform, const Transform3D& endTransform, float interpolationAlpha)
+	{
+		Vec3 interpolatedPosition = GetInterpolatedUnchecked(startTransform.Position, endTransform.Position, (double)interpolationAlpha);
+		Vec3f interpolatedScale = GetInterpolatedUnchecked(startTransform.Scale, endTransform.Scale, interpolationAlpha);
+		Rotation3D interpolatedRotation = GetInterpolated(startTransform.Rotation, endTransform.Rotation, interpolationAlpha);
+
+		return Transform3D(interpolatedPosition, interpolatedScale, interpolatedRotation);
+	}
+
 	Rotation3D GetInterpolated(const Rotation3D& startRotation, const Rotation3D& endRotation, float alpha)
 	{
 		const Vec3f xAxis = endRotation.GetXAxis();
@@ -625,7 +634,7 @@ namespace pix
 		const Vec3f prevXAxis = startRotation.GetXAxis();
 		const Vec3f prevYAxis = startRotation.GetYAxis();
 
-		// 90+ degrees is more than enough for interpolation to not make much sense
+		// 90+ degrees is more than enough to abort interpolation
 		if ((xAxis.GetDotProduct(prevXAxis) < 0.0f) || (yAxis.GetDotProduct(prevYAxis) < 0.0f))
 			return endRotation;
 

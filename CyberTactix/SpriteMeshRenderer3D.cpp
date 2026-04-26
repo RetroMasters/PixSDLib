@@ -33,19 +33,19 @@ namespace pix
 			vertexPoint += meshCenterDistanceFromCamera;
 
 			// Project to camera space:
-			const float z = configuration_.InterpolatedCameraAxisZ.GetDotProduct(vertexPoint);
-			if (z < minDistanceToCamera_)
+			const float z = configuration_.InterpolatedCameraZAxis.GetDotProduct(vertexPoint);
+			if (z > -NEAR_CLIP_DISTANCE)
 			{
 				for (int j = i; j > 0; j--) vertexBatch_.pop_back();
 				return;
 			}
-			const float x = configuration_.InterpolatedInversedCameraRotation.GetXAxis().GetDotProduct(vertexPoint);
-			const float y = configuration_.InterpolatedInversedCameraRotation.GetYAxis().GetDotProduct(vertexPoint);
+			const float x = configuration_.InterpolatedCameraRotation.GetXAxis().GetDotProduct(vertexPoint);
+			const float y = configuration_.InterpolatedCameraRotation.GetYAxis().GetDotProduct(vertexPoint);
 
 
 			// Project to screen space:
-			const Vec2f screenCoords = { configuration_.RenderTargetCenter.X + (x * configuration_.CameraDistanceToScreen) / z,
-											configuration_.RenderTargetCenter.Y - (y * configuration_.CameraDistanceToScreen) / z };
+			const Vec2f screenCoords = { configuration_.RenderTargetOffset.X + (x * configuration_.CameraDistanceToScreen) / z,
+											configuration_.RenderTargetOffset.Y - (y * configuration_.CameraDistanceToScreen) / z };
 
 			// Add final vertices to batch:
 			vertexBatch_.emplace_back(screenCoords, vertices[i].Color, vertices[i].UV);
@@ -90,19 +90,19 @@ namespace pix
 			vertexPoint += meshCenterDistanceFromCamera;
 
 			// Project to camera space:
-			const float z = configuration_.InterpolatedCameraAxisZ.GetDotProduct(vertexPoint);
-			if (z < minDistanceToCamera_)
+			const float z = configuration_.InterpolatedCameraZAxis.GetDotProduct(vertexPoint);
+			if (z > -NEAR_CLIP_DISTANCE)
 			{
 				for (int j = i; j > 0; j--) vertexBatch_.pop_back();
 				return;
 			}
-			const float x = configuration_.InterpolatedInversedCameraRotation.GetXAxis().GetDotProduct(vertexPoint);
-			const float y = configuration_.InterpolatedInversedCameraRotation.GetYAxis().GetDotProduct(vertexPoint);
+			const float x = configuration_.InterpolatedCameraRotation.GetXAxis().GetDotProduct(vertexPoint);
+			const float y = configuration_.InterpolatedCameraRotation.GetYAxis().GetDotProduct(vertexPoint);
 
 
 			// Project to screen space:
-			const Vec2f screenCoords = { configuration_.RenderTargetCenter.X + (x * configuration_.CameraDistanceToScreen) / z,
-											configuration_.RenderTargetCenter.Y - (y * configuration_.CameraDistanceToScreen) / z };
+			const Vec2f screenCoords = { configuration_.RenderTargetOffset.X + (x * configuration_.CameraDistanceToScreen) / z,
+											configuration_.RenderTargetOffset.Y - (y * configuration_.CameraDistanceToScreen) / z };
 
 			// Add final vertices to batch:
 			vertexBatch_.emplace_back(screenCoords, vertices[i].Color, vertices[i].UV);
@@ -141,182 +141,168 @@ namespace pix
 			const Vec3f distanceToCamera = Vec3f(vertexPoints[i] - configuration_.InterpolatedCameraPosition);
 
 			// Project to camera space:
-			const float z = configuration_.InterpolatedCameraAxisZ.GetDotProduct(distanceToCamera);
-			if (z < minDistanceToCamera_)
+			const float z = configuration_.InterpolatedCameraZAxis.GetDotProduct(distanceToCamera);
+			if (z > -NEAR_CLIP_DISTANCE)
 			{
 				for (int j = i; j > 0; j--)
 					vertexBatch_.pop_back();
 				return;
 			}
-			const float x = configuration_.InterpolatedInversedCameraRotation.GetXAxis().GetDotProduct(distanceToCamera);
-			const float y = configuration_.InterpolatedInversedCameraRotation.GetYAxis().GetDotProduct(distanceToCamera);
+			const float x = configuration_.InterpolatedCameraRotation.GetXAxis().GetDotProduct(distanceToCamera);
+			const float y = configuration_.InterpolatedCameraRotation.GetYAxis().GetDotProduct(distanceToCamera);
 
 			// Project to screen space:
-			const Vec2f screenCoords = { configuration_.RenderTargetCenter.X + (x * configuration_.CameraDistanceToScreen) / z, configuration_.RenderTargetCenter.Y - (y * configuration_.CameraDistanceToScreen) / z };
+			const Vec2f screenCoords = { configuration_.RenderTargetOffset.X + (x * configuration_.CameraDistanceToScreen) / z, configuration_.RenderTargetOffset.Y - (y * configuration_.CameraDistanceToScreen) / z };
 
 			// Add final vertices to batch:
 			vertexBatch_.emplace_back(screenCoords, vertices[i].Color, vertices[i].UV);
 		}
 	}
 
-	/*
-	void QuadMesh2DRenderer3D::Render(const QuadMesh2D& mesh, const Vector3d& startPoint, const Vector3d& endPoint, float lineWidth) 
+
+	void SpriteMeshRenderer3D::RenderLine(const SpriteMesh& mesh, const Vec3& startPoint, const Vec3& endPoint, float lineWidth) 
 	{
 		const Vertex2D* const vertices = mesh.Vertices;
 
-		// Compute distance-to-camera (in camera space float should provide sufficient precision):
-		Vector3f startPointInCameraSpace = Vector3f(startPoint - configuration_.InterpolatedCameraPosition);
-		Vector3f endPointInCameraSpace = Vector3f(endPoint - configuration_.InterpolatedCameraPosition);
+		// World-space vector from camera to startPoint/endPoint (camera-space float precision is sufficient)
+		Vec3f cameraToStartPoint = Vec3f(startPoint - configuration_.InterpolatedCameraPosition);
+		Vec3f cameraToEndPoint = Vec3f(endPoint - configuration_.InterpolatedCameraPosition);
 
-		// Project to camera space:
-		float z = configuration_.InterpolatedCameraAxisZ.DotProduct(startPointInCameraSpace);
-		float x = configuration_.InterpolatedInversedCameraRotation.GetXAxis().DotProduct(startPointInCameraSpace);
-		float y = configuration_.InterpolatedInversedCameraRotation.GetYAxis().DotProduct(startPointInCameraSpace);
+		// Transform the line points to camera space
+		float x1 = configuration_.InterpolatedCameraRotation.GetXAxis().GetDotProduct(cameraToStartPoint);
+		float y1 = configuration_.InterpolatedCameraRotation.GetYAxis().GetDotProduct(cameraToStartPoint);
+		float z1 = configuration_.InterpolatedCameraZAxis.GetDotProduct(cameraToStartPoint);
 
-		// Project to screen space:
-		const Vector2f startScreenCoords = { configuration_.RenderTargetCenter.X + (x * configuration_.CameraDistanceToScreen) / z,
-											 configuration_.RenderTargetCenter.Y - (y * configuration_.CameraDistanceToScreen) / z };
+		float x2 = configuration_.InterpolatedCameraRotation.GetXAxis().GetDotProduct(cameraToEndPoint);
+		float y2 = configuration_.InterpolatedCameraRotation.GetYAxis().GetDotProduct(cameraToEndPoint);
+		float z2 = configuration_.InterpolatedCameraZAxis.GetDotProduct(cameraToEndPoint);
 
-		z = configuration_.InterpolatedCameraAxisZ.DotProduct(endPointInCameraSpace);
-		x = configuration_.InterpolatedInversedCameraRotation.GetXAxis().DotProduct(endPointInCameraSpace);
-		y = configuration_.InterpolatedInversedCameraRotation.GetYAxis().DotProduct(endPointInCameraSpace);
-
-		// Project to screen space:
-		const Vector2f endScreenCoords = { configuration_.RenderTargetCenter.X + (x * configuration_.CameraDistanceToScreen) / z,
-										   configuration_.RenderTargetCenter.Y - (y * configuration_.CameraDistanceToScreen) / z };
-
-		const Vector2f scaledDirectionVector = (endScreenCoords - startScreenCoords).Normalize() * (lineWidth);
-		const Vector2f scaledDirectionVectorNormal = scaledDirectionVector.GetNormal();
-
-
-		Vector2f transformedVertex = startScreenCoords + scaledDirectionVectorNormal;
-		vertexBatch_.emplace_back(transformedVertex, vertices[0].Color, vertices[0].TexCoordinates);
-
-		transformedVertex = endScreenCoords + scaledDirectionVectorNormal;
-		vertexBatch_.emplace_back(transformedVertex, vertices[1].Color, vertices[1].TexCoordinates);
-
-		transformedVertex = endScreenCoords;
-		vertexBatch_.emplace_back(transformedVertex, vertices[2].Color, vertices[2].TexCoordinates);
-
-		transformedVertex = startScreenCoords;
-		vertexBatch_.emplace_back(transformedVertex, vertices[3].Color, vertices[3].TexCoordinates);
-	}
-	*/
-
-	void SpriteMeshRenderer3D::Render(const SpriteMesh& mesh, const Vec3& startPoint, const Vec3& endPoint, float lineWidth) 
-	{
-		const Vertex2D* const vertices = mesh.Vertices;
-
-		// Compute distance-to-camera (in camera space float should provide sufficient precision):
-		Vec3f startPointInCameraSpace = Vec3f(startPoint - configuration_.InterpolatedCameraPosition);
-		Vec3f endPointInCameraSpace = Vec3f(endPoint - configuration_.InterpolatedCameraPosition);
-
-
-		// Project to camera space:
-		float x1 = configuration_.InterpolatedInversedCameraRotation.GetXAxis().GetDotProduct(startPointInCameraSpace);
-		float y1 = configuration_.InterpolatedInversedCameraRotation.GetYAxis().GetDotProduct(startPointInCameraSpace);
-		float z1 = configuration_.InterpolatedCameraAxisZ.GetDotProduct(startPointInCameraSpace);
-
-		float x2 = configuration_.InterpolatedInversedCameraRotation.GetXAxis().GetDotProduct(endPointInCameraSpace);
-		float y2 = configuration_.InterpolatedInversedCameraRotation.GetYAxis().GetDotProduct(endPointInCameraSpace);
-		float z2 = configuration_.InterpolatedCameraAxisZ.GetDotProduct(endPointInCameraSpace);
-
-		if (z1 < minDistanceToCamera_ && z2 < minDistanceToCamera_)
+		if (z1 > -NEAR_CLIP_DISTANCE && z2 > -NEAR_CLIP_DISTANCE)
 			return;
 
-
-		// Project the point behind the camera onto the camera plane
-		if (z1 < minDistanceToCamera_ && z2 >= minDistanceToCamera_)
+		// Clip the point behind the near clip plane to the near clip plane
+		if (z1 <= -NEAR_CLIP_DISTANCE && z2 > -NEAR_CLIP_DISTANCE)
 		{
-			const float t = (minDistanceToCamera_ - z1) / (z2 - z1);
+			const float t = (-NEAR_CLIP_DISTANCE - z1) / (z2 - z1);
 
-			x1 = x1 + t * (x2 - x1);
-			y1 = y1 + t * (y2 - y1);
-			z1 = minDistanceToCamera_;
+			x2 = x1 + t * (x2 - x1);
+			y2 = y1 + t * (y2 - y1);
+			z2 = -NEAR_CLIP_DISTANCE;
 		}
-		else if (z2 < minDistanceToCamera_ && z1 >= minDistanceToCamera_)
+		else if (z2 <= -NEAR_CLIP_DISTANCE && z1 > -NEAR_CLIP_DISTANCE)
 		{
-			const float t = (minDistanceToCamera_ - z2) / (z1 - z2);
+			const float t = (-NEAR_CLIP_DISTANCE - z2) / (z1 - z2);
 
-			x2 = x2 + t * (x1 - x2);
-			y2 = y2 + t * (y1 - y2);
-			z2 = minDistanceToCamera_;
+			x1 = x2 + t * (x1 - x2);
+			y1 = y2 + t * (y1 - y2);
+			z1 = -NEAR_CLIP_DISTANCE;
 		}
 
+		// Project the line points to logical render-target coordinates (Y increases downward)
+		Vec2f startPointRenderTargetCoords = Vec2f(x1 * configuration_.CameraDistanceToScreen / (-z1), y1 * configuration_.CameraDistanceToScreen / z1);
+		startPointRenderTargetCoords += configuration_.RenderTargetOffset;
 
-		// Project to screen space:
-		const Vec2f startScreenCoords = { configuration_.RenderTargetCenter.X + (x1 * configuration_.CameraDistanceToScreen) / z1,
-											 configuration_.RenderTargetCenter.Y - (y1 * configuration_.CameraDistanceToScreen) / z1 };
+		Vec2f endPointRenderTargetCoords = Vec2f(x2 * configuration_.CameraDistanceToScreen / (-z2), y2 * configuration_.CameraDistanceToScreen / z2);
+		endPointRenderTargetCoords += configuration_.RenderTargetOffset;
 
-		// Project to screen space:
-		const Vec2f endScreenCoords = { configuration_.RenderTargetCenter.X + (x2 * configuration_.CameraDistanceToScreen) / z2,
-										   configuration_.RenderTargetCenter.Y - (y2 * configuration_.CameraDistanceToScreen) / z2 };
+		const Vec2f halfWidthNormal = ((startPointRenderTargetCoords - endPointRenderTargetCoords).Normalize() * (lineWidth * 0.5f)).GetNormal();
 
-		const Vec2f scaledDirectionVector = (startScreenCoords - endScreenCoords).Normalize() * (lineWidth * 0.5f);
-		const Vec2f scaledDirectionVectorNormal = scaledDirectionVector.GetNormal();
+		// Add quad points in clockwise order on the render target around the centered line segment
+		Vec2f quadPoint = startPointRenderTargetCoords + halfWidthNormal;
+		vertexBatch_.emplace_back(quadPoint, vertices[0].Color, vertices[0].UV);
 
+		quadPoint = endPointRenderTargetCoords + halfWidthNormal;
+		vertexBatch_.emplace_back(quadPoint, vertices[1].Color, vertices[1].UV);
 
-		Vec2f transformedVertex = startScreenCoords - scaledDirectionVectorNormal;
-		vertexBatch_.emplace_back(transformedVertex, vertices[0].Color, vertices[0].UV);
+		quadPoint = endPointRenderTargetCoords - halfWidthNormal;
+		vertexBatch_.emplace_back(quadPoint, vertices[2].Color, vertices[2].UV);
 
-		transformedVertex = endScreenCoords - scaledDirectionVectorNormal;
-		vertexBatch_.emplace_back(transformedVertex, vertices[1].Color, vertices[1].UV);
+		quadPoint = startPointRenderTargetCoords - halfWidthNormal;
+		vertexBatch_.emplace_back(quadPoint, vertices[3].Color, vertices[3].UV);
+	}
 
-		transformedVertex = endScreenCoords + scaledDirectionVectorNormal;
-		vertexBatch_.emplace_back(transformedVertex, vertices[2].Color, vertices[2].UV);
+	void SpriteMeshRenderer3D::RenderPoint(const SpriteMesh& mesh, const Vec3& point, float pointWidth)
+	{
+		const Vertex2D* const vertices = mesh.Vertices;
 
-		transformedVertex = startScreenCoords + scaledDirectionVectorNormal;
-		vertexBatch_.emplace_back(transformedVertex, vertices[3].Color, vertices[3].UV);
+		// World-space vector from camera to point (camera-space float precision is sufficient)
+		Vec3f cameraToPoint = Vec3f(point - configuration_.InterpolatedCameraPosition);
+
+		// Transform the point to camera space
+		float x = configuration_.InterpolatedCameraRotation.GetXAxis().GetDotProduct(cameraToPoint);
+		float y = configuration_.InterpolatedCameraRotation.GetYAxis().GetDotProduct(cameraToPoint);
+		float z = configuration_.InterpolatedCameraZAxis.GetDotProduct(cameraToPoint);
+
+		if (z > -NEAR_CLIP_DISTANCE) return; // Discard points behind the near clip plane
+
+		// Project the point to logical render-target coordinates (Y increases downward)
+		Vec2f renderTargetCoords = Vec2f(x * configuration_.CameraDistanceToScreen / (-z), y * configuration_.CameraDistanceToScreen / z);
+		renderTargetCoords += configuration_.RenderTargetOffset;
+
+		const float halfWidth = pointWidth * 0.5f;
+
+		// Add quad points in clockwise order on the render target around the centered point
+		Vec2f quadPoint = renderTargetCoords + Vec2f(-halfWidth, -halfWidth);
+		vertexBatch_.emplace_back(quadPoint, vertices[0].Color, vertices[0].UV);
+
+		quadPoint = renderTargetCoords + Vec2f(halfWidth, -halfWidth);
+		vertexBatch_.emplace_back(quadPoint, vertices[1].Color, vertices[1].UV);
+
+		quadPoint = renderTargetCoords + Vec2f(halfWidth, halfWidth);
+		vertexBatch_.emplace_back(quadPoint, vertices[2].Color, vertices[2].UV);
+
+		quadPoint = renderTargetCoords + Vec2f(-halfWidth, halfWidth);
+		vertexBatch_.emplace_back(quadPoint, vertices[3].Color, vertices[3].UV);
 	}
 
 
-
-
-
-	void SpriteMeshRenderer3D::BeginBatch(const MovableObject3D* camera, float interpolationAlpha, const Vec2f& renderTargetCenter, float verticalFOV) 
+	void SpriteMeshRenderer3D::BeginBatch(const MovableObject3D& camera, float interpolationAlpha, Vec2f renderTargetOffset, float verticalFOV)
 	{
 		vertexBatch_.clear();
 
-		if (interpolationAlpha > 1.0f)      interpolationAlpha = 1.0f;
-		else if (interpolationAlpha < 0.0f) interpolationAlpha = 0.0f;
+		interpolationAlpha = GetClamped(interpolationAlpha, 0.0f, 1.0f);
+		verticalFOV = GetClamped(verticalFOV, 1.0f, 89.0f);
 
+		configuration_.InterpolatedCameraPosition = GetInterpolatedUnchecked(camera.GetPreviousTransform().Position, camera.Transform.Position, (double)interpolationAlpha);
+		configuration_.InterpolatedCameraRotation = GetInterpolated(camera.GetPreviousTransform().Rotation, camera.Transform.Rotation, interpolationAlpha);
+		configuration_.InterpolatedCameraZAxis = configuration_.InterpolatedCameraRotation.GetZAxis();
 		configuration_.InterpolationAlpha = interpolationAlpha;
-		configuration_.InterpolatedCameraPosition = { 0.0,  0.0,  0.0 };
-		configuration_.InterpolatedInversedCameraRotation.SetToIdentity();
-		configuration_.InterpolatedCameraAxisZ = { 0.0f, 0.0f, 1.0f };
-		configuration_.RenderTargetCenter = renderTargetCenter;
+		configuration_.RenderTargetOffset = renderTargetOffset;
 
 		configuration_.CameraDistanceToScreen = (Renderer::Get().GetLogicalResolutionHeight() * 0.5f) / std::tan(verticalFOV * 0.5f * (float)RADIANS_PER_DEGREE);
-
-		if (camera != nullptr)
-		{
-			configuration_.InterpolatedCameraPosition = GetInterpolatedUnchecked(camera->GetPreviousTransform().Position, camera->Transform.Position, static_cast<double>(interpolationAlpha));
-			configuration_.InterpolatedInversedCameraRotation = GetInterpolated(camera->GetPreviousTransform().Rotation, camera->Transform.Rotation, interpolationAlpha);
-			configuration_.InterpolatedCameraAxisZ = configuration_.InterpolatedInversedCameraRotation.GetZAxis();
-		}
 	}
 
-	void SpriteMeshRenderer3D::RenderBatch(const Texture& boundTexture, TargetTexture* renderTarget) 
+	void SpriteMeshRenderer3D::RenderBatch(const Texture& texture, TargetTexture* renderTarget)
 	{
-		UpdateVertexIndices();
+		if (vertexBatch_.empty()) return;
 
-		//SDL_RenderGeometry(SDLRenderer::Get(), configuration_.BoundTexture->Get(), verticesBatch_.data(), verticesBatch_.size(), vertexIndexArray_.data(), (verticesBatch_.size() * 3) / 2);
+		UpdateVertexIndices();
 
 		const Vertex2D* const vertexArray = vertexBatch_.data();
 
-		Renderer& systemRenderer = Renderer::Get();
+		Renderer& renderer = Renderer::Get();
 
-		systemRenderer.SetRenderTarget(renderTarget);
+		renderer.SetRenderTarget(renderTarget);
 
-		int width, height;
-		renderTarget->GetSize(width, height);
+		Vec2f cachedRenderScale = renderer.GetRenderScale(); // Cache current render scale
 
-		if (renderTarget != nullptr)
-			systemRenderer.SetRenderScale(width / systemRenderer.GetLogicalResolutionWidth(), height / systemRenderer.GetLogicalResolutionHeight());
+		if (renderTarget)
+		{
+			int width, height;
+			renderTarget->GetSize(width, height);
 
-		systemRenderer.RenderGeometryRaw(boundTexture, &(vertexArray->Position.X), 20, &(vertexArray->Color), 20, &(vertexArray->UV.X), 20, vertexBatch_.size(),
+			renderer.SetRenderScale(float(width) / renderer.GetLogicalResolutionWidth(), float(height) / renderer.GetLogicalResolutionHeight());
+		}
+
+		constexpr int stride = sizeof(Vertex2D);
+
+		renderer.RenderGeometryRaw(texture, &(vertexArray->Position.X), stride, &(vertexArray->Color), stride, &(vertexArray->UV.X), stride, vertexBatch_.size(),
 			vertexIndices_.data(), (vertexBatch_.size() * 3) / 2, 4);
+
+		renderer.SetRenderScale(cachedRenderScale.X, cachedRenderScale.Y); // Restore cached render scale
 	}
+
+
 
 	void SpriteMeshRenderer3D::UpdateVertexIndices() 
 	{

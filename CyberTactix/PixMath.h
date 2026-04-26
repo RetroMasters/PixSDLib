@@ -413,16 +413,10 @@ namespace pix
 			return X * v.X + Y * v.Y + Z * v.Z;
 		}
 
-		// Standard cross product. In a left-handed world convention, you may negate the result
-        // when you want the cross product to follow a right-handed orientation convention.
-		// v is applied on the right side. 
+		// Standard cross product
 		Vector3 GetCrossProduct(const Vector3& v) const
 		{
-			const T x = Y * v.Z - Z * v.Y;
-			const T y = Z * v.X - X * v.Z;
-			const T z = X * v.Y - Y * v.X;
-
-			return Vector3(x, y, z);
+			return Vector3(Y * v.Z - Z * v.Y, Z * v.X - X * v.Z, X * v.Y - Y * v.X);
 		}
 
 		T GetLength() const 
@@ -593,6 +587,11 @@ namespace pix
 
 	//################################################################################ GENERAL FUNCTIONS #############################################################
 
+	template<typename T> inline T GetInterpolatedUnchecked(const T startScalar, T endScalar, T alpha)
+	{
+		return startScalar + (endScalar - startScalar) * alpha;
+	}
+
 	// Returns max/lowest for nonzero numerator and zero denominator; returns 0 for 0/0 and other undefined results(NaN).
 	// Note: 0/0 = 0 is sound in practice for the primary purpose of games (e.g. the speed of a static object is still zero, regardless of time delta).
 	float GetSafeDivision(float numerator, float denominator);
@@ -615,7 +614,6 @@ namespace pix
 
 	// Returns an interpolated rotation by interpolating between the difference vector with interpolationAlpha as transitional value in the range [0.0f, 1.0f].
 	// Works best for small angle differences of few degrees. If the rotations are above 90 degrees then endRotation is returned. 
-
 	Transform2D GetInterpolated(const Transform2D& startTransform, const Transform2D& endTransform, float interpolationAlpha);
 
 	Rotation2D GetInterpolated(Rotation2D startRotation, Rotation2D endRotation, float interpolationAlpha);
@@ -644,6 +642,10 @@ namespace pix
 	}
 
 	//################################################################ 3D TYPE OPERATIONS ###################################################
+
+	// Returns an interpolated rotation by interpolating between the difference vector with interpolationAlpha as transitional value in the range [0.0f, 1.0f].
+	// Works best for small angle differences of few degrees. If the rotations are above 90 degrees then endRotation is returned. 
+	Transform3D GetInterpolated(const Transform3D& startTransform, const Transform3D& endTransform, float interpolationAlpha);
 
 	// Returns an interpolated rotation by interpolating between the difference vectors with interpolationAlpha as transitional value in the range [0.0f, 1.0f].
 	// Works best for small angle differences of few degrees. If the rotations are above 90 degrees then endRotation is returned. 

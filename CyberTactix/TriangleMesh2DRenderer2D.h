@@ -13,10 +13,8 @@ namespace pix
 	//
 	// Coordinate spaces:
 	// - World space: X right, Y up.
-	// - Logical screen space: origin (0,0) at the bottom-left of the render target,
-	//   (logicalWidth, logicalHeight) at the top-right.
-	// - World space maps directly to logical screen space when the camera position is (0,0)
-	//   and zoom is (1,1).
+	// - Logical screen space: origin (0,0) at the bottom-left of the render target, (logicalResolutionWidth, logicalResolutionHeight) at the top-right.
+	// - World space maps directly to logical screen space when the camera position is (0,0) and zoom is (1,1).
 	//
 	// Camera:
 	// - The camera is provided as a MovableObject2D in world space.

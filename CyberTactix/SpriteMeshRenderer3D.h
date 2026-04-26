@@ -28,11 +28,13 @@ namespace pix
 
 		void Render(const Sprite3DNode& node) ;
 
-		void Render(const SpriteMesh& mesh, const Vec3& startPoint, const Vec3& endPoint, float lineWidth) ;
+		void RenderLine(const SpriteMesh& mesh, const Vec3& startPoint, const Vec3& endPoint, float lineWidth) ;
+
+		void RenderPoint(const SpriteMesh& mesh, const Vec3& pointoint, float pointWidth);
 
 		//void BeginBatch(const Texture& boundTexture, TargetTexture* renderTarget = nullptr, float interpolation = 1.0f, const MoveableObject3D* camera = nullptr, const Vector2f& renderCenter = { 0.0f,0.0f }, float verticalFOV = 60.0f);
 
-		void BeginBatch(const MovableObject3D* camera, float interpolationAlpha, const Vec2f& renderTargetCenter, float verticalFOV = 60.0f) ;
+		void BeginBatch(const MovableObject3D& camera, float interpolationAlpha, Vec2f renderTargetCenter, float verticalFOV = 60.0f) ;
 
 		void RenderBatch(const Texture& boundTexture, TargetTexture* renderTarget) ;
 
@@ -41,14 +43,15 @@ namespace pix
 
 		struct Configuration
 		{
+			Vec3 InterpolatedCameraPosition = Vec3(0.0, 0.0, 0.0);
+			Rotation3D InterpolatedCameraRotation;
+			Vec3f InterpolatedCameraZAxis = Vec3f(0.0f, 0.0f, 1.0f);
 			float InterpolationAlpha = 1.0f;
-			Vec2f RenderTargetCenter = { 0.0f , 0.0f };
+			Vec2f RenderTargetOffset = Vec2f(0.0f, 0.0f);
 
-			float CameraDistanceToScreen = (1080 * 0.5f) / std::tan(60.0f * 0.5f * (float)RADIANS_PER_DEGREE); //935.3f; 
-			Vec3 InterpolatedCameraPosition = { 0.0 , 0.0, 0.0 };
-			Rotation3D InterpolatedInversedCameraRotation;
-			Vec3f InterpolatedCameraAxisZ = { 0.0f, 0.0f, 1.0f };
+			float CameraDistanceToScreen = (1080.0f * 0.5f) / std::tan(60.0f * 0.5f * (float)RADIANS_PER_DEGREE); // = 935.3f for 1080p and verticalFOV = 60.0f
 		};
+
 
 		void UpdateVertexIndices() ;
 
@@ -57,7 +60,7 @@ namespace pix
 		std::vector<Vertex2D> vertexBatch_;
 		std::vector<int> vertexIndices_;
 
-		static constexpr float minDistanceToCamera_ = 0.5f;
+		static constexpr float NEAR_CLIP_DISTANCE = 0.5f; // Has to be smaller than zero to avoid division by zero in RenderLine()
 	};
 
 }

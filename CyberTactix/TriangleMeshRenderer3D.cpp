@@ -3,69 +3,73 @@
 
 namespace pix
 {
-	TriangleMeshRenderer3D::TriangleMeshRenderer3D(int initialVertexBatchSize)  :
-		configuration_()
+	TriangleMeshRenderer3D::TriangleMeshRenderer3D(int initialVertexBatchSize)
 	{
 		if (initialVertexBatchSize > 0)
 			vertexBatch_.reserve(initialVertexBatchSize);
+
+		worldPositionBuffer_.reserve(6); // Typical sprite mesh (quad) = 6 vertices
+		prevWorldPositionBuffer_.reserve(6);
 	};
 
 
-	void TriangleMeshRenderer3D::Render(const TriangleMesh3D& mesh, const Transform3D& transform) 
+
+	void TriangleMeshRenderer3D::Render(const TriangleMesh3D& mesh, const Transform3D& transform)
 	{
 		const std::vector<Vertex3D>& vertices = mesh.Vertices;
 		const size_t vertexCount = vertices.size();
 
-		// World -> camera space of mesh center (in camera space float provides sufficient precision)
-		const Vec3f destinationCenter = Vec3f(transform.Position - configuration_.InterpolatedCameraPosition);
-		const Vec3f axisZ = transform.Rotation.GetZAxis(); // Precompute for use
+		// Precompute for combined scaling and rotation per vertex
+		const Vec3f scaledXAxis = transform.Rotation.GetXAxis() * transform.Scale.X;
+		const Vec3f scaledYAxis = transform.Rotation.GetYAxis() * transform.Scale.Y;
+		const Vec3f scaledZAxis = transform.Rotation.GetZAxis() * transform.Scale.Z;
 
-		//Transform to camera space
+		// World-space vector from camera to object origin (camera-space float precision is sufficient)
+		const Vec3f cameraToObjectOrigin = Vec3f(transform.Position - configuration_.InterpolatedCameraPosition);
+
 		for (size_t i = 0; i < vertexCount; i++)
 		{
-			Vec3f vertexPoint = vertices[i].Position;
+			const size_t triangleVertexIndex = i % 3;
 
-			// Scale vertex
-			vertexPoint *= transform.Scale;
+			Vec3f vertexPosition = vertices[i].Position;
 
-			// Rotate vertex
-			vertexPoint = (transform.Rotation.GetXAxis() * vertexPoint.X) + (transform.Rotation.GetYAxis() * vertexPoint.Y) + (axisZ * vertexPoint.Z);
+			// Scale and rotate the vertex position
+			vertexPosition = (scaledXAxis * vertexPosition.X) + (scaledYAxis * vertexPosition.Y) + (scaledZAxis * vertexPosition.Z);
 
-			// Compute distance to camera:
-			vertexPoint += destinationCenter;
+			// Translate the vertex position by the camera-to-object-origin vector
+			vertexPosition += cameraToObjectOrigin;
 
-			// Project to camera space:
-			const float z = configuration_.InterpolatedCameraAxisZ.GetDotProduct(vertexPoint);
-			if (z < minDistanceToCamera_)
+			// Transform the vertex position to camera space or discard the triangle
+			const float z = configuration_.InterpolatedCameraZAxis.GetDotProduct(vertexPosition);
+			if (z > -MIN_DISTANCE_TO_CAMERA)
 			{
-				size_t removeCount = i % 3;
-
-				for (size_t j = removeCount; j > 0; j--)
+				// Remove already added vertices of the current triangle from the batch
+				for (size_t j = triangleVertexIndex; j > 0; j--) 
 					vertexBatch_.pop_back();
 
-				i += ((size_t)2 - removeCount);
+				i += ((size_t)2 - triangleVertexIndex); // Jump to the last vertex of the discarded triangle
 
 				continue;
 			}
-			const float x = configuration_.InterpolatedInversedCameraRotation.GetXAxis().GetDotProduct(vertexPoint);
-			const float y = configuration_.InterpolatedInversedCameraRotation.GetYAxis().GetDotProduct(vertexPoint);
+			const float x = configuration_.InterpolatedCameraRotation.GetXAxis().GetDotProduct(vertexPosition);
+			const float y = configuration_.InterpolatedCameraRotation.GetYAxis().GetDotProduct(vertexPosition);
 
-			// Project to screen space:
-			Vec2f screenCoords = { (x * configuration_.CameraDistanceToScreen) / z, -(y * configuration_.CameraDistanceToScreen) / z };
-			screenCoords += configuration_.RenderTargetCenter;
+			// Project the vertex position to logical render-target coordinates (Y increases downward)
+			Vec2f renderTargetCoords = Vec2f(x * configuration_.CameraDistanceToScreen / (-z), y * configuration_.CameraDistanceToScreen / z);
+			renderTargetCoords += configuration_.RenderTargetOffset;
 
-			// Set final vertices:
-			if (i % 3 == 2)
+			// Apply backface culling
+			if (triangleVertexIndex == 2)
 			{
-				const int end = vertexBatch_.size() - 1;
+				const size_t end = vertexBatch_.size() - 1;
 
-				const Vec2f firstDirectionNormal = { vertexBatch_[end - 1].Position.Y - vertexBatch_[end].Position.Y,
-												  vertexBatch_[end].Position.X - vertexBatch_[end - 1].Position.X };
-				const Vec2f secondDirection = { screenCoords.X - vertexBatch_[end].Position.X,
-											 screenCoords.Y - vertexBatch_[end].Position.Y };
+				const Vec2f edgeNormal = Vec2f(vertexBatch_[end - 1].Position.Y - vertexBatch_[end].Position.Y, vertexBatch_[end].Position.X - vertexBatch_[end - 1].Position.X);
+				const Vec2f closingEdge = Vec2f(renderTargetCoords.X - vertexBatch_[end].Position.X, renderTargetCoords.Y - vertexBatch_[end].Position.Y);
 
-				if (secondDirection.GetDotProduct(firstDirectionNormal) > 0.0f) // is front face
-					vertexBatch_.emplace_back(screenCoords, vertices[i].Color, vertices[i].UV);
+				if (closingEdge.GetDotProduct(edgeNormal) > 0.0f) // Front faces appear in clockwise vertex order on the render target
+				{
+					vertexBatch_.emplace_back(renderTargetCoords, vertices[i].Color, vertices[i].UV);
+				}
 				else
 				{
 					vertexBatch_.pop_back();
@@ -73,229 +77,277 @@ namespace pix
 				}
 			}
 			else
-				vertexBatch_.emplace_back(screenCoords, vertices[i].Color, vertices[i].UV);
+				vertexBatch_.emplace_back(renderTargetCoords, vertices[i].Color, vertices[i].UV);
 		}
-
 	}
 
+	
 
-	void TriangleMeshRenderer3D::Render(const TriangleMesh2D& mesh, const Transform3D& transform) 
+	void TriangleMeshRenderer3D::Render(const TriangleMesh2D& mesh, const Transform3D& transform)
 	{
 		const std::vector<Vertex2DEx>& vertices = mesh.Vertices;
-		const int vertexCount = vertices.size();
+		const size_t vertexCount = vertices.size();
 
-		const Vec3f meshCenterDistanceFromCamera = Vec3f(transform.Position - configuration_.InterpolatedCameraPosition);
+		// Precompute for combined scaling and rotation per vertex
+		const Vec3f scaledXAxis = transform.Rotation.GetXAxis() * transform.Scale.X;
+		const Vec3f scaledYAxis = transform.Rotation.GetYAxis() * transform.Scale.Y;
 
-		//Transform to camera space:
-		for (int i = 0; i < vertexCount; i++)
+		// World-space vector from camera to object origin (camera-space float precision is sufficient)
+		const Vec3f cameraToObjectOrigin = Vec3f(transform.Position - configuration_.InterpolatedCameraPosition);
+
+		for (size_t i = 0; i < vertexCount; i++)
 		{
-			Vec3f vertexPoint = { vertices[i].Position.X, vertices[i].Position.Y, 0.0f };
+			Vec3f vertexPosition = Vec3f(vertices[i].Position.X, vertices[i].Position.Y, 0.0f);
 
-			// Scale the mesh point:
-			vertexPoint.X = vertexPoint.X * transform.Scale.X;
-			vertexPoint.Y = vertexPoint.Y * transform.Scale.Y; //ignore Z
+			// Scale and rotate the vertex position (Z can be ignored)
+			vertexPosition = (scaledXAxis * vertexPosition.X) + (scaledYAxis * vertexPosition.Y);
 
-			// Rotate the mesh point:
-			vertexPoint = (transform.Rotation.GetXAxis() * vertexPoint.X) + (transform.Rotation.GetYAxis() * vertexPoint.Y); //ignore Z
+			// Translate the vertex position by the camera-to-object-origin vector
+			vertexPosition += cameraToObjectOrigin;
 
-			// Compute distance to camera:
-			vertexPoint += meshCenterDistanceFromCamera;
-
-			// Project to camera space:
-			const float z = configuration_.InterpolatedCameraAxisZ.GetDotProduct(vertexPoint);
-			if (z < minDistanceToCamera_)
+			// Transform the vertex position to camera space or discard the triangle
+			const float z = configuration_.InterpolatedCameraZAxis.GetDotProduct(vertexPosition);
+			if (z > -MIN_DISTANCE_TO_CAMERA)
 			{
-				//int removeCount = i - ((i / 3) * 3);
-				int removeCount = i % 3;
+				const size_t triangleVertexIndex = i % 3;
 
-				for (int j = removeCount; j > 0; j--)
+				// Remove already added vertices of the current triangle from the batch
+				for (size_t j = triangleVertexIndex; j > 0; j--)
 					vertexBatch_.pop_back();
 
-				i += (2 - removeCount);
+				i += ((size_t)2 - triangleVertexIndex); // Jump to the last vertex of the discarded triangle
 
 				continue;
 			}
-			const float x = configuration_.InterpolatedInversedCameraRotation.GetXAxis().GetDotProduct(vertexPoint);
-			const float y = configuration_.InterpolatedInversedCameraRotation.GetYAxis().GetDotProduct(vertexPoint);
+			const float x = configuration_.InterpolatedCameraRotation.GetXAxis().GetDotProduct(vertexPosition);
+			const float y = configuration_.InterpolatedCameraRotation.GetYAxis().GetDotProduct(vertexPosition);
 
-			// Project to screen space:
-			Vec2f screenCoords = { (x * configuration_.CameraDistanceToScreen) / z, -(y * configuration_.CameraDistanceToScreen) / z };
-			screenCoords += configuration_.RenderTargetCenter;
+			// Project the vertex position to logical render-target coordinates (Y increases downward)
+			Vec2f renderTargetCoords = Vec2f(x * configuration_.CameraDistanceToScreen / (-z), y * configuration_.CameraDistanceToScreen / z);
+			renderTargetCoords += configuration_.RenderTargetOffset;
 
-			// Add transformed vertices to batch:
-			vertexBatch_.emplace_back(screenCoords, vertices[i].Color, vertices[i].UV);
+			// Add transformed vertices to the batch
+			vertexBatch_.emplace_back(renderTargetCoords, vertices[i].Color, vertices[i].UV);
 		}
 	}
 
-	void TriangleMeshRenderer3D::Render(const Sprite3DEx& sprite) 
+	
+
+	void TriangleMeshRenderer3D::Render(const Sprite3DEx& sprite)
 	{
+		if (!sprite.Mesh) return;
+
 		const std::vector<Vertex2DEx>& vertices = sprite.Mesh->Vertices;
-		const int vertexCount = vertices.size();
+		const size_t vertexCount = vertices.size();
 
-		Vec3  pos = sprite.Transform.Position;
-		const Vec3  prevPos = sprite.GetPreviousTransform().Position;
-		Vec3f scale = sprite.Transform.Scale;
-		const Vec3f prevScale = sprite.GetPreviousTransform().Scale;
-		Vec3f rotX = sprite.Transform.Rotation.GetXAxis();
-		const Vec3f prevRotX = sprite.GetPreviousTransform().Rotation.GetXAxis();
-		Vec3f rotY = sprite.Transform.Rotation.GetYAxis();
-		const Vec3f prevRotY = sprite.GetPreviousTransform().Rotation.GetYAxis();
+		// Interpolate transform
+		Transform3D interpolatedTransform = GetInterpolated(sprite.GetPreviousTransform(), sprite.Transform, configuration_.InterpolationAlpha);
 
-		pos = GetInterpolatedUnchecked(prevPos, pos, static_cast<double>(configuration_.InterpolationAlpha));
-		scale = GetInterpolatedUnchecked(prevScale, scale, configuration_.InterpolationAlpha);
-		rotX = GetInterpolatedUnchecked(prevRotX, rotX, configuration_.InterpolationAlpha);
-		rotY = GetInterpolatedUnchecked(prevRotY, rotY, configuration_.InterpolationAlpha);
+		// Precompute for combined scaling and rotation per vertex
+		const Vec3f scaledXAxis = interpolatedTransform.Rotation.GetXAxis() * interpolatedTransform.Scale.X;
+		const Vec3f scaledYAxis = interpolatedTransform.Rotation.GetYAxis() * interpolatedTransform.Scale.Y;
 
-		const Vec3f meshCenterDistanceFromCamera = Vec3f(pos - configuration_.InterpolatedCameraPosition);
+		// World-space vector from camera to object origin (camera-space float precision is sufficient)
+		const Vec3f cameraToObjectOrigin = Vec3f(interpolatedTransform.Position - configuration_.InterpolatedCameraPosition);
 
-		//Transform to camera space:
-		for (int i = 0; i < vertexCount; i++)
+		for (size_t i = 0; i < vertexCount; i++)
 		{
-			Vec3f vertexPoint = { vertices[i].Position.X, vertices[i].Position.Y, 0.0f };
+			Vec3f vertexPosition = Vec3f(vertices[i].Position.X, vertices[i].Position.Y, 0.0f);
 
-			// Scale the mesh point:
-			vertexPoint.X *= scale.X;
-			vertexPoint.Y *= scale.Y; //ignore Z
+			// Scale and rotate the vertex position (Z can be ignored)
+			vertexPosition = (scaledXAxis * vertexPosition.X) + (scaledYAxis * vertexPosition.Y);
 
-			// Rotate the mesh point:
-			vertexPoint = (rotX * vertexPoint.X) + (rotY * vertexPoint.Y); //ignore Z
+			// Translate the vertex position by the camera-to-object-origin vector
+			vertexPosition += cameraToObjectOrigin;
 
-			// Compute distance to camera:
-			vertexPoint += meshCenterDistanceFromCamera;
-
-			// Project to camera space:
-			const float z = configuration_.InterpolatedCameraAxisZ.GetDotProduct(vertexPoint);
-			if (z < minDistanceToCamera_)
+			// Transform the vertex position to camera space or discard the triangle
+			const float z = configuration_.InterpolatedCameraZAxis.GetDotProduct(vertexPosition);
+			if (z > -MIN_DISTANCE_TO_CAMERA)
 			{
-				int removeCount = i % 3;
+				const size_t triangleVertexIndex = i % 3;
 
-				for (int j = removeCount; j > 0; j--)
+				// Remove already added vertices of the current triangle from the batch
+				for (size_t j = triangleVertexIndex; j > 0; j--)
 					vertexBatch_.pop_back();
 
-				i += (2 - removeCount);
+				i += ((size_t)2 - triangleVertexIndex);  // Jump to the last vertex of the discarded triangle
 
 				continue;
 			}
-			const float x = configuration_.InterpolatedInversedCameraRotation.GetXAxis().GetDotProduct(vertexPoint);
-			const float y = configuration_.InterpolatedInversedCameraRotation.GetYAxis().GetDotProduct(vertexPoint);
+			const float x = configuration_.InterpolatedCameraRotation.GetXAxis().GetDotProduct(vertexPosition);
+			const float y = configuration_.InterpolatedCameraRotation.GetYAxis().GetDotProduct(vertexPosition);
 
-			// Project to screen space:
-			Vec2f screenCoords = { (x * configuration_.CameraDistanceToScreen) / z, -(y * configuration_.CameraDistanceToScreen) / z };
-			screenCoords += configuration_.RenderTargetCenter;
+			// Project the vertex position to logical render-target coordinates (Y increases downward)
+			Vec2f renderTargetCoords = Vec2f(x * configuration_.CameraDistanceToScreen / (-z), y * configuration_.CameraDistanceToScreen / z);
+			renderTargetCoords += configuration_.RenderTargetOffset;
 
-			// Add transformed vertices to batch:
-			vertexBatch_.emplace_back(screenCoords, vertices[i].Color, vertices[i].UV);
+			// Add transformed vertices to the batch
+			vertexBatch_.emplace_back(renderTargetCoords, vertices[i].Color, vertices[i].UV);
 		}
-
 	}
+
+
 
 	void TriangleMeshRenderer3D::Render(const Sprite3DExNode& node) 
 	{
+		if (!node.Mesh) return;
+
 		const Sprite3DExNode* parent = &node;
 		const std::vector<Vertex2DEx>& vertices = (node.Mesh)->Vertices;
-		const int vertexCount = vertices.size();
-		const double interpolationAlphaD = configuration_.InterpolationAlpha; // Convert to double for later use
+		const size_t vertexCount = vertices.size();
+		const double interpolationAlpha = configuration_.InterpolationAlpha; // Convert to double for use
 
-		pointBuffer1_.clear(); // stores the vertex points
-		pointBuffer2_.clear(); // stores the previous vertex points
+		worldPositionBuffer_.clear(); // stores the vertex positions
+		prevWorldPositionBuffer_.clear(); // stores the previous vertex positions
 
-		//for (int i = 0; i < vertexCount; i++)
-		//	pointBuffer1_.push_back({ vertices[i].Position.X, vertices[i].Position.Y, 0.0 });
+		for (size_t i = 0; i < vertexCount; i++)
+			worldPositionBuffer_.emplace_back(vertices[i].Position.X, vertices[i].Position.Y, 0.0);
 
-		for (int i = 0; i < vertexCount; i++)
-			pointBuffer1_.emplace_back(vertices[i].Position.X, vertices[i].Position.Y, 0.0);
+		prevWorldPositionBuffer_ = worldPositionBuffer_;
 
-		pointBuffer2_ = pointBuffer1_;
-
-		// Transform to world space:
+		// Transform vertices to world space
 		while (parent != nullptr)
 		{
-			parent->Transform.TransformPoints(pointBuffer1_.data(), pointBuffer1_.size());
-			parent->GetPreviousTransform().TransformPoints(pointBuffer2_.data(), pointBuffer2_.size());
+			parent->Transform.TransformPoints(worldPositionBuffer_.data(), worldPositionBuffer_.size());
+			parent->GetPreviousTransform().TransformPoints(prevWorldPositionBuffer_.data(), prevWorldPositionBuffer_.size());
 			parent = parent->GetParent();
 		}
 
-
-		//Transform to camera and screen space:
-		for (int i = 0; i < vertexCount; i++)
+		for (size_t i = 0; i < vertexCount; i++)
 		{
-			// Interpolate world position:
-			pointBuffer1_[i] = GetInterpolatedUnchecked(pointBuffer2_[i], pointBuffer1_[i], interpolationAlphaD);
+			// Interpolate the world-space vertex position
+			worldPositionBuffer_[i] = GetInterpolatedUnchecked(prevWorldPositionBuffer_[i], worldPositionBuffer_[i], interpolationAlpha);
 
-			// Compute distance to camera:
-			const Vec3f destination = Vec3f(pointBuffer1_[i] - configuration_.InterpolatedCameraPosition);
+			// World-space vector from camera to vertex (camera-space float precision is sufficient)
+			const Vec3f cameraToVertex = Vec3f(worldPositionBuffer_[i] - configuration_.InterpolatedCameraPosition);
 
-			// Project to camera space:
-			const float z = configuration_.InterpolatedCameraAxisZ.GetDotProduct(destination);
-			if (z < minDistanceToCamera_)
+			// Transform the vertex position to camera space or discard the triangle
+			const float z = configuration_.InterpolatedCameraZAxis.GetDotProduct(cameraToVertex);
+			if (z > -MIN_DISTANCE_TO_CAMERA)
 			{
-				int removeCount = i % 3;
+				const size_t triangleVertexIndex = i % 3;
 
-				for (int j = removeCount; j > 0; j--)
+				// Remove already added vertices of the current triangle from the batch
+				for (size_t j = triangleVertexIndex; j > 0; j--)
 					vertexBatch_.pop_back();
 
-				i += (2 - removeCount);
+				i += ((size_t)2 - triangleVertexIndex); // Jump to the last vertex of the discarded triangle
 
 				continue;
 			}
-			const float x = configuration_.InterpolatedInversedCameraRotation.GetXAxis().GetDotProduct(destination);
-			const float y = configuration_.InterpolatedInversedCameraRotation.GetYAxis().GetDotProduct(destination);
+			const float x = configuration_.InterpolatedCameraRotation.GetXAxis().GetDotProduct(cameraToVertex);
+			const float y = configuration_.InterpolatedCameraRotation.GetYAxis().GetDotProduct(cameraToVertex);
 
-			// Project to screen space:
-			Vec2f screenCoords = { (x * configuration_.CameraDistanceToScreen) / z, -(y * configuration_.CameraDistanceToScreen) / z };
-			screenCoords += configuration_.RenderTargetCenter;
+			// Project the vertex position to logical render-target coordinates (Y increases downward)
+			Vec2f renderTargetCoords = Vec2f(x * configuration_.CameraDistanceToScreen / (-z), y * configuration_.CameraDistanceToScreen / z);
+			renderTargetCoords += configuration_.RenderTargetOffset;
 
-			// Add transformed vertices to batch:
-			vertexBatch_.emplace_back(screenCoords, vertices[i].Color, vertices[i].UV);
+			// Add transformed vertices to the batch
+			vertexBatch_.emplace_back(renderTargetCoords, vertices[i].Color, vertices[i].UV);
 		}
 	}
 
 
 
-	void TriangleMeshRenderer3D::BeginBatch(const MovableObject3D* camera, float interpolationAlpha, Vec2f renderTargetCenter, float verticalFOV) 
+	void TriangleMeshRenderer3D::RenderFast(const Sprite3DExNode& node)
+	{
+		if (!node.Mesh) return;
+
+		const std::vector<Vertex2DEx>& vertices = (node.Mesh)->Vertices;
+		const size_t vertexCount = vertices.size();
+
+		Transform3D interpolatedTransform = node.GetGlobalTransform();
+		Transform3D prevTransform = node.GetPrevGlobalTransform();
+
+		// Interpolate global transform
+		interpolatedTransform = GetInterpolated(prevTransform, interpolatedTransform, configuration_.InterpolationAlpha);
+
+		// Precompute for combined scaling and rotation per vertex
+		const Vec3f scaledXAxis = interpolatedTransform.Rotation.GetXAxis() * interpolatedTransform.Scale.X;
+		const Vec3f scaledYAxis = interpolatedTransform.Rotation.GetYAxis() * interpolatedTransform.Scale.Y;
+
+		// World-space vector from camera to object origin (camera-space float precision is sufficient)
+		const Vec3f cameraToObjectOrigin = Vec3f(interpolatedTransform.Position - configuration_.InterpolatedCameraPosition);
+
+		for (size_t i = 0; i < vertexCount; i++)
+		{
+			Vec3f vertexPosition = Vec3f(vertices[i].Position.X, vertices[i].Position.Y, 0.0f);
+
+			// Scale and rotate the vertex position (Z can be ignored)
+			vertexPosition = (scaledXAxis * vertexPosition.X) + (scaledYAxis * vertexPosition.Y);
+
+			// Translate the vertex position by the camera-to-object-origin vector
+			vertexPosition += cameraToObjectOrigin;
+
+			// Transform the vertex position to camera space or discard the triangle
+			const float z = configuration_.InterpolatedCameraZAxis.GetDotProduct(vertexPosition);
+			if (z > -MIN_DISTANCE_TO_CAMERA)
+			{
+				const size_t triangleVertexIndex = i % 3;
+
+				// Remove already added vertices of the current triangle from the batch
+				for (size_t j = triangleVertexIndex; j > 0; j--)
+					vertexBatch_.pop_back();
+
+				i += ((size_t)2 - triangleVertexIndex);  // Jump to the last vertex of the discarded triangle
+
+				continue;
+			}
+			const float x = configuration_.InterpolatedCameraRotation.GetXAxis().GetDotProduct(vertexPosition);
+			const float y = configuration_.InterpolatedCameraRotation.GetYAxis().GetDotProduct(vertexPosition);
+
+			// Project the vertex position to logical render-target coordinates (Y increases downward)
+			Vec2f renderTargetCoords = Vec2f(x * configuration_.CameraDistanceToScreen / (-z), y * configuration_.CameraDistanceToScreen / z);
+			renderTargetCoords += configuration_.RenderTargetOffset;
+
+			// Add transformed vertices to the batch
+			vertexBatch_.emplace_back(renderTargetCoords, vertices[i].Color, vertices[i].UV);
+		}
+	}
+
+
+
+	void TriangleMeshRenderer3D::BeginBatch(const MovableObject3D& camera, float interpolationAlpha, Vec2f renderTargetOffset, float verticalFOV) 
 	{
 		vertexBatch_.clear();
 
-		if (interpolationAlpha > 1.0f)      interpolationAlpha = 1.0f;
-		else if (interpolationAlpha < 0.0f) interpolationAlpha = 0.0f;
+		interpolationAlpha = GetClamped(interpolationAlpha, 0.0f, 1.0f);
+		verticalFOV = GetClamped(verticalFOV, 1.0f, 89.0f);
 
+		configuration_.InterpolatedCameraPosition = GetInterpolatedUnchecked(camera.GetPreviousTransform().Position, camera.Transform.Position, (double)interpolationAlpha);
+		configuration_.InterpolatedCameraRotation = GetInterpolated(camera.GetPreviousTransform().Rotation, camera.Transform.Rotation, interpolationAlpha);
+		configuration_.InterpolatedCameraZAxis = configuration_.InterpolatedCameraRotation.GetZAxis();
 		configuration_.InterpolationAlpha = interpolationAlpha;
-		configuration_.InterpolatedCameraPosition = { 0.0,  0.0,  0.0 };
-		configuration_.InterpolatedInversedCameraRotation.SetToIdentity();
-		configuration_.InterpolatedCameraAxisZ = { 0.0f, 0.0f, 1.0f };
-		configuration_.RenderTargetCenter = renderTargetCenter;
+		configuration_.RenderTargetOffset = renderTargetOffset;
 
 		configuration_.CameraDistanceToScreen = (Renderer::Get().GetLogicalResolutionHeight() * 0.5f) / std::tan(verticalFOV * 0.5f * (float)RADIANS_PER_DEGREE);
-
-		if (camera != nullptr)
-		{
-			configuration_.InterpolatedCameraPosition = GetInterpolatedUnchecked(camera->GetPreviousTransform().Position, camera->Transform.Position, static_cast<double>(interpolationAlpha));
-			configuration_.InterpolatedInversedCameraRotation = GetInterpolated(camera->GetPreviousTransform().Rotation, camera->Transform.Rotation, interpolationAlpha);
-			configuration_.InterpolatedCameraAxisZ = configuration_.InterpolatedInversedCameraRotation.GetZAxis();
-
-			//std::cout << configuration_.InterpolatedCamRotationZ.Z << std::endl;
-		}
 	}
 
-
-	void TriangleMeshRenderer3D::RenderBatch(const Texture& boundTexture, TargetTexture* renderTarget) 
+	
+	void TriangleMeshRenderer3D::RenderBatch(const Texture& texture, TargetTexture* renderTarget)
 	{
-		//SDL_RenderGeometry(SDLRenderer::Get(), configuration_.BoundTexture->Get(), verticesBatch_.data(), verticesBatch_.size(), nullptr, 0);
+		if (vertexBatch_.empty()) return;
 
 		const Vertex2D* const vertexArray = vertexBatch_.data();
 
-		Renderer& systemRenderer = Renderer::Get();
+		Renderer& renderer = Renderer::Get();
 
-		systemRenderer.SetRenderTarget(renderTarget);
+		renderer.SetRenderTarget(renderTarget);
 
-		int width, height;
-		renderTarget->GetSize(width, height);
+		Vec2f cachedRenderScale = renderer.GetRenderScale(); // Cache current render scale
 
-		if (renderTarget != nullptr)
-			systemRenderer.SetRenderScale(width / systemRenderer.GetLogicalResolutionWidth(), height / systemRenderer.GetLogicalResolutionHeight());
+		if (renderTarget)
+		{
+			int width, height;
+			renderTarget->GetSize(width, height);
 
-		systemRenderer.RenderGeometryRaw(boundTexture, &(vertexArray->Position.X), 20, &(vertexArray->Color), 20, &(vertexArray->UV.X), 20, vertexBatch_.size(), nullptr, 0, 4);
+			renderer.SetRenderScale(float(width) / renderer.GetLogicalResolutionWidth(), float(height) / renderer.GetLogicalResolutionHeight());
+		}
 
+		constexpr int stride = sizeof(Vertex2D);
+
+		renderer.RenderGeometryRaw(texture, &(vertexArray->Position.X), stride, &(vertexArray->Color), stride, &(vertexArray->UV.X), stride, vertexBatch_.size(), nullptr, 0, 4);
+
+		renderer.SetRenderScale(cachedRenderScale.X, cachedRenderScale.Y); // Restore cached render scale
 	}
-
 }
