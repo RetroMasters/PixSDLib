@@ -476,7 +476,7 @@ namespace pix
 
 	void Transform3D::TransformPoints(Vec3* points, int count) const 
 	{
-		// Convert to Vec3 for repeated use:
+		// Convert to Vec3 for repeated use
 		const Vec3 scale(Scale);
 		const Vec3 xAxis(Rotation.GetXAxis());
 		const Vec3 yAxis(Rotation.GetYAxis());

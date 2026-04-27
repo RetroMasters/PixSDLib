@@ -26,8 +26,8 @@ namespace pix
 	//
 	// Usage:
 	// 1) Call BeginBatch() once per frame (or whenever configuration changes).
-	// 2) Call Render() to submit meshes/sprites to the batch.
-	// 3) Call RenderBatch() to draw all submitted geometry.
+	// 2) Call the render methods to submit geometry to the batch.
+	// 3) Call RenderBatch() to draw all submitted geometry. It may be called multiple times in a row with different textures or render targets.
 	class SpriteMeshRenderer2D
 	{
 

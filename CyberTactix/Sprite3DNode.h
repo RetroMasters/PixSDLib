@@ -1,7 +1,7 @@
 #pragma once
 
 #include <vector>
-#include "MoveableObject3D.h"
+#include "MovableObject3D.h"
 #include "SpriteMesh.h"
 
 
@@ -50,7 +50,7 @@ namespace pix
 	    // Correct result is only guaranteed with no rotated non-uniform scaling in the ancestor chain (uniform scale is safe). 
 		Transform3D GetGlobalTransform() const;
 
-		Transform3D GetGlobalPrevTransform() const;
+		Transform3D GetPrevGlobalTransform() const;
 
 
 		const SpriteMesh* Mesh;

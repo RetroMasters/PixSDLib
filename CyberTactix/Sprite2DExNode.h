@@ -1,7 +1,7 @@
 #pragma once
 
 #include <vector>
-#include "MoveableObject2D.h"
+#include "MovableObject2D.h"
 #include "TriangleMesh2D.h"
 
 namespace pix

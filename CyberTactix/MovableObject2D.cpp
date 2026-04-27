@@ -1,4 +1,4 @@
-#include "MoveableObject2D.h"
+#include "MovableObject2D.h"
 
 namespace pix
 {

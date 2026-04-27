@@ -40,7 +40,7 @@ namespace pix
 		for (size_t i = 0; i < children_.size(); i++)
 		{
 			children_[i]->Transform = children_[i]->GetGlobalTransform();
-			children_[i]->prevTransform_ = children_[i]->GetGlobalPrevTransform();
+			children_[i]->prevTransform_ = children_[i]->GetPrevGlobalTransform();
 
 			children_[i]->parent_ = nullptr;
 		}
@@ -65,7 +65,7 @@ namespace pix
 		if (parent_ != nullptr)
 		{
 			Transform = GetGlobalTransform();
-			prevTransform_ = GetGlobalPrevTransform();
+			prevTransform_ = GetPrevGlobalTransform();
 
 			for (size_t i = 0; i < parent_->children_.size(); i++)
 			{
@@ -81,7 +81,7 @@ namespace pix
 		if (newParent != nullptr)
 		{
 			Transform3D newParentTransform = newParent->GetGlobalTransform();
-			Transform3D newParentPrevTransform = newParent->GetGlobalPrevTransform();
+			Transform3D newParentPrevTransform = newParent->GetPrevGlobalTransform();
 
 			newParentTransform.InverseTransformPoint(Transform.Position);
 			//Transform.Rotation.AddGlobalRotation(newParentTransform.Rotation.GetInverse());
@@ -137,7 +137,7 @@ namespace pix
 		return Transform3D(position, scale, rotation);
 	}
 
-	Transform3D Sprite3DNode::GetGlobalPrevTransform() const
+	Transform3D Sprite3DNode::GetPrevGlobalTransform() const
 	{
 		const Sprite3DNode* parent = parent_;
 

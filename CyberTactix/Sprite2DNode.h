@@ -1,7 +1,7 @@
 #pragma once
 
-#include<vector>
-#include "MoveableObject2D.h"
+#include <vector>
+#include "MovableObject2D.h"
 #include "SpriteMesh.h"
 
 

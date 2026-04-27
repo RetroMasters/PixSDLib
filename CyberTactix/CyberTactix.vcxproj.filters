@@ -171,7 +171,7 @@
     <ClCompile Include="ObjectInputLegacy.cpp">
       <Filter>Source Files\PixSDLib\Input</Filter>
     </ClCompile>
-    <ClCompile Include="MoveableObject2D.cpp">
+    <ClCompile Include="MovableObject2D.cpp">
       <Filter>Source Files\PixSDLib\Entity\Entitty2D</Filter>
     </ClCompile>
     <ClCompile Include="Sprite2D.cpp">
@@ -192,7 +192,7 @@
     <ClCompile Include="Sprite3DNode.cpp">
       <Filter>Source Files\PixSDLib\Entity\Entity3D</Filter>
     </ClCompile>
-    <ClCompile Include="MoveableObject3D.cpp">
+    <ClCompile Include="MovableObject3D.cpp">
       <Filter>Source Files\PixSDLib\Entity\Entity3D</Filter>
     </ClCompile>
     <ClCompile Include="Sprite3D.cpp">
@@ -287,7 +287,7 @@
     <ClInclude Include="ObjectInputLegacy.h">
       <Filter>Header Files\PixSDLib\Input</Filter>
     </ClInclude>
-    <ClInclude Include="MoveableObject2D.h">
+    <ClInclude Include="MovableObject2D.h">
       <Filter>Header Files\PixSDLib\Entity\Entity2D</Filter>
     </ClInclude>
     <ClInclude Include="Sprite2D.h">
@@ -302,7 +302,7 @@
     <ClInclude Include="Sprite2DExNode.h">
       <Filter>Header Files\PixSDLib\Entity\Entity2D</Filter>
     </ClInclude>
-    <ClInclude Include="MoveableObject3D.h">
+    <ClInclude Include="MovableObject3D.h">
       <Filter>Header Files\PixSDLib\Entity\Entity3D</Filter>
     </ClInclude>
     <ClInclude Include="Sprite3D.h">

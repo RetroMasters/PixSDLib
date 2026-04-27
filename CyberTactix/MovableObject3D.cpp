@@ -1,4 +1,4 @@
-#include "MoveableObject3D.h"
+#include "MovableObject3D.h"
 
 // MoveableObject is the basis class for an object that can move in space.
 namespace pix

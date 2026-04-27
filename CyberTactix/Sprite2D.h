@@ -1,6 +1,6 @@
 #pragma once
 
-#include "MoveableObject2D.h"
+#include "MovableObject2D.h"
 #include "SpriteMesh.h"
 
 namespace pix
