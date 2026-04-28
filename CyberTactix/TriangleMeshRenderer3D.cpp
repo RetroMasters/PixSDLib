@@ -20,13 +20,13 @@ namespace pix
 		const std::vector<Vertex3D>& vertices = mesh.Vertices;
 		const int vertexCount = vertices.size();
 
-		// Precompute for combined scaling and rotation per vertex
+		// Precompute the transform's combined scale and rotation for per-vertex use
 		const Vec3f scaledXAxis = transform.Rotation.GetXAxis() * transform.Scale.X;
 		const Vec3f scaledYAxis = transform.Rotation.GetYAxis() * transform.Scale.Y;
 		const Vec3f scaledZAxis = transform.Rotation.GetZAxis() * transform.Scale.Z;
 
 		// World-space vector from camera to object origin (float precision is sufficient in camera-relative space)
-		const Vec3f cameraToObjectOrigin(transform.Position - configuration_.InterpolatedCameraPosition);
+		const Vec3f originOffset(transform.Position - configuration_.InterpolatedCameraPosition);
 
 		for (int i = 0; i < vertexCount; i++)
 		{
@@ -37,15 +37,15 @@ namespace pix
 			// Scale and rotate the vertex position
 			vertexPosition = (scaledXAxis * vertexPosition.X) + (scaledYAxis * vertexPosition.Y) + (scaledZAxis * vertexPosition.Z);
 
-			// Translate the vertex position by the camera-to-object-origin vector
-			vertexPosition += cameraToObjectOrigin;
+			// Translate the vertex position by origin offset
+			vertexPosition += originOffset;
 
-			// Transform the vertex position to camera space or discard the triangle
+			// Transform the vertex position to camera space or discard this triangle
 			const float z = configuration_.InterpolatedCameraZAxis.GetDotProduct(vertexPosition);
 			if (z > -NEAR_CLIP_DISTANCE)
 			{
 				// Remove already added vertices of the current triangle from the batch
-				for (int j = triangleVertexIndex; j > 0; j--) 
+				for (int j = 0; j < triangleVertexIndex; j++) 
 					vertexBatch_.pop_back();
 
 				i += (2 - triangleVertexIndex); // Jump to the last vertex of the discarded triangle
@@ -59,13 +59,13 @@ namespace pix
 			Vec2f renderTargetCoords(x * configuration_.CameraDistanceToScreen / (-z), y * configuration_.CameraDistanceToScreen / z);
 			renderTargetCoords += configuration_.RenderTargetOffset;
 
-			// Cull backface or add the transformed vertex to the batch
+			// Perform backface culling or add the transformed vertex to the batch
 			if (triangleVertexIndex == 2)
 			{
-				const int end = vertexBatch_.size() - 1;
+				const int last = vertexBatch_.size() - 1;
 
-				const Vec2f edgeNormal(vertexBatch_[end - 1].Position.Y - vertexBatch_[end].Position.Y, vertexBatch_[end].Position.X - vertexBatch_[end - 1].Position.X);
-				const Vec2f closingEdge(renderTargetCoords.X - vertexBatch_[end].Position.X, renderTargetCoords.Y - vertexBatch_[end].Position.Y);
+				const Vec2f edgeNormal(vertexBatch_[last - 1].Position.Y - vertexBatch_[last].Position.Y, vertexBatch_[last].Position.X - vertexBatch_[last - 1].Position.X);
+				const Vec2f closingEdge(renderTargetCoords.X - vertexBatch_[last].Position.X, renderTargetCoords.Y - vertexBatch_[last].Position.Y);
 
 				if (closingEdge.GetDotProduct(edgeNormal) > 0.0f) // Front faces appear in clockwise vertex order on the screen
 				{
@@ -164,31 +164,31 @@ namespace pix
 		const std::vector<Vertex2DEx>& vertices = mesh.Vertices;
 		const int vertexCount = vertices.size();
 
-		// Precompute for combined scaling and rotation per vertex
+		// Precompute the transform's combined scale and rotation for per-vertex use (flat mesh: Z can be ignored)
 		const Vec3f scaledXAxis = transform.Rotation.GetXAxis() * transform.Scale.X;
 		const Vec3f scaledYAxis = transform.Rotation.GetYAxis() * transform.Scale.Y;
 
 		// World-space vector from camera to object origin (float precision is sufficient in camera-relative space)
-		const Vec3f cameraToObjectOrigin(transform.Position - configuration_.InterpolatedCameraPosition);
+		const Vec3f originOffset(transform.Position - configuration_.InterpolatedCameraPosition);
 
 		for (int i = 0; i < vertexCount; i++)
 		{
 			Vec3f vertexPosition(vertices[i].Position.X, vertices[i].Position.Y, 0.0f);
 
-			// Scale and rotate the vertex position (Z can be ignored)
+			// Scale and rotate the vertex position (flat mesh: Z can be ignored)
 			vertexPosition = (scaledXAxis * vertexPosition.X) + (scaledYAxis * vertexPosition.Y);
 
-			// Translate the vertex position by the camera-to-object-origin vector
-			vertexPosition += cameraToObjectOrigin;
+			// Translate the vertex position by origin offset
+			vertexPosition += originOffset;
 
-			// Transform the vertex position to camera space or discard the triangle
+			// Transform the vertex position to camera space or discard this triangle
 			const float z = configuration_.InterpolatedCameraZAxis.GetDotProduct(vertexPosition);
 			if (z > -NEAR_CLIP_DISTANCE)
 			{
 				const int triangleVertexIndex = i % 3;
 
 				// Remove already added vertices of the current triangle from the batch
-				for (int j = triangleVertexIndex; j > 0; j--)
+				for (int j = 0; j < triangleVertexIndex; j++)
 					vertexBatch_.pop_back();
 
 				i += (2 - triangleVertexIndex); // Jump to the last vertex of the discarded triangle
@@ -219,31 +219,31 @@ namespace pix
 		// Interpolate the sprite transform
 		Transform3D interpolatedTransform = GetInterpolated(sprite.GetPreviousTransform(), sprite.Transform, configuration_.InterpolationAlpha);
 
-		// Precompute for combined scaling and rotation per vertex
+		// Precompute the interpolated transform's combined scale and rotation for per-vertex use (flat mesh: Z can be ignored)
 		const Vec3f scaledXAxis = interpolatedTransform.Rotation.GetXAxis() * interpolatedTransform.Scale.X;
 		const Vec3f scaledYAxis = interpolatedTransform.Rotation.GetYAxis() * interpolatedTransform.Scale.Y;
 
 		// World-space vector from camera to object origin (float precision is sufficient in camera-relative space)
-		const Vec3f cameraToObjectOrigin(interpolatedTransform.Position - configuration_.InterpolatedCameraPosition);
+		const Vec3f originOffset(interpolatedTransform.Position - configuration_.InterpolatedCameraPosition);
 
 		for (int i = 0; i < vertexCount; i++)
 		{
 			Vec3f vertexPosition(vertices[i].Position.X, vertices[i].Position.Y, 0.0f);
 
-			// Scale and rotate the vertex position (Z can be ignored)
+			// Scale and rotate the vertex position (flat mesh: Z can be ignored)
 			vertexPosition = (scaledXAxis * vertexPosition.X) + (scaledYAxis * vertexPosition.Y);
 
-			// Translate the vertex position by the camera-to-object-origin vector
-			vertexPosition += cameraToObjectOrigin;
+			// Translate the vertex position by origin offset
+			vertexPosition += originOffset;
 
-			// Transform the vertex position to camera space or discard the triangle
+			// Transform the vertex position to camera space or discard this triangle
 			const float z = configuration_.InterpolatedCameraZAxis.GetDotProduct(vertexPosition);
 			if (z > -NEAR_CLIP_DISTANCE)
 			{
 				const int triangleVertexIndex = i % 3;
 
 				// Remove already added vertices of the current triangle from the batch
-				for (int j = triangleVertexIndex; j > 0; j--)
+				for (int j = 0; j < triangleVertexIndex; j++)
 					vertexBatch_.pop_back();
 
 				i += (2 - triangleVertexIndex);  // Jump to the last vertex of the discarded triangle
@@ -269,13 +269,14 @@ namespace pix
 		if (!node.Mesh) return;
 
 		const Sprite3DExNode* parent = &node;
-		const std::vector<Vertex2DEx>& vertices = (node.Mesh)->Vertices;
+		const std::vector<Vertex2DEx>& vertices = node.Mesh->Vertices;
 		const int vertexCount = vertices.size();
 		const double interpolationAlpha = configuration_.InterpolationAlpha; // Convert to double for repeated use
 
 		worldPositionBuffer_.clear(); 
 		prevWorldPositionBuffer_.clear(); 
 
+		// Cache initial vertex positions
 		for (int i = 0; i < vertexCount; i++)
 			worldPositionBuffer_.emplace_back(vertices[i].Position.X, vertices[i].Position.Y, 0.0);
 
@@ -297,14 +298,14 @@ namespace pix
 			// World-space vector from camera to vertex (float precision is sufficient in camera-relative space)
 			const Vec3f cameraToVertex(worldPositionBuffer_[i] - configuration_.InterpolatedCameraPosition);
 
-			// Transform the vertex position to camera space or discard the triangle
+			// Transform the vertex position to camera space or discard this triangle
 			const float z = configuration_.InterpolatedCameraZAxis.GetDotProduct(cameraToVertex);
 			if (z > -NEAR_CLIP_DISTANCE)
 			{
 				const int triangleVertexIndex = i % 3;
 
 				// Remove already added vertices of the current triangle from the batch
-				for (int j = triangleVertexIndex; j > 0; j--)
+				for (int j = 0; j < triangleVertexIndex; j++)
 					vertexBatch_.pop_back();
 
 				i += (2 - triangleVertexIndex); // Jump to the last vertex of the discarded triangle
@@ -329,40 +330,40 @@ namespace pix
 	{
 		if (!node.Mesh) return;
 
-		const std::vector<Vertex2DEx>& vertices = (node.Mesh)->Vertices;
+		const std::vector<Vertex2DEx>& vertices = node.Mesh->Vertices;
 		const int vertexCount = vertices.size();
 
-		Transform3D interpolatedTransform = node.GetGlobalTransform();
 		Transform3D prevTransform = node.GetPrevGlobalTransform();
 
 		// Interpolate the global node transform
+		Transform3D interpolatedTransform = node.GetGlobalTransform();
 		interpolatedTransform = GetInterpolated(prevTransform, interpolatedTransform, configuration_.InterpolationAlpha);
 
-		// Precompute for combined scaling and rotation per vertex
+		// Precompute the interpolated transform's combined scale and rotation for per-vertex use (flat mesh: Z can be ignored)
 		const Vec3f scaledXAxis = interpolatedTransform.Rotation.GetXAxis() * interpolatedTransform.Scale.X;
 		const Vec3f scaledYAxis = interpolatedTransform.Rotation.GetYAxis() * interpolatedTransform.Scale.Y;
 
 		// World-space vector from camera to object origin (float precision is sufficient in camera-relative space)
-		const Vec3f cameraToObjectOrigin(interpolatedTransform.Position - configuration_.InterpolatedCameraPosition);
+		const Vec3f originOffset(interpolatedTransform.Position - configuration_.InterpolatedCameraPosition);
 
 		for (int i = 0; i < vertexCount; i++)
 		{
 			Vec3f vertexPosition(vertices[i].Position.X, vertices[i].Position.Y, 0.0f);
 
-			// Scale and rotate the vertex position (Z can be ignored)
+			// Scale and rotate the vertex position (flat mesh: Z can be ignored)
 			vertexPosition = (scaledXAxis * vertexPosition.X) + (scaledYAxis * vertexPosition.Y);
 
-			// Translate the vertex position by the camera-to-object-origin vector
-			vertexPosition += cameraToObjectOrigin;
+			// Translate the vertex position by origin offset
+			vertexPosition += originOffset;
 
-			// Transform the vertex position to camera space or discard the triangle
+			// Transform the vertex position to camera space or discard this triangle
 			const float z = configuration_.InterpolatedCameraZAxis.GetDotProduct(vertexPosition);
 			if (z > -NEAR_CLIP_DISTANCE)
 			{
 				const int triangleVertexIndex = i % 3;
 
 				// Remove already added vertices of the current triangle from the batch
-				for (int j = triangleVertexIndex; j > 0; j--)
+				for (int j = 0; j < triangleVertexIndex; j++)
 					vertexBatch_.pop_back();
 
 				i += (2 - triangleVertexIndex);  // Jump to the last vertex of the discarded triangle

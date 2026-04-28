@@ -96,7 +96,9 @@ namespace pix
 
 	private:
 
-		// The near clip plane is at z = -NEAR_CLIP_DISTANCE. The constant must be greater than zero to avoid projection at z = 0.
+		// The near clip plane is at z = -NEAR_CLIP_DISTANCE. 
+		// The constant must be greater than zero to avoid projection at z = 0.
+		// Triangles with camera-space depth greater than -NEAR_CLIP_DISTANCE are discarded.
 		static constexpr float NEAR_CLIP_DISTANCE = 0.5f;
 
 		struct Configuration

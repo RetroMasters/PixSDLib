@@ -68,6 +68,7 @@ namespace pix
 		// lineWidth is specified in logical render-target units. Fractional values are supported and influence rasterization/rounding.
 		// If lineWidth is negative (not intended), the generated corner ordering is flipped.
 		// The line segment runs through the center of the generated quad.
+		// A line segment with camera-space depth greater than -NEAR_CLIP_DISTANCE is clipped.
 		void RenderLine(const SpriteMesh& mesh, const Vec3& startPoint, const Vec3& endPoint, float lineWidth);
 
 		// Renders a point at the specified world-space position using a quad centered on that position.
@@ -100,7 +101,9 @@ namespace pix
 
 	private:
 
-		// The near clip plane is at z = -NEAR_CLIP_DISTANCE. The constant must be greater than zero to avoid projection at z = 0.
+		// The near clip plane is at z = -NEAR_CLIP_DISTANCE. 
+		// The constant must be greater than zero to avoid projection at z = 0.
+		// Geometry with camera-space depth greater than -NEAR_CLIP_DISTANCE is clipped (lines) or discarded (triangles).
 		static constexpr float NEAR_CLIP_DISTANCE = 0.5f;
 
 		struct Configuration

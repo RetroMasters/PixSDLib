@@ -19,7 +19,7 @@ namespace pix
 	{
 		const Vertex2D* const vertices = mesh.Vertices;
 
-		// Precompute the transform's combined scale and rotation for per-vertex use
+		// Precompute the transform's combined scale and rotation for per-vertex use (flat mesh: Z can be ignored)
 		const Vec3f scaledXAxis = transform.Rotation.GetXAxis() * transform.Scale.X;
 		const Vec3f scaledYAxis = transform.Rotation.GetYAxis() * transform.Scale.Y;
 
@@ -30,7 +30,7 @@ namespace pix
 		{
 			Vec3f vertexPosition(vertices[i].Position.X, vertices[i].Position.Y, 0.0f);
 
-			// Scale and rotate the vertex position (Z can be ignored)
+			// Scale and rotate the vertex position (flat mesh: Z can be ignored)
 			vertexPosition = (scaledXAxis * vertexPosition.X) + (scaledYAxis * vertexPosition.Y); 
 
 			// Translate the vertex position by origin offset
@@ -69,7 +69,7 @@ namespace pix
 		// Interpolate the sprite transform
 		Transform3D interpolatedTransform = GetInterpolated(sprite.GetPreviousTransform(), sprite.Transform, configuration_.InterpolationAlpha);
 
-		// Precompute the interpolated transform's combined scale and rotation for per-vertex use
+		// Precompute the interpolated transform's combined scale and rotation for per-vertex use (flat mesh: Z can be ignored)
 		const Vec3f scaledXAxis = interpolatedTransform.Rotation.GetXAxis() * interpolatedTransform.Scale.X;
 		const Vec3f scaledYAxis = interpolatedTransform.Rotation.GetYAxis() * interpolatedTransform.Scale.Y;
 
@@ -80,7 +80,7 @@ namespace pix
 		{
 			Vec3f vertexPosition(vertices[i].Position.X, vertices[i].Position.Y, 0.0f);
 
-			// Scale and rotate the vertex position (Z can be ignored)
+			// Scale and rotate the vertex position (flat mesh: Z can be ignored)
 			vertexPosition = (scaledXAxis * vertexPosition.X) + (scaledYAxis * vertexPosition.Y); 
 
 			// Translate the vertex position by origin offset
@@ -181,7 +181,7 @@ namespace pix
 		Transform3D interpolatedTransform = node.GetGlobalTransform();
 		interpolatedTransform = GetInterpolated(prevTransform, interpolatedTransform, configuration_.InterpolationAlpha);
 
-		// Precompute the interpolated transform's combined scale and rotation for per-vertex use
+		// Precompute the interpolated transform's combined scale and rotation for per-vertex use (flat mesh: Z can be ignored)
 		const Vec3f scaledXAxis = interpolatedTransform.Rotation.GetXAxis() * interpolatedTransform.Scale.X;
 		const Vec3f scaledYAxis = interpolatedTransform.Rotation.GetYAxis() * interpolatedTransform.Scale.Y;
 
@@ -192,7 +192,7 @@ namespace pix
 		{
 			Vec3f vertexPosition(vertices[i].Position.X, vertices[i].Position.Y, 0.0f);
 
-			// Scale and rotate the vertex position (Z can be ignored)
+			// Scale and rotate the vertex position (flat mesh: Z can be ignored)
 			vertexPosition = (scaledXAxis * vertexPosition.X) + (scaledYAxis * vertexPosition.Y);
 
 			// Translate the vertex position by origin offset
@@ -226,7 +226,7 @@ namespace pix
 	{
 		const Vertex2D* const vertices = mesh.Vertices;
 
-		// World-space vector from camera to startPoint/endPoint (camera-space float precision is sufficient)
+		// World-space vector from camera to startPoint/endPoint (float precision is sufficient in camera-relative space)
 		Vec3f cameraToStartPoint(startPoint - configuration_.InterpolatedCameraPosition);
 		Vec3f cameraToEndPoint(endPoint - configuration_.InterpolatedCameraPosition);
 
@@ -242,7 +242,7 @@ namespace pix
 		if (z1 > -NEAR_CLIP_DISTANCE && z2 > -NEAR_CLIP_DISTANCE) // Discard lines behind the near clip plane
 			return;
 
-		// Clip the point behind the near clip plane to the near clip plane
+		// Clip the line segment behind the near clip plane
 		if (z1 <= -NEAR_CLIP_DISTANCE && z2 > -NEAR_CLIP_DISTANCE)
 		{
 			const float t = (-NEAR_CLIP_DISTANCE - z1) / (z2 - z1);
@@ -289,7 +289,7 @@ namespace pix
 	{
 		const Vertex2D* const vertices = mesh.Vertices;
 
-		// World-space vector from camera to the point (camera-space float precision is sufficient)
+		// World-space vector from camera to the point (float precision is sufficient in camera-relative space)
 		Vec3f cameraToPoint(point - configuration_.InterpolatedCameraPosition);
 
 		// Transform the point to camera space
