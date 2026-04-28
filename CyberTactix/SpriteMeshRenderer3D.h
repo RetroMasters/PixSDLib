@@ -17,7 +17,7 @@ namespace pix
 	// Coordinate spaces:
 	// - World space: X right, Y up, -Z forward.
 	// - With identity camera rotation, the camera looks along -Z.
-	// - Logical render-target coordinates: top-left = (0,0), bottom-right = (logicalResolutionWidth, logicalResolutionHeight).
+	// - Logical render-target coordinates: origin = (0, 0) at the top-left of the render target, and (logicalResolutionWidth, logicalResolutionHeight) at the bottom-right.
 	//
 	// Camera:
 	// - The camera is provided as a MovableObject3D in world space.
@@ -40,7 +40,7 @@ namespace pix
 
 	public:
 
-		SpriteMeshRenderer3D(int initialVertexBatchSize = 100000);
+		SpriteMeshRenderer3D(int initialVertexBatchCapacity = 100000);
 	    ~SpriteMeshRenderer3D() = default;
 
 		// Renders a SpriteMesh using the specified world transform.
@@ -65,13 +65,13 @@ namespace pix
 		void RenderFast(const Sprite3DNode& node);
 
 		// Renders a line between the world-space positions startPoint and endPoint by stretching the mesh along the segment.
-		// lineWidth is specified in logical screen pixels. Fractional values are supported and influence rasterization/rounding.
+		// lineWidth is specified in logical render-target units. Fractional values are supported and influence rasterization/rounding.
 		// If lineWidth is negative (not intended), the generated corner ordering is flipped.
 		// The line segment runs through the center of the generated quad.
 		void RenderLine(const SpriteMesh& mesh, const Vec3& startPoint, const Vec3& endPoint, float lineWidth);
 
 		// Renders a point at the specified world-space position using a quad centered on that position.
-        // pointSize is specified in logical screen pixels and defines the size of the generated quad.
+        // pointSize is specified in logical render-target units and defines the size of the generated quad.
 		// Fractional values are supported and influence rasterization/rounding.
 		// If pointSize is negative (not intended), the generated corner ordering is flipped.
 		void RenderPoint(const SpriteMesh& mesh, const Vec3& point, float pointSize);
@@ -83,7 +83,7 @@ namespace pix
 		// - camera: World-space camera used for view position and rotation.
 		// - renderTargetOffset: Logical render-target coordinate that corresponds to camera-space origin.
 		//   (top-left = (0,0), bottom-right = (logicalResolutionWidth, logicalResolutionHeight)).  
-		// - interpolationAlpha: Interpolation factor in [0.0f, 1.0f] used for previous -> current transform blending.
+		// - interpolationAlpha: Interpolation factor used for previous -> current transform blending (internally clamped to [0.0f, 1.0f]).
 		// - verticalFOV: Vertical field of view in degrees for perspective projection.
 		void BeginBatch(const MovableObject3D& camera, Vec2f renderTargetOffset, float interpolationAlpha= 1.0f, float verticalFOV = 60.0f);
 

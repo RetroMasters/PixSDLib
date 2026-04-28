@@ -13,6 +13,7 @@
 namespace pix
 {
 	// TriangleMesh2DRenderer2D batches and renders TriangleMesh2D-based 2D objects to a render target.
+	// A correctly rendered mesh must contain a valid triangle list (vertex count divisible by 3).
 	//
 	// Coordinate spaces:
 	// - World space: X right, Y up.
@@ -73,7 +74,7 @@ namespace pix
 		// Parameters:
 		// - camera: World-space camera used for view position, rotation and zoom (scale).
 		// - renderTargetOffset: Logical render-target coordinate that corresponds to camera-space origin.
-		// - interpolationAlpha: Interpolation factor in [0.0f, 1.0f] used for previous -> current transform blending.
+		// - interpolationAlpha: Interpolation factor used for previous -> current transform blending (internally clamped to [0.0f, 1.0f]).
 		void BeginBatch(const MovableObject2D& camera, Vec2f renderTargetOffset, float interpolationAlpha = 1.0f);
 
 		// Renders the current batch to the specified render target using the given texture.

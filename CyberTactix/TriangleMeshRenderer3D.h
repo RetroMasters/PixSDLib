@@ -15,13 +15,13 @@
 namespace pix
 {
 	// TriangleMeshRenderer3D batches and renders 3D objects based on TriangleMesh2D and TriangleMesh3D to a render target.
-	// Rendered meshes must contain a valid triangle list (vertex count divisible by 3).
+	// A correctly rendered mesh must contain a valid triangle list (vertex count divisible by 3).
 	// Backface culling is applied only to TriangleMesh3D.
 	// 
 	// Coordinate spaces:
 	// - World space: X right, Y up, -Z forward.
 	// - With identity camera rotation, the camera looks along -Z.
-	// - Logical render-target coordinates: top-left = (0,0), bottom-right = (logicalResolutionWidth, logicalResolutionHeight).
+	// - Logical render-target coordinates: origin = (0, 0) at the top-left of the render target, and (logicalResolutionWidth, logicalResolutionHeight) at the bottom-right.
 	//
 	// Camera:
 	// - The camera is provided as a MovableObject3D in world space.
@@ -50,7 +50,7 @@ namespace pix
 		// Renders a TriangleMesh3D using the specified world transform.
 		// This is the most performant rendering path for a TriangleMesh3D when the final transform
 		// is already available (e.g., for static meshes or externally computed transform).
-		// Backface culling is applied. Front faces appear in clockwise vertex order on the render target.
+		// Backface culling is applied. Front faces appear in clockwise vertex order on the screen.
 		void Render(const TriangleMesh3D& mesh, const Transform3D& transform);
 		
 		// Renders a TriangleMesh2D using the specified world transform.
@@ -81,7 +81,7 @@ namespace pix
 		// - camera: World-space camera used for view position and rotation.
 		// - renderTargetOffset: Logical render-target coordinate that corresponds to camera-space origin.
         //   (top-left = (0,0), bottom-right = (logicalResolutionWidth, logicalResolutionHeight)).   
-		// - interpolationAlpha: Interpolation factor in [0.0f, 1.0f] used for previous -> current transform blending.
+		// - interpolationAlpha: Interpolation factor used for previous -> current transform blending (internally clamped to [0.0f, 1.0f]).
 		// - verticalFOV: Vertical field of view in degrees for perspective projection.
 		void BeginBatch(const MovableObject3D& camera, Vec2f renderTargetOffset, float interpolationAlpha = 1.0f, float verticalFOV = 60.0f);
 

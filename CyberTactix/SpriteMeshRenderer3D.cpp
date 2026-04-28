@@ -4,12 +4,12 @@
 namespace pix
 {
 
-	SpriteMeshRenderer3D::SpriteMeshRenderer3D(int initialVertexBatchSize)
+	SpriteMeshRenderer3D::SpriteMeshRenderer3D(int initialVertexBatchCapacity)
 	{
-		if (initialVertexBatchSize > 0)
+		if (initialVertexBatchCapacity > 0)
 		{
-			vertexBatch_.reserve(initialVertexBatchSize);
-			vertexIndices_.reserve((initialVertexBatchSize * 3) / 2);
+			vertexBatch_.reserve(initialVertexBatchCapacity);
+			vertexIndices_.reserve((initialVertexBatchCapacity * 3) / 2);
 		}
 	}
 
@@ -19,22 +19,22 @@ namespace pix
 	{
 		const Vertex2D* const vertices = mesh.Vertices;
 
-		// Precompute for combined scaling and rotation per vertex
+		// Precompute the transform's combined scale and rotation for per-vertex use
 		const Vec3f scaledXAxis = transform.Rotation.GetXAxis() * transform.Scale.X;
 		const Vec3f scaledYAxis = transform.Rotation.GetYAxis() * transform.Scale.Y;
 
 		// World-space vector from camera to object origin (float precision is sufficient in camera-relative space)
-		const Vec3f cameraToObjectOrigin = Vec3f(transform.Position - configuration_.InterpolatedCameraPosition);
+		const Vec3f originOffset(transform.Position - configuration_.InterpolatedCameraPosition);
 
 		for (int i = 0; i < 4; i++)
 		{
-			Vec3f vertexPosition = Vec3f(vertices[i].Position.X, vertices[i].Position.Y, 0.0f);
+			Vec3f vertexPosition(vertices[i].Position.X, vertices[i].Position.Y, 0.0f);
 
 			// Scale and rotate the vertex position (Z can be ignored)
 			vertexPosition = (scaledXAxis * vertexPosition.X) + (scaledYAxis * vertexPosition.Y); 
 
-			// Translate the vertex position by the camera-to-object-origin vector
-			vertexPosition += cameraToObjectOrigin;
+			// Translate the vertex position by origin offset
+			vertexPosition += originOffset;
 
 			// Transform the vertex position to camera space or discard this mesh
 			const float z = configuration_.InterpolatedCameraZAxis.GetDotProduct(vertexPosition);
@@ -50,7 +50,7 @@ namespace pix
 			const float y = configuration_.InterpolatedCameraRotation.GetYAxis().GetDotProduct(vertexPosition);
 
 			// Project the vertex position to logical render-target coordinates (Y increases downward)
-			Vec2f renderTargetCoords = Vec2f(x * configuration_.CameraDistanceToScreen / (-z), y * configuration_.CameraDistanceToScreen / z);
+			Vec2f renderTargetCoords(x * configuration_.CameraDistanceToScreen / (-z), y * configuration_.CameraDistanceToScreen / z);
 			renderTargetCoords += configuration_.RenderTargetOffset;
 
 			// Add the transformed vertex to the batch
@@ -69,22 +69,22 @@ namespace pix
 		// Interpolate the sprite transform
 		Transform3D interpolatedTransform = GetInterpolated(sprite.GetPreviousTransform(), sprite.Transform, configuration_.InterpolationAlpha);
 
-		// Precompute for combined scaling and rotation per vertex
+		// Precompute the interpolated transform's combined scale and rotation for per-vertex use
 		const Vec3f scaledXAxis = interpolatedTransform.Rotation.GetXAxis() * interpolatedTransform.Scale.X;
 		const Vec3f scaledYAxis = interpolatedTransform.Rotation.GetYAxis() * interpolatedTransform.Scale.Y;
 
 		// World-space vector from camera to object origin (float precision is sufficient in camera-relative space)
-		const Vec3f cameraToObjectOrigin = Vec3f(interpolatedTransform.Position - configuration_.InterpolatedCameraPosition);
+		const Vec3f originOffset(interpolatedTransform.Position - configuration_.InterpolatedCameraPosition);
 
 		for (int i = 0; i < 4; i++)
 		{
-			Vec3f vertexPosition = Vec3f(vertices[i].Position.X, vertices[i].Position.Y, 0.0f);
+			Vec3f vertexPosition(vertices[i].Position.X, vertices[i].Position.Y, 0.0f);
 
 			// Scale and rotate the vertex position (Z can be ignored)
 			vertexPosition = (scaledXAxis * vertexPosition.X) + (scaledYAxis * vertexPosition.Y); 
 
-			// Translate the vertex position by the camera-to-object-origin vector
-			vertexPosition += cameraToObjectOrigin;
+			// Translate the vertex position by origin offset
+			vertexPosition += originOffset;
 
 			// Transform the vertex position to camera space or discard this sprite
 			const float z = configuration_.InterpolatedCameraZAxis.GetDotProduct(vertexPosition);
@@ -100,7 +100,7 @@ namespace pix
 			const float y = configuration_.InterpolatedCameraRotation.GetYAxis().GetDotProduct(vertexPosition);
 
 			// Project the vertex position to logical render-target coordinates (Y increases downward)
-			Vec2f renderTargetCoords = Vec2f(x * configuration_.CameraDistanceToScreen / (-z), y * configuration_.CameraDistanceToScreen / z);
+			Vec2f renderTargetCoords(x * configuration_.CameraDistanceToScreen / (-z), y * configuration_.CameraDistanceToScreen / z);
 			renderTargetCoords += configuration_.RenderTargetOffset;
 
 			// Add the transformed vertex to the batch
@@ -116,8 +116,9 @@ namespace pix
 
 		const Vertex2D* const vertices = node.Mesh->Vertices;
 		const Sprite3DNode* parent = &node;
-		const double interpolationAlpha = static_cast<double>(configuration_.InterpolationAlpha); // Convert to double for use
+		const double interpolationAlpha = configuration_.InterpolationAlpha; // Convert to double for repeated use
 
+		// Cache initial vertex positions
 		Vec3 worldPositionBuffer[4] = 
 		{ 
 		  Vec3(vertices[0].Position.X, vertices[0].Position.Y, 0.0),
@@ -142,9 +143,9 @@ namespace pix
 			worldPositionBuffer[i] = GetInterpolatedUnchecked(prevWorldPositionBuffer[i], worldPositionBuffer[i], interpolationAlpha);
 
 			// World-space vector from camera to vertex (float precision is sufficient in camera-relative space)
-			const Vec3f cameraToVertex = Vec3f(worldPositionBuffer[i] - configuration_.InterpolatedCameraPosition);
+			const Vec3f cameraToVertex(worldPositionBuffer[i] - configuration_.InterpolatedCameraPosition);
 
-			// Transform the vertex position to camera space or discard the sprite
+			// Transform the vertex position to camera space or discard this sprite node
 			const float z = configuration_.InterpolatedCameraZAxis.GetDotProduct(cameraToVertex);
 			if (z > -NEAR_CLIP_DISTANCE)
 			{
@@ -158,7 +159,7 @@ namespace pix
 			const float y = configuration_.InterpolatedCameraRotation.GetYAxis().GetDotProduct(cameraToVertex);
 
 			// Project the vertex position to logical render-target coordinates (Y increases downward)
-			Vec2f renderTargetCoords = Vec2f(x * configuration_.CameraDistanceToScreen / (-z), y * configuration_.CameraDistanceToScreen / z);
+			Vec2f renderTargetCoords(x * configuration_.CameraDistanceToScreen / (-z), y * configuration_.CameraDistanceToScreen / z);
 			renderTargetCoords += configuration_.RenderTargetOffset;
 
 			// Add the transformed vertex to the batch
@@ -174,30 +175,30 @@ namespace pix
 
 		const Vertex2D* const vertices = node.Mesh->Vertices;
 
-		Transform3D interpolatedTransform = node.GetGlobalTransform();
 		Transform3D prevTransform = node.GetPrevGlobalTransform();
 
 		// Interpolate the global node transform
+		Transform3D interpolatedTransform = node.GetGlobalTransform();
 		interpolatedTransform = GetInterpolated(prevTransform, interpolatedTransform, configuration_.InterpolationAlpha);
 
-		// Precompute for combined scaling and rotation per vertex
+		// Precompute the interpolated transform's combined scale and rotation for per-vertex use
 		const Vec3f scaledXAxis = interpolatedTransform.Rotation.GetXAxis() * interpolatedTransform.Scale.X;
 		const Vec3f scaledYAxis = interpolatedTransform.Rotation.GetYAxis() * interpolatedTransform.Scale.Y;
 
 		// World-space vector from camera to object origin (float precision is sufficient in camera-relative space)
-		const Vec3f cameraToObjectOrigin = Vec3f(interpolatedTransform.Position - configuration_.InterpolatedCameraPosition);
+		const Vec3f originOffset(interpolatedTransform.Position - configuration_.InterpolatedCameraPosition);
 
 		for (int i = 0; i < 4; i++)
 		{
-			Vec3f vertexPosition = Vec3f(vertices[i].Position.X, vertices[i].Position.Y, 0.0f);
+			Vec3f vertexPosition(vertices[i].Position.X, vertices[i].Position.Y, 0.0f);
 
 			// Scale and rotate the vertex position (Z can be ignored)
 			vertexPosition = (scaledXAxis * vertexPosition.X) + (scaledYAxis * vertexPosition.Y);
 
-			// Translate the vertex position by the camera-to-object-origin vector
-			vertexPosition += cameraToObjectOrigin;
+			// Translate the vertex position by origin offset
+			vertexPosition += originOffset;
 
-			// Transform the vertex position to camera space or discard this sprite
+			// Transform the vertex position to camera space or discard this sprite node
 			const float z = configuration_.InterpolatedCameraZAxis.GetDotProduct(vertexPosition);
 			if (z > -NEAR_CLIP_DISTANCE)
 			{
@@ -211,7 +212,7 @@ namespace pix
 			const float y = configuration_.InterpolatedCameraRotation.GetYAxis().GetDotProduct(vertexPosition);
 
 			// Project the vertex position to logical render-target coordinates (Y increases downward)
-			Vec2f renderTargetCoords = Vec2f(x * configuration_.CameraDistanceToScreen / (-z), y * configuration_.CameraDistanceToScreen / z);
+			Vec2f renderTargetCoords(x * configuration_.CameraDistanceToScreen / (-z), y * configuration_.CameraDistanceToScreen / z);
 			renderTargetCoords += configuration_.RenderTargetOffset;
 
 			// Add the transformed vertex to the batch
@@ -226,8 +227,8 @@ namespace pix
 		const Vertex2D* const vertices = mesh.Vertices;
 
 		// World-space vector from camera to startPoint/endPoint (camera-space float precision is sufficient)
-		Vec3f cameraToStartPoint = Vec3f(startPoint - configuration_.InterpolatedCameraPosition);
-		Vec3f cameraToEndPoint = Vec3f(endPoint - configuration_.InterpolatedCameraPosition);
+		Vec3f cameraToStartPoint(startPoint - configuration_.InterpolatedCameraPosition);
+		Vec3f cameraToEndPoint(endPoint - configuration_.InterpolatedCameraPosition);
 
 		// Transform the line points to camera space
 		float x1 = configuration_.InterpolatedCameraRotation.GetXAxis().GetDotProduct(cameraToStartPoint);
@@ -238,7 +239,7 @@ namespace pix
 		float y2 = configuration_.InterpolatedCameraRotation.GetYAxis().GetDotProduct(cameraToEndPoint);
 		float z2 = configuration_.InterpolatedCameraZAxis.GetDotProduct(cameraToEndPoint);
 
-		if (z1 > -NEAR_CLIP_DISTANCE && z2 > -NEAR_CLIP_DISTANCE)
+		if (z1 > -NEAR_CLIP_DISTANCE && z2 > -NEAR_CLIP_DISTANCE) // Discard lines behind the near clip plane
 			return;
 
 		// Clip the point behind the near clip plane to the near clip plane
@@ -260,15 +261,15 @@ namespace pix
 		}
 
 		// Project the line points to logical render-target coordinates (Y increases downward)
-		Vec2f startPointRenderTargetCoords = Vec2f(x1 * configuration_.CameraDistanceToScreen / (-z1), y1 * configuration_.CameraDistanceToScreen / z1);
+		Vec2f startPointRenderTargetCoords(x1 * configuration_.CameraDistanceToScreen / (-z1), y1 * configuration_.CameraDistanceToScreen / z1);
 		startPointRenderTargetCoords += configuration_.RenderTargetOffset;
 
-		Vec2f endPointRenderTargetCoords = Vec2f(x2 * configuration_.CameraDistanceToScreen / (-z2), y2 * configuration_.CameraDistanceToScreen / z2);
+		Vec2f endPointRenderTargetCoords(x2 * configuration_.CameraDistanceToScreen / (-z2), y2 * configuration_.CameraDistanceToScreen / z2);
 		endPointRenderTargetCoords += configuration_.RenderTargetOffset;
 
 		const Vec2f halfWidthNormal = ((startPointRenderTargetCoords - endPointRenderTargetCoords).Normalize() * (lineWidth * 0.5f)).GetNormal();
 
-		// Add quad points in clockwise order on the render target around the centered line segment
+		// Add quad points in clockwise order on the screen around the centered line segment
 		Vec2f quadPoint = startPointRenderTargetCoords + halfWidthNormal;
 		vertexBatch_.emplace_back(quadPoint, vertices[0].Color, vertices[0].UV);
 
@@ -288,8 +289,8 @@ namespace pix
 	{
 		const Vertex2D* const vertices = mesh.Vertices;
 
-		// World-space vector from camera to point (camera-space float precision is sufficient)
-		Vec3f cameraToPoint = Vec3f(point - configuration_.InterpolatedCameraPosition);
+		// World-space vector from camera to the point (camera-space float precision is sufficient)
+		Vec3f cameraToPoint(point - configuration_.InterpolatedCameraPosition);
 
 		// Transform the point to camera space
 		float x = configuration_.InterpolatedCameraRotation.GetXAxis().GetDotProduct(cameraToPoint);
@@ -299,21 +300,24 @@ namespace pix
 		if (z > -NEAR_CLIP_DISTANCE) return; // Discard points behind the near clip plane
 
 		// Project the point to logical render-target coordinates (Y increases downward)
-		Vec2f renderTargetCoords = Vec2f(x * configuration_.CameraDistanceToScreen / (-z), y * configuration_.CameraDistanceToScreen / z);
+		Vec2f renderTargetCoords(x * configuration_.CameraDistanceToScreen / (-z), y * configuration_.CameraDistanceToScreen / z);
 		renderTargetCoords += configuration_.RenderTargetOffset;
 
 		const float halfSize = pointSize * 0.5f;
 
-		// Add quad points in clockwise order on the render target around the centered point
+		// Top-left corner
 		Vec2f quadPoint = renderTargetCoords + Vec2f(-halfSize, -halfSize);
 		vertexBatch_.emplace_back(quadPoint, vertices[0].Color, vertices[0].UV);
 
+		// Top-right corner
 		quadPoint = renderTargetCoords + Vec2f(halfSize, -halfSize);
 		vertexBatch_.emplace_back(quadPoint, vertices[1].Color, vertices[1].UV);
 
+		// Bottom-right corner
 		quadPoint = renderTargetCoords + Vec2f(halfSize, halfSize);
 		vertexBatch_.emplace_back(quadPoint, vertices[2].Color, vertices[2].UV);
 
+		// Bottom-left corner
 		quadPoint = renderTargetCoords + Vec2f(-halfSize, halfSize);
 		vertexBatch_.emplace_back(quadPoint, vertices[3].Color, vertices[3].UV);
 	}
@@ -370,7 +374,14 @@ namespace pix
 
 
 
-	void SpriteMeshRenderer3D::UpdateVertexIndices() 
+	// Triangles are emitted in clockwise order on the screen.
+	// First triangle:  0-1-2
+	// Second triangle: 2-3-0
+	// Vertex layout for a non-rotated SpriteMesh:
+	// 0--1
+	// |  |
+	// 3--2
+	void SpriteMeshRenderer3D::UpdateVertexIndices()
 	{
 		const int vertexCount = vertexBatch_.size();
 		const int indexCount = vertexIndices_.size();
@@ -385,12 +396,12 @@ namespace pix
 		for (int i = startSpriteIndex; i <= lastSpriteIndex; i += 4)
 		{
 			vertexIndices_.push_back(i);
-			vertexIndices_.push_back(i + 3);
 			vertexIndices_.push_back(i + 1);
-
-			vertexIndices_.push_back(i + 1);
-			vertexIndices_.push_back(i + 3);
 			vertexIndices_.push_back(i + 2);
+
+			vertexIndices_.push_back(i + 2);
+			vertexIndices_.push_back(i + 3);
+			vertexIndices_.push_back(i);
 		}
 	}
 

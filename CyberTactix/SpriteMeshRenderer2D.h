@@ -2,6 +2,8 @@
 
 #include <vector>
 #include "PixMath.h"
+#include "MovableObject2D.h"
+#include "Texture.h"
 #include "TargetTexture.h"
 #include "SpriteMesh.h"
 #include "Sprite2D.h"
@@ -13,10 +15,10 @@ namespace pix
 	//
 	// Coordinate spaces:
 	// - World space: X right, Y up.
-	// - Logical screen space: origin (0,0) at the bottom-left of the render target,
-	//   (logicalWidth, logicalHeight) at the top-right.
-	// - World space maps directly to logical screen space when the camera position is (0,0)
-	//   and zoom is (1,1).
+	// - Logical screen space: origin = (0, 0) at the bottom-left of the render target, and (logicalResolutionWidth, logicalResolutionHeight) at the top-right.
+	// - Logical render-target coordinates: origin = (0, 0) at the top-left of the render target, and (logicalResolutionWidth, logicalResolutionHeight) at the bottom-right.
+	// - World space maps directly to logical screen space when the camera position is (0, 0), the zoom is (1, 1),
+	//   and renderTargetOffset is set to (0, logicalResolutionHeight) in BeginBatch().
 	//
 	// Camera:
 	// - The camera is provided as a MovableObject2D in world space.
@@ -28,15 +30,21 @@ namespace pix
 	// 1) Call BeginBatch() once per frame (or whenever configuration changes).
 	// 2) Call the render methods to submit geometry to the batch.
 	// 3) Call RenderBatch() to draw all submitted geometry. It may be called multiple times in a row with different textures or render targets.
+	// 
+	// Philosophy:
+	// SpriteMeshRenderer2D focuses on performant rendering of the supported 2D objects.
+	// Geometry is collected into a batch and submitted to the GPU through RenderBatch(),
+	// which greatly reduces communication overhead between the CPU and GPU.
+	// This trades some convenience of immediate per-object rendering for significant performance gains.
 	class SpriteMeshRenderer2D
 	{
 
 	public:
 
-		SpriteMeshRenderer2D(int initialVertexBatchSize = 100000);
+		SpriteMeshRenderer2D(int initialVertexBatchCapacity = 100000);
 		~SpriteMeshRenderer2D()  = default;
 
-		// Renders SpriteMesh using the specified world transform.
+		// Renders a SpriteMesh using the specified world transform.
 		// This is the most performant rendering path when the final transform
 		// is already available (e.g., static meshes or externally computed transform).
 		void Render(const SpriteMesh& mesh, const Transform2D& transform);
@@ -59,44 +67,44 @@ namespace pix
 		void RenderFast(const Sprite2DNode& node);
 
 		// Renders a line between the world-space positions startPoint and endPoint by stretching the mesh along the segment.
-		// lineWidth is specified in logical screen pixels. Fractional values are supported and influence rasterization/rounding.
+		// lineWidth is specified in logical render-target units. Fractional values are supported and influence rasterization/rounding.
 		// If lineWidth is negative (not intended), the generated corner ordering is flipped.
+		// The line segment runs through the center of the generated quad.
 		void RenderLine(const SpriteMesh& mesh, Vec2 startPoint, Vec2 endPoint, float lineWidth);
 
-		// Renders a point centered at the specified world-space position with size = pointSize.
-		// pointSize is specified in logical screen pixels. Fractional values are supported and influence rasterization/rounding.
+		// Renders a point at the specified world-space position using a quad centered on that position.
+		// pointSize is specified in logical render-target units and defines the size of the generated quad.
+		// Fractional values are supported and influence rasterization/rounding.
 		// If pointSize is negative (not intended), the generated corner ordering is flipped.
 		void RenderPoint(const SpriteMesh& mesh, const Vec2 point, float pointSize);
 
 		// Clears the current batch and updates the rendering configuration.
-		// After calling BeginBatch(), subsequent Render() calls append geometry to the batch, transformed according to this configuration.
+		// After calling BeginBatch(), subsequent render calls append geometry to the batch, transformed according to this configuration.
 		// 
 		// Parameters:
-		// - camera: Optional world-space camera (position/rotation/scale = zoom).
-		// - interpolationAlpha: Interpolation factor in [0.0f, 1.0f] used for previous -> current transform blending.
-		// - renderTargetCenter: Logical render-target coordinate that corresponds to camera-space origin.
-		void BeginBatch(const MovableObject2D* camera = nullptr, float interpolationAlpha = 1.0f, Vec2f renderTargetCenter = { 0.0f, 0.0f });
+		// - camera: World-space camera used for view position, rotation and zoom (scale).
+		// - renderTargetOffset: Logical render-target coordinate that corresponds to camera-space origin.
+		// - interpolationAlpha: Interpolation factor used for previous -> current transform blending (internally clamped to [0.0f, 1.0f]).
+		void BeginBatch(const MovableObject2D& camera, Vec2f renderTargetOffset, float interpolationAlpha = 1.0f);
 
 		// Renders the current batch to the specified render target using the given texture.
 		// If renderTarget is nullptr, rendering is performed to the default back buffer.
-		// RenderBatch() may be called independently; it does not modify the batch or the configuration. The batch is cleared only by calling BeginBatch().
+		// RenderBatch() may be called multiple times in a row with different textures or render targets; it does not modify the batch or the configuration. 
+		// The batch is cleared only by calling BeginBatch().
 		// 
 		// Note: 
-		// Render target is renderer-global state. This function sets the render target
-		// and does not restore the previous one (sticky render state contract).
-		void RenderBatch(const Texture& boundTexture, TargetTexture* renderTarget);
+		// Render target is renderer-global state. This function sets the render target and does not restore the previous one.
+		void RenderBatch(const Texture& texture, TargetTexture* renderTarget);
 
 	private:
-
 
 		struct Configuration
 		{
 			float InterpolationAlpha = 1.0f;
-			Vec2 InterpolatedCameraPosition = { 0.0, 0.0 };
-			Vec2f InterpolatedCameraZoom = { 1.0f, 1.0f };
+			Vec2  InterpolatedCameraPosition = Vec2(0.0, 0.0);
+			Vec2f InterpolatedCameraZoom = Vec2f(1.0f, 1.0f);
 			Rotation2D InterpolatedCameraRotation;
-			Vec2f RenderTargetCenter = { 0.0f, 0.0f };
-
+			Vec2f RenderTargetOffset = Vec2f(0.0f, 0.0f);
 		};
 
 		void UpdateVertexIndices();
@@ -105,9 +113,7 @@ namespace pix
 
 		std::vector<Vertex2D> vertexBatch_;
 		std::vector<int> vertexIndices_;
-
 	};
-
 }
 
 
