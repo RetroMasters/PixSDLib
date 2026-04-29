@@ -226,7 +226,7 @@ namespace pix
 	{
 		const Vertex2D* const vertices = mesh.Vertices;
 
-		// World-space vector from camera to startPoint/endPoint (float precision is sufficient in camera-relative space)
+		// World-space vectors from camera to the line endpoints (float precision is sufficient in camera-relative space)
 		Vec3f cameraToStartPoint(startPoint - configuration_.InterpolatedCameraPosition);
 		Vec3f cameraToEndPoint(endPoint - configuration_.InterpolatedCameraPosition);
 
@@ -242,7 +242,7 @@ namespace pix
 		if (z1 > -NEAR_CLIP_DISTANCE && z2 > -NEAR_CLIP_DISTANCE) // Discard lines behind the near clip plane
 			return;
 
-		// Clip the line segment behind the near clip plane
+		// Clip the line segment against the near clip plane
 		if (z1 <= -NEAR_CLIP_DISTANCE && z2 > -NEAR_CLIP_DISTANCE)
 		{
 			const float t = (-NEAR_CLIP_DISTANCE - z1) / (z2 - z1);
@@ -303,7 +303,7 @@ namespace pix
 		Vec2f renderTargetCoords(x * configuration_.CameraDistanceToScreen / (-z), y * configuration_.CameraDistanceToScreen / z);
 		renderTargetCoords += configuration_.RenderTargetOffset;
 
-		const float halfSize = pointSize * 0.5f;
+		const float halfSize = pointSize * 0.5f; // Half side length of the generated quad
 
 		// Top-left corner
 		Vec2f quadPoint = renderTargetCoords + Vec2f(-halfSize, -halfSize);

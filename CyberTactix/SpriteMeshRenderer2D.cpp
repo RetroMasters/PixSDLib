@@ -246,7 +246,7 @@ namespace pix
 		transformedPoint.X = configuration_.RenderTargetOffset.X + transformedPoint.X;
 		transformedPoint.Y = configuration_.RenderTargetOffset.Y - transformedPoint.Y;
 
-		const float halfSize = pointSize * 0.5f; 
+		const float halfSize = pointSize * 0.5f; // Half side length of the generated quad
 
 		// Top-left corner
 		Vec2f quadPoint(transformedPoint.X - halfSize, transformedPoint.Y - halfSize);
@@ -282,7 +282,7 @@ namespace pix
 
 
 
-	void SpriteMeshRenderer2D::RenderBatch(const Texture& boundTexture, TargetTexture* renderTarget) 
+	void SpriteMeshRenderer2D::RenderBatch(const Texture& texture, TargetTexture* renderTarget) 
 	{
 		if (vertexBatch_.size() < 4) return;
 
@@ -306,7 +306,7 @@ namespace pix
 		
 		constexpr int stride = sizeof(Vertex2D);
 
-		renderer.RenderGeometryRaw(boundTexture, &(vertexArray->Position.X), stride, &(vertexArray->Color), stride, &(vertexArray->UV.X), stride, vertexBatch_.size(),
+		renderer.RenderGeometryRaw(texture, &(vertexArray->Position.X), stride, &(vertexArray->Color), stride, &(vertexArray->UV.X), stride, vertexBatch_.size(),
 			vertexIndices_.data(), (vertexBatch_.size() * 3) / 2, 4);
 
 		renderer.SetRenderScale(cachedRenderScale.X, cachedRenderScale.Y); // Restore cached render scale

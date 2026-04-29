@@ -42,7 +42,7 @@ namespace pix
 	public:
 
 		SpriteMeshRenderer2D(int initialVertexBatchCapacity = 100000);
-		~SpriteMeshRenderer2D()  = default;
+		~SpriteMeshRenderer2D() = default;
 
 		// Renders a SpriteMesh using the specified world transform.
 		// This is the most performant rendering path when the final transform
@@ -54,10 +54,9 @@ namespace pix
 		// This is the typical rendering path for moving sprites without hierarchical parent transforms.
 		void Render(const Sprite2D& sprite);
 
-		// Transforms the node hierarchy to world space and renders it using interpolated transform state.
-		// This is the most general rendering path but also the least performant.
-		// It evaluates the Transform2D hierarchy per vertex without using
-		// precomputed affine transformation matrices.
+		// Transforms the node hierarchy to world space and renders the sprite node using interpolated world-space vertex positions.
+        // This is the most general rendering path but also the least performant.
+        // It evaluates the Transform2D hierarchy per vertex without precomputing transforms for per-vertex use.
 		void Render(const Sprite2DNode& node);
 
 		// Optimized variant of Render(const Sprite2DNode&).
@@ -89,8 +88,8 @@ namespace pix
 
 		// Renders the current batch to the specified render target using the given texture.
 		// If renderTarget is nullptr, rendering is performed to the default back buffer.
-		// RenderBatch() may be called multiple times in a row with different textures or render targets; it does not modify the batch or the configuration. 
-		// The batch is cleared only by calling BeginBatch().
+		// RenderBatch() may be called multiple times in a row with different textures or render targets; 
+		// it does not modify the batch or the configuration. The batch is cleared only by calling BeginBatch().
 		// 
 		// Note: 
 		// Render target is renderer-global state. This function sets the render target and does not restore the previous one.

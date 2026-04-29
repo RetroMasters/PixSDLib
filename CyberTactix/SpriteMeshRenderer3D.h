@@ -53,9 +53,9 @@ namespace pix
 		// This is the typical rendering path for moving sprites without hierarchical parent transforms.
 		void Render(const Sprite3D& sprite);
 
-		// Transforms a Sprite3DNode to world space and renders it using interpolated transform state.
+		// Transforms the node hierarchy to world space and renders the sprite node using interpolated world-space vertex positions.
 		// This is the most general rendering path but also the least performant.
-		// It evaluates the Transform3D hierarchy per vertex without using precomputed affine transformation matrices.
+		// It evaluates the Transform3D hierarchy per vertex without precomputing transforms for per-vertex use.
 		void Render(const Sprite3DNode& node);
 
 		// Optimized variant of Render(const Sprite3DNode&).
@@ -86,12 +86,12 @@ namespace pix
 		//   (top-left = (0,0), bottom-right = (logicalResolutionWidth, logicalResolutionHeight)).  
 		// - interpolationAlpha: Interpolation factor used for previous -> current transform blending (internally clamped to [0.0f, 1.0f]).
 		// - verticalFOV: Vertical field of view in degrees for perspective projection.
-		void BeginBatch(const MovableObject3D& camera, Vec2f renderTargetOffset, float interpolationAlpha= 1.0f, float verticalFOV = 60.0f);
+		void BeginBatch(const MovableObject3D& camera, Vec2f renderTargetOffset, float interpolationAlpha = 1.0f, float verticalFOV = 60.0f);
 
 		// Renders the current batch to the specified render target using the given texture.
 		// If renderTarget is nullptr, rendering is performed to the default back buffer.
-		// RenderBatch() may be called multiple times in a row with different textures or render targets; it does not modify the batch or the configuration. 
-		// The batch is cleared only by calling BeginBatch().
+		// RenderBatch() may be called multiple times in a row with different textures or render targets;
+		// it does not modify the batch or the configuration. The batch is cleared only by calling BeginBatch().
 		// 
 		// Note: 
 		// Render target is renderer-global state. This function sets the render target
@@ -103,7 +103,7 @@ namespace pix
 
 		// The near clip plane is at z = -NEAR_CLIP_DISTANCE. 
 		// The constant must be greater than zero to avoid projection at z = 0.
-		// Geometry with camera-space depth greater than -NEAR_CLIP_DISTANCE is clipped (lines) or discarded (triangles).
+		// Geometry with camera-space depth greater than -NEAR_CLIP_DISTANCE is clipped (lines) or discarded (sprite meshes).
 		static constexpr float NEAR_CLIP_DISTANCE = 0.5f;
 
 		struct Configuration
@@ -116,7 +116,6 @@ namespace pix
 
 			float CameraDistanceToScreen = (1080.0f * 0.5f) / std::tan(60.0f * 0.5f * (float)RADIANS_PER_DEGREE); // = 935.3f for 1080p and verticalFOV = 60.0f
 		};
-
 
 		void UpdateVertexIndices();
 
