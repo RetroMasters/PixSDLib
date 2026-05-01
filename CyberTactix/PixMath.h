@@ -10,9 +10,9 @@ namespace pix
 
 	constexpr double PI = 3.14159265358979323846;  // More than enough precision
 
-	constexpr double RADIANS_PER_DEGREE = PI/180.0;
+	constexpr double RADIANS_PER_DEGREE = PI / 180.0;
 	
-	constexpr double DEGREES_PER_RADIAN = 180.0/PI;
+	constexpr double DEGREES_PER_RADIAN = 180.0 / PI;
 	
 
 	// ################################################################################ GENERAL FUNCTIONS #############################################################
@@ -172,7 +172,7 @@ namespace pix
 			return std::sqrt(X * X + Y * Y);
 		}
 
-		T GetSquareLength() const 
+		T GetSquaredLength() const 
 		{
 			return X * X + Y * Y;
 		}
@@ -182,15 +182,15 @@ namespace pix
 		{
 			const T length = GetLength();
 
-			if (length > (T)0)
+			if (length > T(0))
 			{
 				X /= length;
 				Y /= length;
 			}
 			else
 			{
-				X = (T)0;
-				Y = (T)0;
+				X = T(0);
+				Y = T(0);
 			}
 
 			return *this;
@@ -204,7 +204,7 @@ namespace pix
 		// For explicit type conversion
 		template<typename T2> explicit operator Vector2<T2>() const // Explicit: no mixed-type arithmetic to prevent mistakes 
 		{
-			return Vector2<T2>( (T2)X, (T2)Y);
+			return Vector2<T2>(T2(X), T2(Y));
 		}
 
 	};
@@ -335,15 +335,15 @@ namespace pix
 			return X != other.X || Y != other.Y || Z != other.Z;
 		}
 
-		T GetDotProduct(const Vector3& v) const
+		T GetDotProduct(const Vector3& other) const
 		{
-			return X * v.X + Y * v.Y + Z * v.Z;
+			return X * other.X + Y * other.Y + Z * other.Z;
 		}
 
 		// Standard cross product
-		Vector3 GetCrossProduct(const Vector3& v) const
+		Vector3 GetCrossProduct(const Vector3& other) const
 		{
-			return Vector3(Y * v.Z - Z * v.Y, Z * v.X - X * v.Z, X * v.Y - Y * v.X);
+			return Vector3(Y * other.Z - Z * other.Y, Z * other.X - X * other.Z, X * other.Y - Y * other.X);
 		}
 
 		T GetLength() const
@@ -351,7 +351,7 @@ namespace pix
 			return std::sqrt(X * X + Y * Y + Z * Z);
 		}
 
-		T GetSquareLength() const
+		T GetSquaredLength() const
 		{
 			return X * X + Y * Y + Z * Z;
 		}
@@ -361,7 +361,7 @@ namespace pix
 		{
 			const T length = GetLength();
 
-			if (length > (T)0)
+			if (length > T(0))
 			{
 				X /= length;
 				Y /= length;
@@ -369,9 +369,9 @@ namespace pix
 			}
 			else
 			{
-				X = (T)0;
-				Y = (T)0;
-				Z = (T)0;
+				X = T(0);
+				Y = T(0);
+				Z = T(0);
 			}
 
 			return *this;
@@ -380,7 +380,7 @@ namespace pix
 		// For explicit type conversion
 		template<typename T2> explicit operator Vector3<T2>() const
 		{
-			return Vector3<T2>((T2)X, (T2)Y, (T2)Z);
+			return Vector3<T2>(T2(X), T2(Y), T2(Z));
 		}
 
 	};
@@ -497,8 +497,8 @@ namespace pix
 	};
 
 	// Rotation3D represents a 3D rotation using two perpendicular unit vectors (its local X and Y axes).
-	// The third axis (Z) is derived automatically via the cross product, so the three axes always form
-	// a perpendicular coordinate frame (in linear algebra: an orthonormal basis).
+    // The third axis (Z) is derived automatically via the cross product, so the three axes always form
+    // a right-handed perpendicular coordinate frame (in linear algebra: an orthonormal basis).
 	// 
 	// Positive rotation angles follow the mathematical rule:
 	// counterclockwise when looking along the positive direction of the rotation axis.
@@ -518,7 +518,7 @@ namespace pix
 		void SetToIdentity();
 
 
-		// The projection of the global coordinate system onto this rotation's vectors (in linear algebra: equivalent to transposing the orthonormal basis)
+		// Achieved by projecting the global coordinate system onto this rotation's axes (in linear algebra: equivalent to transposing the orthonormal basis)
 		Rotation3D& Inverse();
 
 		// Equivalent to globalRotation.RotatePoint() applied to the xAxis and yAxis
@@ -578,7 +578,7 @@ namespace pix
 
 	private:
 
-		Rotation3D(Vec3f rotationX, Vec3f rotationY); // Used for AddGlobalRotation(Vec3f rotAxis, float degrees)
+		Rotation3D(Vec3f xAxis, Vec3f yAxis); // Used for AddGlobalRotation(Vec3f rotAxis, float degrees)
 
 		Rotation3D& Normalize();
 
@@ -590,7 +590,7 @@ namespace pix
 	// ############################################################### ROTATION OPERATIONS ###################################################
 
 
-	// Returns a linearly interpolated Rotation2D by interpolating between the rotation vectors using interpolationAlpha (internally clamped to [0.0f, 1.0f]).
+	// Returns a linearly interpolated Rotation2D by interpolating between the rotation axes using interpolationAlpha (internally clamped to [0.0f, 1.0f]).
 	// Works most accurately for small angle differences of a few degrees. If the local X axes differ by more than 60 degrees, endRotation is returned.
 	Rotation2D GetInterpolated(Rotation2D startRotation, Rotation2D endRotation, float interpolationAlpha);
 
@@ -601,7 +601,7 @@ namespace pix
 			               xAxis.Y * point.X + xAxis.X * point.Y);
 	}
 
-	// Returns a linearly interpolated Rotation3D by interpolating between the rotation vectors using interpolationAlpha (internally clamped to [0.0f, 1.0f]).
+	// Returns a linearly interpolated Rotation3D by interpolating between the rotation axes using interpolationAlpha (internally clamped to [0.0f, 1.0f]).
 	// Works most accurately for small angle differences of a few degrees. If either axis differs by more than 60 degrees, endRotation is returned.
 	Rotation3D GetInterpolated(const Rotation3D& startRotation, const Rotation3D& endRotation, float interpolationAlpha);
 
@@ -609,7 +609,7 @@ namespace pix
 	// ################################################################################### TRANSFORMS ##################################################################
 
 
-	// Transform2D represents a 2D affine transform (scale, rotation, translation) in either local or world space.
+	// Transform2D represents the position, rotation, and scale of a 2D object in either local or world space.
 	// Transform order: scale -> rotate -> translate.
 	//
 	// Philosophy:
@@ -645,7 +645,7 @@ namespace pix
 
 
 
-	// Transform3D represents a 3D affine transform (scale, rotation, translation) in either local or world space.
+	// Transform3D represents the position, rotation, and scale of a 3D object in either local or world space.
 	// Transform order: scale -> rotate -> translate.
 	//
 	// Philosophy:
