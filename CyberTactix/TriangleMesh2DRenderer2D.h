@@ -18,7 +18,7 @@ namespace pix
 	// Coordinate spaces:
 	// - World space: X right, Y up.
 	// - Logical screen space: origin = (0, 0) at the bottom-left of the render target, and (logicalResolutionWidth, logicalResolutionHeight) at the top-right.
-	// - Logical render-target coordinates: origin = (0, 0) at the top-left of the render target, and (logicalResolutionWidth, logicalResolutionHeight) at the bottom-right.
+	// - Logical render-target space: origin = (0, 0) at the top-left of the render target, and (logicalResolutionWidth, logicalResolutionHeight) at the bottom-right.
 	// - World space maps directly to logical screen space when the camera position is (0, 0), the zoom is (1, 1),
 	//   and renderTargetOffset is set to (0, logicalResolutionHeight) in BeginBatch().
 	//

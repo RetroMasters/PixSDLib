@@ -17,7 +17,7 @@ namespace pix
 	// Coordinate spaces:
 	// - World space: X right, Y up, -Z forward.
 	// - With identity camera rotation, the camera looks along -Z.
-	// - Logical render-target coordinates: origin = (0, 0) at the top-left of the render target, and (logicalResolutionWidth, logicalResolutionHeight) at the bottom-right.
+	// - Logical render-target space: origin = (0, 0) at the top-left of the render target, and (logicalResolutionWidth, logicalResolutionHeight) at the bottom-right.
 	//
 	// Camera:
 	// - The camera is provided as a MovableObject3D in world space.

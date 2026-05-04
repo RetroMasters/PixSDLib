@@ -1,13 +1,16 @@
 #pragma once
 
 #include <vector>
-#include "SpriteMesh.h"
+#include "PixMath.h"
 #include "UV.h"
+#include <SDL_pixels.h>
+#include "SpriteMesh.h"
+
 
 namespace pix
 {
 	// Animation keyframe for the position attributes in SpriteMesh.
-	// DurationTicks is the number of update ticks the frame should persist (may be fractional for an average).
+	// DurationTicks is the number of update ticks the frame should persist and may be fractional to express an average duration.
 	struct SpriteMeshPositionKeyframe
 	{
 		SpriteMeshPositionKeyframe() = default;
@@ -18,13 +21,23 @@ namespace pix
 		{
 		}
 
-		Vec2f Positions[SpriteMesh::VERTEX_COUNT];
+		Vec2f& TopLeft() { return Positions[0]; }
+		Vec2f& TopRight() { return Positions[1]; }
+		Vec2f& BottomRight() { return Positions[2]; }
+		Vec2f& BottomLeft() { return Positions[3]; }
 
-		float DurationTicks; 
+		const Vec2f& TopLeft() const { return Positions[0]; }
+		const Vec2f& TopRight() const { return Positions[1]; }
+		const Vec2f& BottomRight() const { return Positions[2]; }
+		const Vec2f& BottomLeft() const { return Positions[3]; }
+
+		Vec2f Positions[SpriteMesh::VERTEX_COUNT] = { {0.0f, 0.0f}, {0.0f, 0.0f}, {0.0f, 0.0f}, {0.0f, 0.0f} };
+
+		float DurationTicks = 1.0f;
 	};
 
 	// Animation keyframe for the color attributes in SpriteMesh.
-	// DurationTicks is the number of update ticks the frame should persist (may be fractional for an average).
+	// DurationTicks is the number of update ticks the frame should persist and may be fractional to express an average duration.
 	struct SpriteMeshColorKeyframe
 	{
 		SpriteMeshColorKeyframe() = default;
@@ -35,19 +48,29 @@ namespace pix
 		{
 		}
 
-		SDL_Color Colors[SpriteMesh::VERTEX_COUNT];
+		SDL_Color& TopLeft() { return Colors[0]; }
+		SDL_Color& TopRight() { return Colors[1]; }
+		SDL_Color& BottomRight() { return Colors[2]; }
+		SDL_Color& BottomLeft() { return Colors[3]; }
 
-		float DurationTicks;
+		const SDL_Color& TopLeft() const { return Colors[0]; }
+		const SDL_Color& TopRight() const { return Colors[1]; }
+		const SDL_Color& BottomRight() const { return Colors[2]; }
+		const SDL_Color& BottomLeft() const { return Colors[3]; }
+
+		SDL_Color Colors[SpriteMesh::VERTEX_COUNT] = { { 255, 255, 255, 255}, { 255, 255, 255, 255 }, { 255, 255, 255, 255 }, { 255, 255, 255, 255 } };
+
+		float DurationTicks = 1.0f;
 	};
 
 	// Animation keyframe for the UV attributes in SpriteMesh.
-	// DurationTicks is the number of update ticks the frame should persist (may be fractional for an average).
+	// DurationTicks is the number of update ticks the frame should persist and may be fractional to express an average duration.
 	struct SpriteMeshUVKeyframe
 	{
 		SpriteMeshUVKeyframe() = default;
 
 		SpriteMeshUVKeyframe(UVRect uvRect, float durationTicks) :
-			UVs{ uvRect.TopLeft, uvRect.TopRight(), uvRect.BottomRight, uvRect.BottomLeft()},
+			UVs{ uvRect.TopLeft, uvRect.TopRight(), uvRect.BottomRight, uvRect.BottomLeft() },
 			DurationTicks(durationTicks)
 		{
 		}
@@ -68,14 +91,14 @@ namespace pix
 		const Vec2f& BottomRight() const { return UVs[2]; }
 		const Vec2f& BottomLeft()  const { return UVs[3]; }
 
-		Vec2f UVs[SpriteMesh::VERTEX_COUNT];
+		Vec2f UVs[SpriteMesh::VERTEX_COUNT] = { {0.0f, 0.0f}, {1.0f, 0.0f}, {1.0f, 1.0f}, {0.0f, 1.0f} };
 
-		float DurationTicks;
+		float DurationTicks = 1.0f;
 	};
 
 	// Philosophy:
 	// SpriteMeshAnimator offers "flipbook" animations for a SpriteMesh by iterating over a keyframe sequence and applying its state to a mesh.
-	// It is running the animation from the start to the end of the sequence, and then loops to the start if looping is enabled. 
+	// It runs the animation from the start to the end of the sequence, and then loops to the start if looping is enabled. 
 	// Different specializations of SpriteMeshAnimator animate different attributes (positions, colors, UVs) of a mesh to keep animations modular and composable.
 	// SpriteMeshAnimator does not own the keyframe sequence and the target mesh; their validity is the responsibility of the caller.
 	// DurationTicks is expected to be positive, but is processed consistently by a tick accumulator for all values, which means that keyframes with DurationTicks <= 0.0f
@@ -86,29 +109,20 @@ namespace pix
 
 		//###################################### INITIALIZATION ###################################
 
-		SpriteMeshAnimator(): 
-			frameSequence_(nullptr), 
-			targetMesh_(nullptr), 
-			elapsedTicks_(0.0f), 
-			currentFrameIndex_(0), 
-			speedScale_(1.0f), 
-			isLooped_(true) 
+
+		SpriteMeshAnimator() = default;
+
+		SpriteMeshAnimator(const std::vector<KeyframeType>* frameSequence, SpriteMesh* targetMesh = nullptr) : 
+			frameSequence_(frameSequence), 
+			targetMesh_(targetMesh)
 		{
 		}
 
-		SpriteMeshAnimator(const std::vector<KeyframeType>* sequence, SpriteMesh* targetMesh = nullptr): 
-			frameSequence_(sequence), 
-			targetMesh_(targetMesh), 
-			elapsedTicks_(0.0f), 
-			currentFrameIndex_(0), 
-			speedScale_(1.0f), 
-			isLooped_(true) 
-		{
-		}
+		~SpriteMeshAnimator() = default;
 
-		~SpriteMeshAnimator()  = default;
 
 		//###################################### FUNCTIONALITY ###################################
+
 
 		// Advances the animation state for the next update tick and (optionally) applies the current frame to the target mesh.
 		// Returns false if there is no sequence or the animation is finished; otherwise advances internal state and returns true.
@@ -120,9 +134,9 @@ namespace pix
 
 			elapsedTicks_ += speedScale_;
 
-			size_t sequenceSize = frameSequence_->size();
+			const int sequenceSize = frameSequence_->size();
 
-			size_t iterationCount = 0;
+			int iterationCount = 0;
 			while (elapsedTicks_ >= frame->DurationTicks && (isLooped_ || currentFrameIndex_ < (sequenceSize - 1)))
 			{
 				elapsedTicks_ -= frame->DurationTicks;
@@ -143,7 +157,7 @@ namespace pix
 		}
 
 		// Applies the current keyframe state to the mesh. 
-		// This has custom implementations for the specizalizations SpriteMeshPositionAnimator, SpriteMeshColorAnimator, and SpriteMeshUVAnimator. 
+		// This has custom implementations for the specializations SpriteMeshPositionAnimator, SpriteMeshColorAnimator, and SpriteMeshUVAnimator. 
 		bool UpdateMesh(SpriteMesh& mesh) const  
 		{ 
 			return false; 
@@ -164,9 +178,9 @@ namespace pix
 			elapsedTicks_ = elapsedTicks;
 		}
 
-		bool SetCurrentFrameIndex(size_t index) 
+		bool SetCurrentFrameIndex(int index) 
 		{
-			if (!frameSequence_ || index >= frameSequence_->size()) return false;
+			if (!frameSequence_ || index < 0 || index >= frameSequence_->size()) return false;
 
 			currentFrameIndex_ = index;
 
@@ -184,13 +198,13 @@ namespace pix
 		{
 			speedScale_ = speedScale;
 
-			if (speedScale_ < 0.0f)
+			if (speedScale_ < 0.0f) 
 				speedScale_ = 0.0f;
 		}
 
-		// Set or switch to a new keyframe sequence.
-		// currentFrameIndex gets clamped to sequence->size() - 1, or to zero if sequence is null/empty.
-		// elapsedTicks is preserved.
+		// Sets or switches the keyframe sequence without applying a frame to the target mesh.
+        // currentFrameIndex is clamped to the valid range, and elapsedTicks is preserved.
+        // This can enable seamless animation flow when switching to a related frame sequence on the fly.
 		void SetFrameSequence(const std::vector<KeyframeType>* sequence)
 		{
 			frameSequence_ = sequence;
@@ -210,7 +224,9 @@ namespace pix
 			targetMesh_ = targetMesh;
 		}
 
+
 		//###################################################################################### GETTERS ############################################################
+
 
 		// Returns true if sequence is null/empty, or if looping is disabled and the last frame has completed (false otherwise).
 		bool IsFinished() const 
@@ -225,7 +241,7 @@ namespace pix
 			return elapsedTicks_;
 		}
 
-		size_t GetCurrentFrameIndex() const 
+		int GetCurrentFrameIndex() const 
 		{
 			return currentFrameIndex_;
 		}
@@ -260,13 +276,14 @@ namespace pix
 
 	private:
 
-		const std::vector<KeyframeType>* frameSequence_;
-		SpriteMesh* targetMesh_;
+		const std::vector<KeyframeType>* frameSequence_ = nullptr;
+		SpriteMesh* targetMesh_ = nullptr;
 
-		float elapsedTicks_;
-		size_t   currentFrameIndex_;
-		float speedScale_;
-		bool  isLooped_;
+
+		float elapsedTicks_ = 0.0f;
+		int currentFrameIndex_ = 0;
+		float speedScale_ = 1.0f;
+		bool isLooped_ = true;
 	};
 
 	using SpriteMeshPositionAnimator = SpriteMeshAnimator<SpriteMeshPositionKeyframe>;
@@ -280,7 +297,7 @@ namespace pix
 
 		const SpriteMeshPositionKeyframe& currentFrame = (*frameSequence_)[currentFrameIndex_];
 
-		for (size_t i = 0; i < SpriteMesh::VERTEX_COUNT; i++)                                                
+		for (int i = 0; i < SpriteMesh::VERTEX_COUNT; i++)                                                
 			mesh.Vertices[i].Position = currentFrame.Positions[i];
 
 		return true;
@@ -293,7 +310,7 @@ namespace pix
 
 		const SpriteMeshColorKeyframe& currentFrame = (*frameSequence_)[currentFrameIndex_];
 
-		for (size_t i = 0; i < SpriteMesh::VERTEX_COUNT; i++)
+		for (int i = 0; i < SpriteMesh::VERTEX_COUNT; i++)
 			mesh.Vertices[i].Color = currentFrame.Colors[i];
 
 		return true;
@@ -306,7 +323,7 @@ namespace pix
 
 		const SpriteMeshUVKeyframe& currentFrame = (*frameSequence_)[currentFrameIndex_];
 
-		for (size_t i = 0; i < SpriteMesh::VERTEX_COUNT; i++)
+		for (int i = 0; i < SpriteMesh::VERTEX_COUNT; i++)
 			mesh.Vertices[i].UV = currentFrame.UVs[i];
 
 		return true;

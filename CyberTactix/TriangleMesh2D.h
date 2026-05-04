@@ -1,21 +1,21 @@
 #pragma once
 
-#include<SDL_pixels.h>
+#include <SDL_pixels.h>
 #include <vector>
 #include "PixMath.h"
 
 namespace pix
 {
-	// Vertex2DEx is a 2D vertex storing 2D position, Color, UV coordinates, and a 3D normal vector.
+	// Vertex2DEx is a 2D vertex storing 2D position, color, UV coordinates, and a 3D normal vector.
 	// 
 	// Philosophy:
 	// Vertex2DEx defines a point with rendering attributes used by TriangleMesh2D.
 	// The normal vector can provide the illusion of a 3D surface for lighting effects, or carry any other information.
 	struct Vertex2DEx
 	{
-		Vertex2DEx()  = default;
+		Vertex2DEx() = default;
 
-		Vertex2DEx(Vec2f position, SDL_Color color, Vec2f uv, Vec3f normal):
+		Vertex2DEx(Vec2f position, SDL_Color color, Vec2f uv, Vec3f normal) :
 			Position(position),
 			Color(color),
 			UV(uv),
@@ -23,11 +23,13 @@ namespace pix
 		{
 		}
 
-		Vec2f  Position;
-		SDL_Color Color;
-		Vec2f  UV;
-		Vec3f  Normal;
+		Vec2f Position = Vec2f(0.0f, 0.0f);
+		SDL_Color Color = { 255, 255, 255, 255 };
+		Vec2f UV = Vec2f(0.0f, 0.0f);
+		Vec3f Normal = Vec3f(0.0f, 0.0f, 1.0f);
 	};
+
+
 
 	// TriangleMesh2D stores vertices for a 2D mesh composed of triangles.
     // Each triangle is three consecutive Vertex2DEx entries.
@@ -38,17 +40,17 @@ namespace pix
 	{
 		TriangleMesh2D() = default;
 
-		TriangleMesh2D(const std::vector<Vertex2DEx>& vertices):
+		TriangleMesh2D(const std::vector<Vertex2DEx>& vertices) :
 			Vertices(vertices)
 		{
 		}
 
 		bool IsValid() const 
 		{ 
-			return (Vertices.size() % 3) == 0; 
+			return Vertices.size() >= 3 && Vertices.size() % 3 == 0;
 		}
 
-		size_t GetTriangleCount() const 
+		int GetTriangleCount() const 
 		{ 
 			return Vertices.size() / 3; 
 		}

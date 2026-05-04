@@ -104,7 +104,14 @@ namespace pix
 		const double interpolationAlpha = configuration_.InterpolationAlpha; // Convert to double for repeated use
 
 		// Cache initial vertex positions
-		Vec2 worldPositionBuffer[4] = { Vec2(vertices[0].Position), Vec2(vertices[1].Position), Vec2(vertices[2].Position), Vec2(vertices[3].Position) };
+		Vec2 worldPositionBuffer[4] = 
+		{ 
+			Vec2(vertices[0].Position), 
+			Vec2(vertices[1].Position), 
+			Vec2(vertices[2].Position), 
+			Vec2(vertices[3].Position) 
+		};
+
 		Vec2 prevWorldPositionBuffer[4] = { worldPositionBuffer[0], worldPositionBuffer[1], worldPositionBuffer[2], worldPositionBuffer[3] };
 
 		// Transform current and previous vertex positions to world space
@@ -301,7 +308,7 @@ namespace pix
 			int width, height;
 			renderTarget->GetSize(width, height);
 
-			renderer.SetRenderScale(float(width) / renderer.GetLogicalResolutionWidth(), float(height) / renderer.GetLogicalResolutionHeight());
+			renderer.SetRenderScale((float)width / renderer.GetLogicalResolutionWidth(), (float)height / renderer.GetLogicalResolutionHeight());
 		}
 		
 		constexpr int stride = sizeof(Vertex2D);

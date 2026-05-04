@@ -22,25 +22,30 @@ namespace pix
 		return SpriteMesh(topLeft, topRight, bottomRight, bottomLeft);
 	}
 
-	Vec2f GetBoundsSize(const SpriteMesh& mesh)
+	Vec2f GetBoundsSize(const SpriteMesh& mesh) // Compute the size of the axis-aligned bounding box
 	{
-		Vec2f min(mesh.BottomLeft().Position);
-		Vec2f max(mesh.TopRight().Position);
+		const Vec2f topLeft(mesh.TopLeft().Position);
+		const Vec2f topRight(mesh.TopRight().Position);
+		const Vec2f bottomRight(mesh.BottomRight().Position);
+		const Vec2f bottomLeft(mesh.BottomLeft().Position);
 
-		if (mesh.TopLeft().Position.X < min.X) min.X = mesh.TopLeft().Position.X;
-		if (mesh.TopLeft().Position.Y < min.Y) min.Y = mesh.TopLeft().Position.Y;
-		if (mesh.TopRight().Position.X < min.X) min.X = mesh.TopRight().Position.X;
-		if (mesh.TopRight().Position.Y < min.Y) min.Y = mesh.TopRight().Position.Y;
-		if (mesh.BottomRight().Position.X < min.X) min.X = mesh.BottomRight().Position.X;
-		if (mesh.BottomRight().Position.Y < min.Y) min.Y = mesh.BottomRight().Position.Y;
-		
-		if (mesh.BottomRight().Position.X > max.X) max.X = mesh.BottomRight().Position.X;
-		if (mesh.BottomRight().Position.Y > max.Y) max.Y = mesh.BottomRight().Position.Y;
-		if (mesh.BottomLeft().Position.X > max.X) max.X = mesh.BottomLeft().Position.X;
-		if (mesh.BottomLeft().Position.Y > max.Y) max.Y = mesh.BottomLeft().Position.Y;
-		if (mesh.TopLeft().Position.X > max.X) max.X = mesh.TopLeft().Position.X;
-		if (mesh.TopLeft().Position.Y > max.Y) max.Y = mesh.TopLeft().Position.Y;
-		
+		Vec2f min(bottomLeft);
+		Vec2f max(topRight);
+
+		if (topLeft.X < min.X) min.X = topLeft.X;
+		if (topLeft.Y < min.Y) min.Y = topLeft.Y;
+		if (topRight.X < min.X) min.X = topRight.X;
+		if (topRight.Y < min.Y) min.Y = topRight.Y;
+		if (bottomRight.X < min.X) min.X = bottomRight.X;
+		if (bottomRight.Y < min.Y) min.Y = bottomRight.Y;
+
+		if (bottomRight.X > max.X) max.X = bottomRight.X;
+		if (bottomRight.Y > max.Y) max.Y = bottomRight.Y;
+		if (bottomLeft.X > max.X) max.X = bottomLeft.X;
+		if (bottomLeft.Y > max.Y) max.Y = bottomLeft.Y;
+		if (topLeft.X > max.X) max.X = topLeft.X;
+		if (topLeft.Y > max.Y) max.Y = topLeft.Y;
+
 		return max - min;
 	}
 

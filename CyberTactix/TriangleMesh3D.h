@@ -1,12 +1,12 @@
 #pragma once
 
-#include<SDL_pixels.h>
 #include <vector>
+#include <SDL_pixels.h>
 #include "PixMath.h"
 
 namespace pix
 {
-	// Vertex3D is a 3D vertex storing 3D position, Color, UV coordinates, and a 3D normal vector.
+	// Vertex3D is a 3D vertex storing 3D position, color, UV coordinates, and a 3D normal vector.
     // 
     // Philosophy:
     // Vertex3D defines a point with rendering attributes used by TriangleMesh3D.
@@ -23,14 +23,14 @@ namespace pix
 		{
 		}
 
-		Vec3f   Position;
-		SDL_Color  Color;
-		Vec2f   UV;
-		Vec3f   Normal;
+		Vec3f Position = Vec3f(0.0f, 0.0f, 0.0f);
+		SDL_Color Color = { 255, 255, 255, 255 };
+		Vec2f UV = Vec2f(0.0f, 0.0f);
+		Vec3f Normal = Vec3f(0.0f, 0.0f, 1.0f);
 	};
 
 
-	// TriangleMesh3D stores vertices for a 3D mesh composed of triangles.
+	// TriangleMesh3D stores vertices for a 3D mesh composed of triangles. 
 	// Each triangle is three consecutive Vertex3D entries.
 	//
 	// Philosophy:
@@ -46,10 +46,10 @@ namespace pix
 
 		bool IsValid() const
 		{
-			return (Vertices.size() % 3) == 0;
+			return Vertices.size() >= 3 && Vertices.size() % 3 == 0;
 		}
 
-		size_t GetTriangleCount() const
+		int GetTriangleCount() const
 		{
 			return Vertices.size() / 3;
 		}

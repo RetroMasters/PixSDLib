@@ -1,14 +1,14 @@
 #pragma once
 
-#include<string>
+#include <string>
 
 
 namespace pix
 {
-	// A virtual input axis that stores values in the range [-1,1].
+	// A virtual input axis that stores values in the range [-1, 1].
 	//
 	// Philosophy:
-	// VirtualAxis represents a system independent virtual analog axis that can be pushed in the range [-1,1].
+	// VirtualAxis represents a system-independent virtual analog axis that can be pushed in the range [-1, 1].
 	// This virtual analog axis can be set by input systems and then be queried for its state.
 	// It can also be used like a button that can be pressed.
 	class VirtualAxis
@@ -28,15 +28,15 @@ namespace pix
 		// "Became" queries compare current state with the snapshot taken by BeginUpdate().
 		void BeginUpdate();
 
-		// Sets the current axis state within the range [-1,1]
+		// Sets the current axis state within the clamped range [-1, 1]
 		// Note that within the dead zone, the axis state is set to zero
 		void SetAxisState(float state);
 
-		// Sets the dead zone within the range [0,1]
+		// Sets the dead zone within the clamped range [0, 1]
 		void SetDeadZone(float value);
 
-		// Resets the previous and current axis state to zero 
-		void Reset();
+		// Clears current and previous axis state. Deadzone, ID, and name remain unchanged.
+		void ClearState();
 		
 		//################################# GETTERS ##########################################
 		
@@ -66,32 +66,34 @@ namespace pix
 
 	private:
 
-		float axisState_;
-		float prevAxisState_;
-		float deadZone_;
+		float axisState_ = 0.0f;
+		float prevAxisState_ = 0.0f;
+		float deadZone_ = 0.001f;
 
 		std::string name_;
-		int id_;
+		int id_ = -1;
 	};
 
 
-	// AbstractInputPump is the abstract base class for pumps transferring specific source-input, like a button press on gamepad, to a virtual axis. 
-	// The transfer is handled by a pump function that takes the current source and axis state as input.
-	// The concrete InputPump types only differ in the source of input. Thus they only have to implement GetSourceState().
-	// A valid axis that outlives the pump must be provided by its owner, so the Pump() method can operate. 
-	// The axis ID is cached primarily as an index-like identity for owners that store axes in vectors (to relink after reallocation).
-	// But validity of the ID depends on the owner. 
+	// AbstractInputPump is the abstract base class for pumps transferring specific source input, such as a button press on a gamepad, to a virtual axis.
+    // The transfer is handled by a pump function that takes the current source state and axis state as input.
+    // Concrete pump types differ only in the source input, so they only need to implement GetSourceState().
+    // A valid axis that outlives the pump must be provided by its owner so that Pump() can operate.
+    // The axis ID is cached primarily as an index-like identity for owners that store axes in vectors, for example to relink after reallocation.
+    // The validity of the cached axis ID depends on the owner.
 	// 
 	// Philosophy:
-	// An input pump is the fundamental building block for streaming input. An input pump does not own the virtual axis, it just connects exactly 
-	// one source of input to exactly one virtual axis. The virtual axis must outlive the pump. By plugging input pumps in between the sources of input
-	// and the virtual axes, a full n:n relationship (an input can connect to all axes, and an axis can be connected by all inputs) in connectivity can be achieved.  
+    // An input pump is the fundamental building block for streaming input.
+    // It does not own the virtual axis; it only connects exactly one source of input to exactly one virtual axis.
+    // The virtual axis must outlive the pump.
+    // By placing input pumps between input sources and virtual axes, a full n:n relationship can be achieved:
+    // one input can connect to multiple axes, and one axis can receive input from multiple sources.
 	class AbstractInputPump
 	{
 
 	public:
 
-	    // A 2D float function taking the current source state and axis state to determine the resulting axis state.
+		// A float function taking the current source state and current axis state and returning the resulting axis state.
 		// Note: If a virtual axis has multiple input sources, DefaultPumpFunction() is typically suited to set the input properly.
 		using PumpFunction = float(*) (float sourceState, float axisState);
 
@@ -105,10 +107,10 @@ namespace pix
 
 		//###################### FUNCTIONALITY #############################
 
-		bool Enabled;
+		bool Enabled = true;
 
 		// Pumps the current source state to the axis by using the pump function.
-		// If Enabled is set to false, Pump() is no-op. 
+		// If Enabled is set to false, Pump() is a no-op. 
 		void Pump();
 
 		// Rebinds the pump to a different axis and updates the cached axis ID.
@@ -124,9 +126,9 @@ namespace pix
 
 		PumpFunction GetPumpFunction() const;
 
-		VirtualAxis& GetVirtualAxis() const;
-
-		//const VirtualAxis& GetVirtualAxis() const;
+		// Philosophy: Returns a non-const reference because the pump does not own the bound VirtualAxis.
+		// Constness of the pump does not restrict mutation of externally owned objects.
+		VirtualAxis& GetVirtualAxis() const; 
 
 		int GetCachedAxisID() const;
 
@@ -136,9 +138,9 @@ namespace pix
 		// On equal magnitude, the source value wins (later pumps override earlier ones).
 		static float DefaultPumpFunction(float sourceState, float axisState);
 
-		PumpFunction pumpFunction_;
-		VirtualAxis* virtualAxis_;
-		int cachedAxisID_;
+		PumpFunction pumpFunction_ = DefaultPumpFunction;
+		VirtualAxis* virtualAxis_ = nullptr;
+		int cachedAxisID_ = -1;
 	};
 
 }

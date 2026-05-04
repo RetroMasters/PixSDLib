@@ -5,8 +5,6 @@ namespace pix
 {
 	
 		VirtualAxis::VirtualAxis(const std::string& name, int id, float deadZone) :
-			axisState_(0.0f),
-			prevAxisState_(0.0f),
 			name_(name),
 			id_(id)
 		{
@@ -33,7 +31,7 @@ namespace pix
 		float VirtualAxis::GetEffectiveAxisState() const
 		{
 			// When deadZone_ == 1, axisState_ is 0, so division by zero cannot occur
-			float effectiveRange = 1.0f - deadZone_;
+			const float effectiveRange = 1.0f - deadZone_;
 
 			if (axisState_ > 0.0f)
 				return (axisState_ - deadZone_) / effectiveRange;
@@ -47,6 +45,9 @@ namespace pix
 		void VirtualAxis::SetDeadZone(float value)
 		{
 			deadZone_ = GetClamped(value, 0.0f, 1.0f);
+
+			if(std::abs(axisState_) <= deadZone_) 
+				axisState_ = 0.0f;
 		}
 
 		float VirtualAxis::GetDeadZone() const
@@ -54,7 +55,7 @@ namespace pix
 			return deadZone_;
 		}
 
-		void VirtualAxis::Reset()
+		void VirtualAxis::ClearState()
 		{
 			axisState_ = 0.0f;
 			prevAxisState_ = 0.0f;
@@ -80,7 +81,6 @@ namespace pix
 		}
 
 		AbstractInputPump::AbstractInputPump(VirtualAxis& virtualAxis, PumpFunction pumpFunction) :
-			Enabled(true),
 			pumpFunction_(pumpFunction ? pumpFunction : DefaultPumpFunction), 
 			virtualAxis_(&virtualAxis),
 			cachedAxisID_(virtualAxis.GetID())

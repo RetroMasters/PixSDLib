@@ -1,4 +1,3 @@
-
 #include "SpriteMeshAnimatorOps.h"
 #include "UVOps.h"
 
@@ -21,13 +20,13 @@ namespace pix
 
 		for (int i = 1; i < frameCount; i++)
 		{
-			if (sampleRect.x + (2 * sampleRect.w) <= texWidth) // Is there space for another frame in this row?
+			if (sampleRect.x + (2 * sampleRect.w) <= texWidth) // Is there enough horizontal space for another frame in this row?
 			{
 				sampleRect.x += sampleRect.w;
 			    
 				frameSequence.emplace_back(GetUVQuad(texWidth, texHeight, sampleRect), tickDuration);
 			}
-			else if (sampleRect.y + (2 * sampleRect.h) <= texHeight) // Is there space for another frame in the column?
+			else if (sampleRect.y + (2 * sampleRect.h) <= texHeight) // Is there enough vertical space for another frame in the next row?
 			{
 				sampleRect.x = 0;
 				sampleRect.y += sampleRect.h;
@@ -42,13 +41,17 @@ namespace pix
 
 		if (flip & SDL_RendererFlip::SDL_FLIP_HORIZONTAL)
 		{
-			for (size_t i = 0; i < frameSequence.size(); i++)
+			const int sequenceSize = frameSequence.size();
+
+			for (int i = 0; i < sequenceSize; i++)
 				FlipUVHorizontal(frameSequence[i]);
 		}
 
 		if (flip & SDL_RendererFlip::SDL_FLIP_VERTICAL)
 		{
-			for (size_t i = 0; i < frameSequence.size(); i++)
+			const int sequenceSize = frameSequence.size();
+
+			for (int i = 0; i < sequenceSize; i++)
 				FlipUVVertical(frameSequence[i]);
 		}
 
@@ -57,28 +60,28 @@ namespace pix
 
 	void FlipUVHorizontal(SpriteMeshUVKeyframe& keyframe)
 	{
-		float tempX = keyframe.UVs[0].X;
+		float tempX = keyframe.TopLeft().X;
 
-		keyframe.UVs[0].X = keyframe.UVs[1].X;
-		keyframe.UVs[1].X = tempX;
+		keyframe.TopLeft().X = keyframe.TopRight().X;
+		keyframe.TopRight().X = tempX;
 
-		tempX = keyframe.UVs[2].X;
+		tempX = keyframe.BottomRight().X;
 
-		keyframe.UVs[2].X = keyframe.UVs[3].X;
-		keyframe.UVs[3].X = tempX;
+		keyframe.BottomRight().X = keyframe.BottomLeft().X;
+		keyframe.BottomLeft().X = tempX;
 	}
 
 	void FlipUVVertical(SpriteMeshUVKeyframe& keyframe)
 	{
-		float tempY = keyframe.UVs[0].Y;
+		float tempY = keyframe.TopLeft().Y;
 
-		keyframe.UVs[0].Y = keyframe.UVs[3].Y;
-		keyframe.UVs[3].Y = tempY;
+		keyframe.TopLeft().Y = keyframe.BottomLeft().Y;
+		keyframe.BottomLeft().Y = tempY;
 
-		tempY = keyframe.UVs[1].Y;
+		tempY = keyframe.TopRight().Y;
 
-		keyframe.UVs[1].Y = keyframe.UVs[2].Y;
-		keyframe.UVs[2].Y = tempY;
+		keyframe.TopRight().Y = keyframe.BottomRight().Y;
+		keyframe.BottomRight().Y = tempY;
 	}
 
 }

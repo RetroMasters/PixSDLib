@@ -182,15 +182,15 @@ namespace pix
 		{
 			const T length = GetLength();
 
-			if (length > T(0))
+			if (length > (T)0)
 			{
 				X /= length;
 				Y /= length;
 			}
 			else
 			{
-				X = T(0);
-				Y = T(0);
+				X = (T)0;
+				Y = (T)0;
 			}
 
 			return *this;
@@ -204,7 +204,7 @@ namespace pix
 		// For explicit type conversion
 		template<typename T2> explicit operator Vector2<T2>() const // Explicit: no mixed-type arithmetic to prevent mistakes 
 		{
-			return Vector2<T2>(T2(X), T2(Y));
+			return Vector2<T2>((T2)X, (T2)Y);
 		}
 
 	};
@@ -361,7 +361,7 @@ namespace pix
 		{
 			const T length = GetLength();
 
-			if (length > T(0))
+			if (length > (T)0)
 			{
 				X /= length;
 				Y /= length;
@@ -369,9 +369,9 @@ namespace pix
 			}
 			else
 			{
-				X = T(0);
-				Y = T(0);
-				Z = T(0);
+				X = (T)0;
+				Y = (T)0;
+				Z = (T)0;
 			}
 
 			return *this;
@@ -380,7 +380,7 @@ namespace pix
 		// For explicit type conversion
 		template<typename T2> explicit operator Vector3<T2>() const
 		{
-			return Vector3<T2>(T2(X), T2(Y), T2(Z));
+			return Vector3<T2>((T2)X, (T2)Y, (T2)Z);
 		}
 
 	};

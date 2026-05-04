@@ -66,7 +66,7 @@ namespace pix
 
 	void Rotation2D::Set(float degrees)
 	{
-		degrees *= float(RADIANS_PER_DEGREE);
+		degrees *= (float)RADIANS_PER_DEGREE;
 
 		// No need for normalization as numerical errors don't accumulate
 		xAxis_ = Vec2f(std::cosf(degrees), std::sinf(degrees));
@@ -74,7 +74,7 @@ namespace pix
 
 	Rotation2D& Rotation2D::AddRotation(float deltaDegrees)
 	{
-		deltaDegrees *= float(RADIANS_PER_DEGREE);
+		deltaDegrees *= (float)RADIANS_PER_DEGREE;
 
 		Vec2f localXAxis(std::cosf(deltaDegrees), std::sinf(deltaDegrees));
 
@@ -145,7 +145,7 @@ namespace pix
 
 	float Rotation2D::GetAngle() const
 	{
-		return std::atan2f(xAxis_.Y, xAxis_.X) * float(DEGREES_PER_RADIAN);
+		return std::atan2f(xAxis_.Y, xAxis_.X) * (float)DEGREES_PER_RADIAN;
 	}
 
 	Rotation2D Rotation2D::GetInverse() const
@@ -218,7 +218,7 @@ namespace pix
 
 	Rotation3D& Rotation3D::AddGlobalRotationX(float degrees) // Treat like a 2D rotation in the YZ plane
 	{
-		const float rad = degrees * float(RADIANS_PER_DEGREE);
+		const float rad = degrees * (float)RADIANS_PER_DEGREE;
 
 		const float c = std::cosf(rad);
 		const float s = std::sinf(rad);
@@ -231,7 +231,7 @@ namespace pix
 
 	Rotation3D& Rotation3D::AddGlobalRotationY(float degrees) // Treat like a 2D rotation in the XZ plane
 	{
-		const float rad = degrees * float(RADIANS_PER_DEGREE);
+		const float rad = degrees * (float)RADIANS_PER_DEGREE;
 
 		const float c = std::cosf(rad);
 		const float s = std::sinf(rad);
@@ -244,7 +244,7 @@ namespace pix
 
 	Rotation3D& Rotation3D::AddGlobalRotationZ(float degrees) // Treat like a 2D rotation in the XY plane
 	{
-		const float rad = degrees * float(RADIANS_PER_DEGREE);
+		const float rad = degrees * (float)RADIANS_PER_DEGREE;
 
 		const float s = std::sinf(rad);
 		const float c = std::cosf(rad);
@@ -269,7 +269,7 @@ namespace pix
 
 	Rotation3D& Rotation3D::AddLocalRotationX(float degrees)
 	{
-		const float rad = degrees * float(RADIANS_PER_DEGREE);
+		const float rad = degrees * (float)RADIANS_PER_DEGREE;
 
 		const float s = std::sinf(rad);
 		const float c = std::cosf(rad);
@@ -282,7 +282,7 @@ namespace pix
 
 	Rotation3D& Rotation3D::AddLocalRotationY(float degrees)
 	{
-		const float rad = degrees * float(RADIANS_PER_DEGREE);
+		const float rad = degrees * (float)RADIANS_PER_DEGREE;
 
 		const float s = std::sinf(rad);
 		const float c = std::cosf(rad);
@@ -295,7 +295,7 @@ namespace pix
 
 	Rotation3D& Rotation3D::AddLocalRotationZ(float degrees)
 	{
-		const float rad = degrees * float(RADIANS_PER_DEGREE);
+		const float rad = degrees * (float)RADIANS_PER_DEGREE;
 
 		const float s = std::sinf(rad);
 		const float c = std::cosf(rad);
@@ -424,7 +424,7 @@ namespace pix
 
 	Rotation3D& Rotation3D::Normalize()
 	{
-		// The idea is to simply subtract any overlap from yAxis that it has with the xAxis and normalize it (In linear algebra: also known as Gram–Schmidt orthogonalization).
+		// The idea is to simply subtract any overlap from yAxis that it has with the xAxis and normalize it (in linear algebra: also known as Gram–Schmidt orthogonalization).
 		xAxis_.Normalize();
 		float overlapOnXAxis = yAxis_.GetDotProduct(xAxis_);
 		yAxis_ -= (xAxis_ * overlapOnXAxis);
@@ -524,7 +524,7 @@ namespace pix
 	void Transform2D::InverseTransformPoints(Vec2* points, int count) const
 	{
 		// Precompute inverse scale. GetSafeDivision() keeps it finite.
-		Vec2 invScale(GetSafeDivision(1.0, double(Scale.X)), GetSafeDivision(1.0, double(Scale.Y)));
+		Vec2 invScale(GetSafeDivision(1.0, (double)Scale.X), GetSafeDivision(1.0, (double)Scale.Y));
 
 		for (int i = 0; i < count; i++)
 		{
@@ -548,8 +548,8 @@ namespace pix
 		Rotation.InverseRotatePoint(point);
 
 		// Reverse scale
-		point.X = GetSafeDivision(point.X, double(Scale.X));
-		point.Y = GetSafeDivision(point.Y, double(Scale.Y));
+		point.X = GetSafeDivision(point.X, (double)Scale.X);
+		point.Y = GetSafeDivision(point.Y, (double)Scale.Y);
 	}
 
 	
@@ -605,7 +605,7 @@ namespace pix
 	void Transform3D::InverseTransformPoints(Vec3* points, int count) const
 	{
 		// Precompute inverse scale. GetSafeDivision() keeps it finite.
-		Vec3 invScale(GetSafeDivision(1.0, double(Scale.X)), GetSafeDivision(1.0, double(Scale.Y)), GetSafeDivision(1.0, double(Scale.Z)));
+		Vec3 invScale(GetSafeDivision(1.0, (double)Scale.X), GetSafeDivision(1.0, (double)Scale.Y), GetSafeDivision(1.0, (double)Scale.Z));
 		Rotation3D inverseRotation = Rotation.GetInverse();
 
 		for (int i = 0; i < count; i++)
@@ -630,9 +630,9 @@ namespace pix
 		Rotation.GetInverse().RotatePoint(point);
 
 		// Reverse scale
-		point.X = GetSafeDivision(point.X, double(Scale.X));
-		point.Y = GetSafeDivision(point.Y, double(Scale.Y));
-		point.Z = GetSafeDivision(point.Z, double(Scale.Z));
+		point.X = GetSafeDivision(point.X, (double)Scale.X);
+		point.Y = GetSafeDivision(point.Y, (double)Scale.Y);
+		point.Z = GetSafeDivision(point.Z, (double)Scale.Z);
 	}
 
 
@@ -643,7 +643,7 @@ namespace pix
 	{
 		interpolationAlpha = GetClamped(interpolationAlpha, 0.0f, 1.0f);
 
-		Vec2 interpolatedPosition = GetInterpolatedUnchecked(startTransform.Position, endTransform.Position, double(interpolationAlpha));
+		Vec2 interpolatedPosition = GetInterpolatedUnchecked(startTransform.Position, endTransform.Position, (double)interpolationAlpha);
 		Vec2f interpolatedScale = GetInterpolatedUnchecked(startTransform.Scale, endTransform.Scale, interpolationAlpha);
 		Rotation2D interpolatedRotation = GetInterpolated(startTransform.Rotation, endTransform.Rotation, interpolationAlpha);
 
@@ -656,7 +656,7 @@ namespace pix
 	{
 		interpolationAlpha = GetClamped(interpolationAlpha, 0.0f, 1.0f);
 
-		Vec3 interpolatedPosition = GetInterpolatedUnchecked(startTransform.Position, endTransform.Position, double(interpolationAlpha));
+		Vec3 interpolatedPosition = GetInterpolatedUnchecked(startTransform.Position, endTransform.Position, (double)interpolationAlpha);
 		Vec3f interpolatedScale = GetInterpolatedUnchecked(startTransform.Scale, endTransform.Scale, interpolationAlpha);
 		Rotation3D interpolatedRotation = GetInterpolated(startTransform.Rotation, endTransform.Rotation, interpolationAlpha);
 

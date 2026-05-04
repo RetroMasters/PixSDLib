@@ -1,15 +1,17 @@
 #pragma once
 
-#include <SDL.h>
 #include "Uncopyable.h"
+#include <SDL_render.h>
 
 namespace pix
 {
-	// Texture is a resource-managing abstract base class for SDL_Texture. It provides common properties and functionality for all concrete texture types.
+	// Texture is a resource-managing non-instantiable base class for SDL_Texture. 
+	// It provides common properties and functionality for concrete texture types.
 	//
 	// Technical note:
 	// SDL_Textures are GPU resources that know their internal pixel format, and it may differ from the format used to create or load them. 
-	// SDL guarantees correct blending and rendering across textures regardless of their origin since it creates SDL_Textures in a format that the GPU accepts.
+	// SDL guarantees correct blending and rendering across textures regardless of their origin, 
+	// since it creates SDL_Texture resources in a format accepted by the the GPU.
 	// 
 	// Philosophy:
 	// Conceptually, a texture is just raw pixel data. However, in SDL2, blending state is bound to the texture
@@ -58,14 +60,12 @@ namespace pix
 
 	protected:
 
-		// Sets sdlTexture_ to nullptr
-		Texture(); // Allow construction of derived classes only
+		Texture() = default; // Allow construction of derived classes only
 
 		// Destroys SDL_Texture and sets sdlTexture_ to nullptr.
 		// The command is ignored if sdlTexture_ is already a nullptr.
 		void DeleteSDLTexture(); 
 
-		SDL_Texture* sdlTexture_;
+		SDL_Texture* sdlTexture_ = nullptr;
 	};
-
 }

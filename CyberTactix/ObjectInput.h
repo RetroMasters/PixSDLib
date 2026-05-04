@@ -1,6 +1,6 @@
 #pragma once
 
-#include<vector>
+#include <vector>
 #include "InputPumps.h"
 
 namespace pix
@@ -25,16 +25,12 @@ namespace pix
 		ObjectInput(const ObjectInput& other);
 		ObjectInput& operator= (const ObjectInput& other);
 
-		// ################################### UPDATE ##################################
+		// ################################################################## CONFIGURE INPUT ####################################################
 
-		// Updates the input state. An object should check input AFTER Update() is called to react to the most current input state.
-		// Requires the underlying Input singletons to have up-to-date SDL state(SDL_PollEvent / SDL_PumpEvents already processed).
-		void Update();
-
-		//################################################################## CONFIGURE INPUT ####################################################
-
-		// All binding methods return true if the binding has been added/removed, false otherwise 
-		// Adding a binding immediately sets all axis state to the currently polled one to prevent transient state (no "Became" actions are possible this update).
+		// Add methods return true if a new binding was added, false otherwise.
+        // Remove methods return true if an existing binding was removed, false otherwise.
+        // New bindings are pumped and synced immediately to avoid false Became* transitions on the creation frame.
+		// Pump order matches binding order and is preserved when bindings are removed.
 		
 		bool AddKeyboardBinding(SDL_Scancode sourceKey, const std::string& axisName, AbstractInputPump::PumpFunction pumpFunction = nullptr);
 
@@ -56,19 +52,29 @@ namespace pix
 
 		bool RemoveVirtualBinding(int sourceID, const std::string& axisName);
 
-		bool SetVirtualSourceState(int sourceID, const std::string& axisName, float sourceState);
-
 		// The axis state within the deadzone is zero
 		bool SetDeadZone(const std::string& axisName, float value);
 
+		// ################################################################## SET INPUT ####################################################
+
+		// Updates the input state. An object should check input AFTER Update() is called to react to the most current input state.
+		// Requires the underlying Input singletons to have up-to-date SDL state (SDL_PollEvent / SDL_PumpEvents already processed).
+		void Update();
+
+		// Code driven source input
+		bool SetVirtualSourceState(int sourceID, const std::string& axisName, float sourceState);
+
+		// Overload that takes axis ID instead of its name
+		bool SetVirtualSourceState(int sourceID, int axisID, float sourceState);
+
 		// Resets the previous and current state of all axes to zero
-		void ResetAxes();
+		void ClearAxisState();
 
 		// Resets the state of all virtual input sources to zero, not the axis state.
 		// The resulting axis state is changed on the next Update().
 		void ResetVirtualSourceState();
 
-		//################################################################## CHECK INPUT ####################################################
+		// ################################################################## CHECK INPUT ####################################################
 
 		// Returns true if current axis state is positive, false otherwise
 		bool IsPositive(const std::string& axisName) const;
@@ -94,25 +100,53 @@ namespace pix
 		// Returns current axis state
 		float GetAxisState(const std::string& axisName) const;
 
-		
+		// Following overloads operates on cached axis IDs to avoid string lookup
+
+		// Returns true if current axis state is positive, false otherwise.
+		bool IsPositive(int axisID) const;
+
+		// Returns true if axis state was not positive and became positive in the current update iteration, false otherwise.
+		bool BecamePositive(int axisID) const;
+
+		// Returns true if axis state was positive and became zero in the current update iteration, false otherwise.
+		bool BecameZeroFromPositive(int axisID) const;
+
+		// Returns true if current axis state is negative, false otherwise
+		bool IsNegative(int axisID) const;
+
+		// Returns true if axis state was not negative and became negative in the current update iteration, false otherwise
+		bool BecameNegative(int axisID) const;
+
+		// Returns true if axis state was negative and became zero in the current update iteration, false otherwise
+		bool BecameZeroFromNegative(int axisID) const;
+
+		// Returns true if axis state was not zero and became zero in the current update iteration, false otherwise
+		bool BecameZero(int axisID) const;
+
+		// Returns current axis state
+		float GetAxisState(int axisID) const;
+
+	    int GetAxisID(const std::string& axisName) const;
+
+		std::string GetAxisName(int axisID) const;
 
 	private:
 
 		void SyncPreviousInput();
 
-		void ResetAxisState();
+		void ClearCurrentAxisState();
 
 		void PumpInput();
 
-		// Invariant: axes are append-only. VirtualAxis::id == index in virtualAxes_.
+		// Axes are append-only, so VirtualAxis::id == index in virtualAxes_.
         // Cached pump axis IDs are therefore stable for the lifetime of this ObjectInput.
 		void RelinkPumpsToAxes();
 
 		VirtualAxis* GetOrAddVirtualAxis(const std::string& axisName);
 		
-		VirtualAxis* GetVirtualAxis(const std::string& axisName);
+		VirtualAxis* GetAxis(const std::string& axisName);
 
-		const VirtualAxis* GetVirtualAxis(const std::string& axisName) const;
+		const VirtualAxis* GetAxis(const std::string& axisName) const;
 
 		int GetKeyboardPumpIndex(SDL_Scancode sourceKey, const std::string& axisName) const;
 
@@ -124,12 +158,16 @@ namespace pix
 
 		int GetVirtualPumpIndex(int sourceID, const std::string& axisName) const;
 
+		int GetVirtualPumpIndex(int sourceID, int axisID) const;
+
+		bool IsValidAxisID(int axisID) const;
+		
 	
 		std::vector<VirtualAxis> virtualAxes_;
 		std::vector<KeyboardInputPump> keyboardInputPumps_;
-		std::vector<MouseButtonInputPump>    mouseInputPumps_;
-		std::vector<GamepadInputPump>  gamepadInputPumps_;
-		std::vector<VirtualInputPump>  virtualInputPumps_;
+		std::vector<MouseButtonInputPump> mouseInputPumps_;
+		std::vector<GamepadInputPump> gamepadInputPumps_;
+		std::vector<VirtualInputPump> virtualInputPumps_;
 
 	};
 

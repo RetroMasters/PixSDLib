@@ -5,7 +5,7 @@
 namespace pix
 {
 
-	TextTexture::TextTexture(const std::string& text, TTF_Font* font, bool renderBlended, SDL_Color color) : Texture()
+	TextTexture::TextTexture(const std::string& text, TTF_Font* font, bool renderBlended, SDL_Color color)
 	{
 	    Reload(text, font, renderBlended, color);
 	}
@@ -13,16 +13,16 @@ namespace pix
 
 	bool TextTexture::Reload(const std::string& text, TTF_Font* font, bool renderBlended, SDL_Color color) 
 	{
-		if (font == nullptr)
+		if (!font)
 		{
 			ErrorLogger::Get().LogError("TextTexture::Reload() failure", "No TTF_Font provided!");
 			return false;
 		}
 
 		SDL_BlendMode blendMode = SDL_BLENDMODE_BLEND;
-		Uint8 r = 255; Uint8 g = 255; Uint8 b = 255; Uint8 a = 255;
+		Uint8 r = 255, g = 255, b = 255, a = 255;
 
-		// Cache blend state to restore it in the new texture
+		// Cache blend state to restore it on the new texture
 		if (sdlTexture_)
 		{
 			blendMode = GetBlendMode();
@@ -30,15 +30,25 @@ namespace pix
 		}
 
 		SDL_Surface* textSurface = nullptr;
-		if(renderBlended)
-		 textSurface = TTF_RenderUTF8_Blended(font, text.c_str(), color);
-		else 
-		 textSurface = TTF_RenderText_Solid(font, text.c_str(), color);
-
-		if (!textSurface)
+		if (renderBlended)
 		{
-			ErrorLogger::Get().LogSDLError("TextTexture::Reload() - TTF_RenderUTF8... failure");
-			return false;
+			textSurface = TTF_RenderUTF8_Blended(font, text.c_str(), color);
+
+			if (!textSurface)
+			{
+				ErrorLogger::Get().LogSDLError("TextTexture::Reload() - TTF_RenderUTF8_Blended() failure");
+				return false;
+			}
+		}
+		else
+		{
+			textSurface = TTF_RenderUTF8_Solid(font, text.c_str(), color);
+
+			if (!textSurface)
+			{
+				ErrorLogger::Get().LogSDLError("TextTexture::Reload() - TTF_RenderUTF8_Solid() failure");
+				return false;
+			}
 		}
 
 		SDL_Texture* newTexture = SDL_CreateTextureFromSurface(Renderer::Get().GetSDLRenderer(), textSurface);

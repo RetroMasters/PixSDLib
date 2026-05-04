@@ -269,7 +269,7 @@ namespace pix
 			int width, height;
 			renderTarget->GetSize(width, height);
 
-			renderer.SetRenderScale(float(width) / renderer.GetLogicalResolutionWidth(), float(height) / renderer.GetLogicalResolutionHeight());
+			renderer.SetRenderScale((float)width / renderer.GetLogicalResolutionWidth(), (float)height / renderer.GetLogicalResolutionHeight());
 		}
 
 		constexpr int stride = sizeof(Vertex2D);

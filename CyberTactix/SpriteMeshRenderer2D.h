@@ -16,7 +16,7 @@ namespace pix
 	// Coordinate spaces:
 	// - World space: X right, Y up.
 	// - Logical screen space: origin = (0, 0) at the bottom-left of the render target, and (logicalResolutionWidth, logicalResolutionHeight) at the top-right.
-	// - Logical render-target coordinates: origin = (0, 0) at the top-left of the render target, and (logicalResolutionWidth, logicalResolutionHeight) at the bottom-right.
+	// - Logical render-target space: origin = (0, 0) at the top-left of the render target, and (logicalResolutionWidth, logicalResolutionHeight) at the bottom-right.
 	// - World space maps directly to logical screen space when the camera position is (0, 0), the zoom is (1, 1),
 	//   and renderTargetOffset is set to (0, logicalResolutionHeight) in BeginBatch().
 	//
@@ -75,7 +75,7 @@ namespace pix
 		// pointSize is specified in logical render-target units and defines the size of the generated quad.
 		// Fractional values are supported and influence rasterization/rounding.
 		// If pointSize is negative (not intended), the generated corner ordering is flipped.
-		void RenderPoint(const SpriteMesh& mesh, const Vec2 point, float pointSize);
+		void RenderPoint(const SpriteMesh& mesh, Vec2 point, float pointSize);
 
 		// Clears the current batch and updates the rendering configuration.
 		// After calling BeginBatch(), subsequent render calls append geometry to the batch, transformed according to this configuration.

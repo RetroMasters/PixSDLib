@@ -2,9 +2,8 @@
 
 namespace pix
 {
-
 	// Philosophy:
-	// Derived class objects of this (effectively abstract) class cannot be copied
+	// Derived class objects of this non-instantiable base class cannot be copied
 	class Uncopyable
 	{
 	public:
@@ -16,10 +15,9 @@ namespace pix
 	protected:
 
 		// Allow construction/destruction of derived classes only
-		Uncopyable()  = default;
+		Uncopyable() = default;
 
 		// Not supposed to be handled by a base pointer -> no need for virtual
-		~Uncopyable()  = default; 
+		~Uncopyable() = default; 
 	};
-
 }

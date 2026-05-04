@@ -152,7 +152,7 @@ namespace pix
 	void ObjectInputLegacy::ResetState() 
 	{
 		for (auto& pair : virtualAxes_)
-			pair.second.Reset();
+			pair.second.ClearState();
 
 		for (auto& pair : virtualInputPumps_)
 			pair.second.SetSourceState(0.0f);

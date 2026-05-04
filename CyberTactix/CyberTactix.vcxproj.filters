@@ -216,9 +216,6 @@
     <ClCompile Include="InputPumps.cpp">
       <Filter>Source Files\PixSDLib\Input</Filter>
     </ClCompile>
-    <ClCompile Include="SpriteMeshOps.cpp">
-      <Filter>Source Files\PixSDLib\Graphics\Rendering2D</Filter>
-    </ClCompile>
     <ClCompile Include="ObjectInput.cpp">
       <Filter>Source Files\PixSDLib\Input</Filter>
     </ClCompile>
@@ -227,6 +224,9 @@
     </ClCompile>
     <ClCompile Include="SpriteMeshAnimatorOps.cpp">
       <Filter>Source Files\PixSDLib\Graphics\SpriteAnimation</Filter>
+    </ClCompile>
+    <ClCompile Include="SpriteMeshOps.cpp">
+      <Filter>Source Files\PixSDLib\Graphics\Geometry2D</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

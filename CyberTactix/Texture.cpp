@@ -82,12 +82,12 @@ namespace pix
 	{
 		if (!sdlTexture_)
 		{
-			ErrorLogger::Get().LogError("Texture::GetColorMod() failure", "sdlTexture_ is nullptr!");
+			ErrorLogger::Get().LogError("Texture::GetRGBMod() failure", "sdlTexture_ is nullptr!");
 			return;
 		}
 
 		if (SDL_GetTextureColorMod(sdlTexture_, &r, &g, &b) != 0)
-			ErrorLogger::Get().LogSDLError("Texture::GetColorMod() - SDL_GetTextureColorMod() failure");
+			ErrorLogger::Get().LogSDLError("Texture::GetRGBMod() - SDL_GetTextureColorMod() failure");
 	}
 
 	Uint8 Texture::GetAlphaMod() const 
@@ -138,12 +138,6 @@ namespace pix
 		return sdlTexture_;
 	}
 
-
-
-	Texture::Texture():
-		sdlTexture_(nullptr)
-	{
-	}
 
 	void Texture::DeleteSDLTexture()
 	{

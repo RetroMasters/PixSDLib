@@ -1,8 +1,8 @@
 #pragma once
 
+#include <vector>
 #include <SDL_rect.h>
 #include <SDL_render.h>
-#include<vector>
 #include "SpriteMeshAnimator.h"
 
 
@@ -26,7 +26,7 @@ namespace pix
 		if (!currentFrame) return false; // An existing currentFrame ensures that the animator sequence is not empty
 
 		animator.SetCurrentFrameIndex(animator.GetFrameSequence()->size() - 1 - animator.GetCurrentFrameIndex());
-		animator.SetElapsedTicks(currentFrame->TickDuration - animator.GetElapsedTicks());
+		animator.SetElapsedTicks(currentFrame->DurationTicks - animator.GetElapsedTicks());
 
 		animator.SetFrameSequence(&reversedSequence);
 
@@ -36,7 +36,7 @@ namespace pix
 	// Samples keyframes in "book order": left-to-right, then top-to-bottom.
 	// Starts at startRect. Each subsequent frame advances by startRect.w in X.
 	// When the next frame would exceed texWidth, sampling continues on the next row:
-	//   Y += startRect.h and X is reset to 0.
+	// Y += startRect.h and X is reset to 0.
 	// Frames are generated only while the full rectangle fits inside the texture;
 	// sampling stops early if no further full frame fits.
 	// On failure (invalid inputs), returns an empty sequence.

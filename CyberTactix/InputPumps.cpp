@@ -51,14 +51,12 @@ namespace pix
 
 		GamepadInputPump::GamepadInputPump(int sourceGamepadIndex, SDL_GameControllerButton sourceButton, VirtualAxis& targetAxis, AbstractInputPump::PumpFunction pumpFunction) : AbstractInputPump(targetAxis, pumpFunction),
 			sourceGamepadIndex_(sourceGamepadIndex),
-			sourceButton_(sourceButton),
-			sourceAxis_(SDL_CONTROLLER_AXIS_INVALID)
+			sourceButton_(sourceButton)
 		{
 		}
 
 		GamepadInputPump::GamepadInputPump(int sourceGamepadIndex, SDL_GameControllerAxis sourceAxis, VirtualAxis& targetAxis, AbstractInputPump::PumpFunction pumpFunction) : AbstractInputPump(targetAxis, pumpFunction),
 			sourceGamepadIndex_(sourceGamepadIndex),
-			sourceButton_(SDL_CONTROLLER_BUTTON_INVALID),
 			sourceAxis_(sourceAxis)
 		{
 		}
@@ -100,7 +98,7 @@ namespace pix
 			return sourceButton_; 
 		}
 
-		SDL_GameControllerAxis  GamepadInputPump::GetSourceAxis() const 
+		SDL_GameControllerAxis GamepadInputPump::GetSourceAxis() const 
 		{ 
 			return sourceAxis_; 
 		}
@@ -110,7 +108,6 @@ namespace pix
 
 
 		VirtualInputPump::VirtualInputPump(int sourceID, VirtualAxis& targetAxis, PumpFunction pumpFunction) : AbstractInputPump(targetAxis, pumpFunction), 
-			sourceState_(0.0f),
 			sourceID_(sourceID)
 		{
 		}

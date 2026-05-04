@@ -1,32 +1,32 @@
 #include "ImageTexture.h"
 #include <SDL_image.h>
 #include "Renderer.h"
-#include"ErrorLogger.h"
+#include "ErrorLogger.h"
 
 namespace pix
 {
-	ImageTexture::ImageTexture(const std::string& imagePath) : Texture()
+	ImageTexture::ImageTexture(const std::string& imagePath)
 	{
 	   Reload(imagePath);
 	}
 
-	bool ImageTexture::Reload(const std::string& path) 
+	bool ImageTexture::Reload(const std::string& imagePath) 
 	{
 		SDL_BlendMode blendMode = SDL_BLENDMODE_BLEND;
-		Uint8 r = 255; Uint8 g = 255; Uint8 b = 255; Uint8 a = 255;
+		Uint8 r = 255, g = 255, b = 255, a = 255;
 
-		// Cache blend state to restore it in the new texture
+		// Cache blend state so it can be restored on the new texture
 		if (sdlTexture_)
 		{
 			blendMode = GetBlendMode();
 			GetRGBAMod(r, g, b, a);
 		}
 
-		SDL_Texture* newTexture = IMG_LoadTexture(Renderer::Get().GetSDLRenderer(), path.c_str());
+		SDL_Texture* newTexture = IMG_LoadTexture(Renderer::Get().GetSDLRenderer(), imagePath.c_str());
 
 		if (!newTexture)
 		{
-			ErrorLogger::Get().LogSDLError("ImageTexture::Reload - IMG_LoadTexture() failure");
+			ErrorLogger::Get().LogSDLError("ImageTexture::Reload() - IMG_LoadTexture() failure");
 			return false;
 		}
 

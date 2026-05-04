@@ -3,6 +3,9 @@
 
 namespace pix
 {
+	// ########################################### UVRECT OPERATIONS #################################
+
+
 	UVRect GetUVRect(int texWidth, int texHeight, SDL_Rect rect)
 	{
 		if (texWidth <= 0 || texHeight <= 0)
@@ -46,6 +49,10 @@ namespace pix
 			    rect.x >= 0 && rect.y >= 0 && rect.w <= texWidth - rect.x && rect.h <= texHeight - rect.y);
 	}
 
+
+	// ########################################### UVQUAD OPERATIONS #################################
+
+
 	UVQuad GetUVQuad(UVRect rect)
 	{
 		return UVQuad(rect.TopLeft, rect.TopRight(), rect.BottomRight, rect.BottomLeft());
@@ -56,24 +63,29 @@ namespace pix
 		return GetUVQuad(GetUVRect(texWidth, texHeight, rect));
 	}
 
-	Vec2f GetBoundsSize(const UVQuad& quad)
+	Vec2f GetBoundsSize(const UVQuad& quad) // Compute the size of the axis-aligned bounding box
 	{
-		Vec2f min(quad.TopLeft());
-		Vec2f max(quad.BottomRight());
+		const Vec2f topLeft(quad.TopLeft());
+		const Vec2f topRight(quad.TopRight());
+		const Vec2f bottomRight(quad.BottomRight());
+		const Vec2f bottomLeft(quad.BottomLeft());
 
-		if (quad.TopRight().X < min.X) min.X = quad.TopRight().X;
-		if (quad.TopRight().Y < min.Y) min.Y = quad.TopRight().Y;
-		if (quad.BottomRight().X < min.X) min.X = quad.BottomRight().X;
-		if (quad.BottomRight().Y < min.Y) min.Y = quad.BottomRight().Y;
-		if (quad.BottomLeft().X < min.X) min.X = quad.BottomLeft().X;
-		if (quad.BottomLeft().Y < min.Y) min.Y = quad.BottomLeft().Y;
+		Vec2f min(topLeft);
+		Vec2f max(bottomRight);
 
-		if (quad.BottomLeft().X > max.X) max.X = quad.BottomLeft().X;
-		if (quad.BottomLeft().Y > max.Y) max.Y = quad.BottomLeft().Y;
-		if (quad.TopLeft().X > max.X) max.X = quad.TopLeft().X;
-		if (quad.TopLeft().Y > max.Y) max.Y = quad.TopLeft().Y;
-		if (quad.TopRight().X > max.X) max.X = quad.TopRight().X;
-		if (quad.TopRight().Y > max.Y) max.Y = quad.TopRight().Y;
+		if (topRight.X < min.X) min.X = topRight.X;
+		if (topRight.Y < min.Y) min.Y = topRight.Y;
+		if (bottomRight.X < min.X) min.X = bottomRight.X;
+		if (bottomRight.Y < min.Y) min.Y = bottomRight.Y;
+		if (bottomLeft.X < min.X) min.X = bottomLeft.X;
+		if (bottomLeft.Y < min.Y) min.Y = bottomLeft.Y;
+
+		if (bottomLeft.X > max.X) max.X = bottomLeft.X;
+		if (bottomLeft.Y > max.Y) max.Y = bottomLeft.Y;
+		if (topLeft.X > max.X) max.X = topLeft.X;
+		if (topLeft.Y > max.Y) max.Y = topLeft.Y;
+		if (topRight.X > max.X) max.X = topRight.X;
+		if (topRight.Y > max.Y) max.Y = topRight.Y;
 
 		return max - min;
 	}

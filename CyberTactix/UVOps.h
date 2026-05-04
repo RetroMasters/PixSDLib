@@ -6,12 +6,12 @@
 namespace pix
 {
 
-	//########################################### UVRECT OPERATIONS #################################
+	// ########################################### UVRECT OPERATIONS #################################
 
-	// Returns a UVRect from the texture region provided in pixels by rect.
-	// texWidth/texHeight is used for normalization and has to be the size of the texture in pixels.
-	// GetUVRect() just transforms the rect into the UVRect format without assuming its validity, 
-	// so negative width or height will flip the BottomRight point respectively. 
+	// Returns a UVRect from the texture region provided in pixels by a SDL_Rect.
+	// texWidth/texHeight are used for normalization and must match the texture size in pixels.
+	// GetUVRect() only converts rect into UVRect format without validating it,
+    // so negative width or height will invert the resulting corner relationship.
 	// If one of the texSize dimensions is zero or smaller, a zero-initialized UVRect is returned.
 	UVRect GetUVRect(int texWidth, int texHeight, SDL_Rect rect);
 
@@ -31,16 +31,16 @@ namespace pix
     // Returns false if texture dimensions are non-positive, or if rect has negative position or negative width/height.
 	bool IsRectInTexBounds(int texWidth, int texHeight, SDL_Rect rect);
 
-	//########################################### UVQUAD OPERATIONS #################################
+	// ########################################### UVQUAD OPERATIONS #################################
 
     // Returns a UVQuad from a UVRect
 	UVQuad GetUVQuad(UVRect rect);
 
-	// Returns a UVQuad from the texture region provided in pixels by rect.
-	// texWidth/texHeight is used for normalization and has to be the size of the texture in pixels.
+	// Returns a UVQuad from the texture region provided in pixels by a SDL_Rect.
+	// texWidth/texHeight are used for normalization and must match the texture size in pixels.
 	UVQuad GetUVQuad(int texWidth, int texHeight, SDL_Rect rect);
 
-	// Returns the width and the height of quad's bounding box
+	// Returns the width and the height of the quad's axis-aligned bounding box
 	Vec2f GetBoundsSize(const UVQuad& quad);
 	
 	// Returns a copy of quad with flipped X-coordinates

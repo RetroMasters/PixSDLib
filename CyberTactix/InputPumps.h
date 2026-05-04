@@ -3,7 +3,7 @@
 #include "AbstractInputPump.h"
 #include "Input.h"
 
-// All of these pump classes internally rely on the Input singleton
+// These pump classes internally query KeyboardInput, MouseInput, and GamepadInput
 
 namespace pix
 {
@@ -20,7 +20,7 @@ namespace pix
 		void SetSourceKey(SDL_Scancode sourceKey);
 
 		// Returns 1.0f if key is pressed, 0.0f otherwise
-		float GetSourceState() const  override;
+		float GetSourceState() const override;
 
 		SDL_Scancode GetSourceKey() const;
 
@@ -46,7 +46,7 @@ namespace pix
 		void SetSourceButton(MouseInput::Button sourceButton);
 
 		// Returns 1.0f if button is pressed, 0.0f otherwise
-		float GetSourceState() const  override;
+		float GetSourceState() const override;
 
 		MouseInput::Button GetSourceButton() const;
 
@@ -74,7 +74,7 @@ namespace pix
 
 		void SetSourceAxis(SDL_GameControllerAxis sourceAxis);
 
-		// For axis: returns a value in range [-1.0f,1.0f] 
+		// For axis: returns a value in range [-1.0f, 1.0f] 
 		// For button: returns 1.0f if pressed, 0.0f otherwise
 		float GetSourceState() const override;
 
@@ -84,38 +84,41 @@ namespace pix
 
 	private:
 
-		int sourceGamepadIndex_;
-		SDL_GameControllerButton sourceButton_;
-		SDL_GameControllerAxis   sourceAxis_;
+		int sourceGamepadIndex_ = -1;
+		SDL_GameControllerButton sourceButton_ = SDL_CONTROLLER_BUTTON_INVALID;
+		SDL_GameControllerAxis   sourceAxis_ = SDL_CONTROLLER_AXIS_INVALID;
 	};
 
 
 
-
+	// VirtualInputPump has a virtual analog value as its input source.
+    // It is driven directly by user code and connects that source to a virtual axis.
+    // The source ID serves to differentiate between input sources, and its validity depends on the owner.
+    // A typical use case is AI-driven input.
 	class VirtualInputPump : public AbstractInputPump
 	{
 	public:
 
-		VirtualInputPump(int sourceID, VirtualAxis& targetAxis, PumpFunction pumpFunction = nullptr);
+		VirtualInputPump(int sourceID, VirtualAxis& targetAxis, AbstractInputPump::PumpFunction pumpFunction = nullptr);
 
 		~VirtualInputPump() override = default;
 
-		// Clamps and sets the virtual source state in range [-1.0f,1.0f].
+		// Clamps and sets the virtual source state in range [-1.0f, 1.0f].
 		// VirtualInputPump is driven by user code via SetSourceState().
 		void SetSourceState(float state);        
 
+		// sourceID serves to differentiate between input sources
 		void SetSourceID(int sourceID);
 
-		// Returns the value set by SetSourceState(), in range [-1.0f,1.0f]
+		// Returns the value set by SetSourceState(), in range [-1.0f, 1.0f]
 		float GetSourceState() const override;
 
 		int GetSourceID() const;
 
 	private:
 
-		float sourceState_;
-		int sourceID_;
+		float sourceState_ = 0.0f;
+		int sourceID_ = -1;
 	};
-
 
 }
