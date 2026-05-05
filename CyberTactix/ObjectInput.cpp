@@ -35,6 +35,8 @@ namespace pix
 	
 	bool ObjectInput::AddKeyboardBinding(SDL_Scancode sourceKey, const std::string& axisName, AbstractInputPump::PumpFunction pumpFunction)
 	{
+		if (sourceKey < 0 || sourceKey >= SDL_NUM_SCANCODES) return false;
+
 		VirtualAxis* targetAxis = GetOrAddVirtualAxis(axisName);
 		if (!targetAxis) return false;
 
@@ -43,7 +45,7 @@ namespace pix
 
 		keyboardInputPumps_.emplace_back(sourceKey, *targetAxis, pumpFunction);
 
-		// Sync transient state to prevent wrong "Now"-Actions during the update of instantiation
+		// Sync state to prevent false Became* transitions on the creation frame
 		keyboardInputPumps_.back().Pump();
 		keyboardInputPumps_.back().GetVirtualAxis().BeginUpdate();
 
@@ -63,6 +65,8 @@ namespace pix
 
 	bool ObjectInput::AddMouseButtonBinding(MouseInput::Button sourceButton, const std::string& axisName, AbstractInputPump::PumpFunction pumpFunction)
 	{
+		if (sourceButton < 1 || sourceButton >= MouseInput::Button::BUTTON_MAX) return false;
+
 		VirtualAxis* targetAxis = GetOrAddVirtualAxis(axisName);
 		if (!targetAxis) return false;
 
@@ -71,7 +75,7 @@ namespace pix
 
 		mouseInputPumps_.emplace_back(sourceButton, *targetAxis, pumpFunction);
 
-		// Sync transient state to prevent wrong "Now"-Actions during the update of instantiation
+		// Sync state to prevent false Became* transitions on the creation frame
 		mouseInputPumps_.back().Pump();
 		mouseInputPumps_.back().GetVirtualAxis().BeginUpdate();
 
@@ -91,7 +95,7 @@ namespace pix
 
 	bool ObjectInput::AddGamepadButtonBinding(int sourceGamepadIndex, SDL_GameControllerButton sourceButton, const std::string& axisName, AbstractInputPump::PumpFunction pumpFunction)
 	{
-		if (!GamepadInput::Get().IsValidGamepadIndex(sourceGamepadIndex)) return false;
+		if (sourceGamepadIndex < 0 || sourceButton < 0 || sourceButton >= SDL_CONTROLLER_BUTTON_MAX) return false;
 
 		VirtualAxis* targetAxis = GetOrAddVirtualAxis(axisName);
 		if (!targetAxis) return false;
@@ -101,7 +105,7 @@ namespace pix
 
 		gamepadInputPumps_.emplace_back(sourceGamepadIndex, sourceButton, *targetAxis, pumpFunction);
 
-		// Sync transient state to prevent wrong "Now"-Actions during the update of instantiation
+		// Sync state to prevent false Became* transitions on the creation frame
 		gamepadInputPumps_.back().Pump();
 		gamepadInputPumps_.back().GetVirtualAxis().BeginUpdate();
 
@@ -121,7 +125,7 @@ namespace pix
 
 	bool ObjectInput::AddGamepadAxisBinding(int sourceGamepadIndex, SDL_GameControllerAxis sourceAxis, const std::string& axisName, AbstractInputPump::PumpFunction pumpFunction)
 	{
-		if (!GamepadInput::Get().IsValidGamepadIndex(sourceGamepadIndex)) return false;
+		if (sourceGamepadIndex < 0 || sourceAxis < 0 || sourceAxis >= SDL_CONTROLLER_AXIS_MAX) return false;
 
 		VirtualAxis* targetAxis = GetOrAddVirtualAxis(axisName);
 		if (!targetAxis) return false;
@@ -131,7 +135,7 @@ namespace pix
 
 		gamepadInputPumps_.emplace_back(sourceGamepadIndex, sourceAxis, *targetAxis, pumpFunction);
 
-		// Sync transient state to prevent wrong "Now"-Actions during the update of instantiation
+		// Sync state to prevent false Became* transitions on the creation frame
 		gamepadInputPumps_.back().Pump();
 		gamepadInputPumps_.back().GetVirtualAxis().BeginUpdate();
 
@@ -159,7 +163,7 @@ namespace pix
 
 		virtualInputPumps_.emplace_back(sourceID, *targetAxis, pumpFunction);
 
-		// Sync transient state to prevent wrong "Became"-Actions during the update of instantiation
+		// Sync state to prevent false Became* transitions on the creation frame
 		virtualInputPumps_.back().Pump();
 		virtualInputPumps_.back().GetVirtualAxis().BeginUpdate();
 
@@ -213,7 +217,7 @@ namespace pix
 		return true;
 	}
 
-	void ObjectInput::ClearAxisState()
+	void ObjectInput::ClearAllAxisState()
 	{
 		int axisCount = virtualAxes_.size();
 

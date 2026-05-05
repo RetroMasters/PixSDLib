@@ -31,7 +31,9 @@ namespace pix
         // Remove methods return true if an existing binding was removed, false otherwise.
         // New bindings are pumped and synced immediately to avoid false Became* transitions on the creation frame.
 		// Pump order matches binding order and is preserved when bindings are removed.
-		
+		// Gamepad bindings accept non-negative gamepad slot indices.
+		// If the slot is disconnected or not in use yet, the binding produces neutral input until the slot becomes active.
+
 		bool AddKeyboardBinding(SDL_Scancode sourceKey, const std::string& axisName, AbstractInputPump::PumpFunction pumpFunction = nullptr);
 
 		bool RemoveKeyboardBinding(SDL_Scancode sourceKey, const std::string& axisName);
@@ -61,14 +63,16 @@ namespace pix
 		// Requires the underlying Input singletons to have up-to-date SDL state (SDL_PollEvent / SDL_PumpEvents already processed).
 		void Update();
 
-		// Code driven source input
+		// Sets the state of a code-driven virtual input source.
+		// Returns false if sourceID and axisName do not match an existing virtual binding, true otherwise.
 		bool SetVirtualSourceState(int sourceID, const std::string& axisName, float sourceState);
 
-		// Overload that takes axis ID instead of its name
+		// Overload that takes axis ID instead of axis name.
+		// Returns false if sourceID and axisID do not match an existing virtual binding, true otherwise.
 		bool SetVirtualSourceState(int sourceID, int axisID, float sourceState);
 
-		// Resets the previous and current state of all axes to zero
-		void ClearAxisState();
+		// Clears the previous and current state of all axes to zero
+		void ClearAllAxisState();
 
 		// Resets the state of all virtual input sources to zero, not the axis state.
 		// The resulting axis state is changed on the next Update().
@@ -100,7 +104,8 @@ namespace pix
 		// Returns current axis state
 		float GetAxisState(const std::string& axisName) const;
 
-		// Following overloads operates on cached axis IDs to avoid string lookup
+		// The following overloads operate on cached axis IDs to avoid string lookup.
+		// Boolean input checks return false on invalid axis ID.
 
 		// Returns true if current axis state is positive, false otherwise.
 		bool IsPositive(int axisID) const;
@@ -123,11 +128,13 @@ namespace pix
 		// Returns true if axis state was not zero and became zero in the current update iteration, false otherwise
 		bool BecameZero(int axisID) const;
 
-		// Returns current axis state
+		// Returns current axis state or 0.0f on invalid axis ID
 		float GetAxisState(int axisID) const;
 
+		// Returns -1 (invalid axis ID) if no axis matches axisName
 	    int GetAxisID(const std::string& axisName) const;
 
+		// Returns an empty string if no axis matches axisID
 		std::string GetAxisName(int axisID) const;
 
 	private:

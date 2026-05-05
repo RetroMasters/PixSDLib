@@ -1,12 +1,9 @@
-#pragma once
 
 #include "UpdateLoopScheduler.h"
-#include <vector>
 
 namespace pix
 {
-		AbstractUpdateLoopScheduler::AbstractUpdateLoopScheduler(float updatesPerSecond) :
-			updatesPerSecond_(updatesPerSecond)
+		AbstractUpdateLoopScheduler::AbstractUpdateLoopScheduler(float updatesPerSecond) 
 		{
 			SetUpdatesPerSecond(updatesPerSecond);
 		}
@@ -15,7 +12,7 @@ namespace pix
 		{
 			updatesPerSecond_ = updatesPerSecond;
 
-			if (updatesPerSecond_ < 0.5f) updatesPerSecond_ = 0.5f;
+			if (updatesPerSecond_ < 0.1f) updatesPerSecond_ = 0.1f; 
 		}
 
 		float AbstractUpdateLoopScheduler::GetUpdatesPerSecond() const
@@ -30,19 +27,25 @@ namespace pix
 
 
 	
-		StandardUpdateLoopScheduler::StandardUpdateLoopScheduler(float updatesPerSecond) : AbstractUpdateLoopScheduler(updatesPerSecond),
-			unprocessedTime_(0.0f)
+		StandardUpdateLoopScheduler::StandardUpdateLoopScheduler(float updatesPerSecond, int maxUpdatesPerFrame) : AbstractUpdateLoopScheduler(updatesPerSecond),
+			maxUpdatesPerFrame_(maxUpdatesPerFrame)
 		{
+			if (maxUpdatesPerFrame_ < 1) maxUpdatesPerFrame_ = 1;
 		}
 
-		int StandardUpdateLoopScheduler::Update(float deltaTimeMs)
+		int StandardUpdateLoopScheduler::Update(float deltaTime)
 		{
-			unprocessedTime_ += deltaTimeMs;
+			unprocessedTime_ += deltaTime;
+
+			const float updatePeriod = GetUpdatePeriod();
+
+			const float maxUnprocessedTime = (maxUpdatesPerFrame_ + 2) * updatePeriod;
 
 			int updateCount = 0;
-			float updatePeriod = GetUpdatePeriod();
 
-			while (unprocessedTime_ >= updatePeriod)
+			if (unprocessedTime_ > maxUnprocessedTime) unprocessedTime_ = maxUnprocessedTime;
+
+			while (unprocessedTime_ >= updatePeriod && updateCount < maxUpdatesPerFrame_)
 			{
 				updateCount++;
 				unprocessedTime_ -= updatePeriod;
@@ -60,14 +63,9 @@ namespace pix
 
 
 		HysteresisUpdateLoopScheduler::HysteresisUpdateLoopScheduler(float updatesPerSecond, float noiseWidth, int filterLength, int maxUpdatesPerFrame) : AbstractUpdateLoopScheduler(updatesPerSecond),
-			unprocessedTime_(0.0f),
-			thresholdOffset_(0.0f),
 			noiseWidth_(noiseWidth),
 			filterLength_(filterLength),
-			maxUpdatesPerFrame_(maxUpdatesPerFrame),
-			averageDeltaTime_(0.0f),
-			samplesIterator_(0),
-			deltaTimeSamples_()
+			maxUpdatesPerFrame_(maxUpdatesPerFrame)
 		{
 			if (noiseWidth_ < 0.0f) noiseWidth_ = 0.0f;
 			if (filterLength_ < 1) filterLength_ = 1;
@@ -80,18 +78,17 @@ namespace pix
 
 
 
-		int HysteresisUpdateLoopScheduler::Update(float deltaTimeMs)
+		int HysteresisUpdateLoopScheduler::Update(float deltaTime)
 		{
-			float updatePeriod = GetUpdatePeriod();
+			const float updatePeriod = GetUpdatePeriod();
 
-			// Have few additional update periods as buffer so that unprocessedTime_
-			// is not truncated to zero (potential stutter otherwise) when maxUpdatesPerFrame_ are processed.
+			// Keep two additional update periods as buffer so that unprocessedTime_
+	        // is not truncated when maxUpdatesPerFrame_ updates are processed on schedule
+			const float maxUnprocessedTime = (maxUpdatesPerFrame_ + 2) * updatePeriod;
 
-			float maxUnprocessedTime = (maxUpdatesPerFrame_ + 2) * updatePeriod;
+			if (deltaTime > maxUnprocessedTime) deltaTime = maxUnprocessedTime;
 
-			if (deltaTimeMs > maxUnprocessedTime) deltaTimeMs = maxUnprocessedTime;
-
-			UpdateAverageDeltaTime(deltaTimeMs);
+			UpdateAverageDeltaTime(deltaTime);
 
 			unprocessedTime_ += averageDeltaTime_;
 
@@ -147,18 +144,20 @@ namespace pix
 				deltaTimeSamples_.push_back(newDeltaTime);
 			else
 			{
-				deltaTimeSamples_[samplesIterator_] = newDeltaTime;
-				samplesIterator_++;
-				if (samplesIterator_ >= deltaTimeSamples_.size())
-					samplesIterator_ = 0;
+				deltaTimeSamples_[sampleIndex_] = newDeltaTime;
+				sampleIndex_++;
+				if (sampleIndex_ >= deltaTimeSamples_.size())
+					sampleIndex_ = 0;
 			}
 
 			// Compute average delta time:
 			float deltaTimeSum = 0.0f;
-			for (int i = 0; i < deltaTimeSamples_.size(); i++)
+			const int sampleCount = deltaTimeSamples_.size();
+
+			for (int i = 0; i < sampleCount; i++)
 				deltaTimeSum += deltaTimeSamples_[i];
 
-			averageDeltaTime_ = deltaTimeSum / deltaTimeSamples_.size();
+			averageDeltaTime_ = deltaTimeSum / sampleCount;
 		}
 
 }

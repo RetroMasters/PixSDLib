@@ -13,7 +13,7 @@ namespace pix
 
 	bool KeyboardInput::IsKeyDown(SDL_Scancode key) const
 	{
-		if (currentKeyStates_ == nullptr) return 0;
+		if (!currentKeyStates_) return false;
 
 		return currentKeyStates_[key] != 0;
 	}
@@ -24,7 +24,7 @@ namespace pix
 		currentKeyStates_ = SDL_GetKeyboardState(nullptr);
 
 		if (!currentKeyStates_)
-			ErrorLogger::Get().LogError("KeyboardInput::KeyboardInput() fail", "currentKeyStates_ is nullptr!");
+			ErrorLogger::Get().LogError("KeyboardInput::KeyboardInput() failure", "currentKeyStates_ is nullptr!");
 	}
 
 
@@ -91,17 +91,6 @@ namespace pix
 		return wheelDeltaY_;
 	}
 
-	MouseInput::MouseInput():
-		positionX_(0),
-		positionY_(0),
-		wheelDeltaX_(0.0f),
-		wheelDeltaY_(0.0f),
-		buttonFlags_(0)
-	{
-	}
-
-
-
 
 
 	GamepadInput& GamepadInput::Get() 
@@ -116,6 +105,13 @@ namespace pix
 		RemoveAllGamepads();
 
 		int gamepadCount = SDL_NumJoysticks();
+
+		if (gamepadCount < 0)
+		{
+			ErrorLogger::Get().LogSDLError("GamepadInput::AddAllGamepads() - SDL_NumJoysticks() failure");
+			return 0;
+		}
+
 		if (gamepadCount > 32) gamepadCount = 32; // Just a sanity measure to prevent huge numbers
 
 		for (int i = 0; i < gamepadCount; i++)
@@ -134,13 +130,13 @@ namespace pix
 		SDL_JoystickID joystickID = SDL_JoystickGetDeviceInstanceID(deviceIndex);
 		if (joystickID < 0)
 		{
-			ErrorLogger::Get().LogError("GamepadInput::AddGamepad() - SDL_JoystickGetDeviceInstanceID() fail", "The joystick instance ID is invalid!");
+			ErrorLogger::Get().LogError("GamepadInput::AddGamepad() - SDL_JoystickGetDeviceInstanceID() failure", "The joystick instance ID is invalid!");
 			return;
 		}
 
 		// 3. Check if joystick is already in use
-		int gamepadCount = gamepads_.size();
-		for (int i = 0; i < gamepadCount; i++)
+		int gamepadSlotCount = gamepads_.size();
+		for (int i = 0; i < gamepadSlotCount; i++)
 		{
 			if (gamepads_[i].IsInitialized && gamepads_[i].JoystickID == joystickID)
 				return;
@@ -150,7 +146,7 @@ namespace pix
 		SDL_GameController* gameController = SDL_GameControllerOpen(deviceIndex);
 		if (!gameController)
 		{
-			ErrorLogger::Get().LogSDLError("GamepadInput::AddGamepad() - SDL_GameControllerOpen() fail");
+			ErrorLogger::Get().LogSDLError("GamepadInput::AddGamepad() - SDL_GameControllerOpen() failure");
 			return;
 		}
 
@@ -159,7 +155,7 @@ namespace pix
 		SDL_Haptic* rumbleHandle = TryOpenRumble(joystick);
 
 		// 6. Reuse an inactive slot if possible (stable indices)
-		for (int i = 0; i < gamepadCount; i++)
+		for (int i = 0; i < gamepadSlotCount; i++)
 		{
 			if (!gamepads_[i].IsInitialized)
 			{
@@ -191,7 +187,7 @@ namespace pix
 
 		for (int i = gamepadCount - 1; i >= 0; i--)
 		{
-			if (gamepads_[i].JoystickID == joystickID)
+			if (gamepads_[i].IsInitialized && gamepads_[i].JoystickID == joystickID)
 			{
 				if (gamepads_[i].RumbleHandle)
 				{
@@ -225,6 +221,11 @@ namespace pix
 		return count;
 	}
 
+	int GamepadInput::GetGamepadSlotCount() const
+	{
+		return gamepads_.size();
+	}
+
 	bool GamepadInput::IsValidGamepadIndex(int gamepadIndex) const 
 	{
 		return  gamepadIndex >= 0 && gamepadIndex < gamepads_.size() && gamepads_[gamepadIndex].IsInitialized;
@@ -232,8 +233,7 @@ namespace pix
 
 	bool GamepadInput::IsButtonDown(int gamepadIndex, SDL_GameControllerButton button) const 
 	{
-		if (!IsValidGamepadIndex(gamepadIndex))
-			return false;
+		if (!IsValidGamepadIndex(gamepadIndex)) return false;
 		
 		return SDL_GameControllerGetButton(gamepads_[gamepadIndex].GameController, button) != 0;
 
@@ -241,13 +241,12 @@ namespace pix
 
 	float GamepadInput::GetAxisValue(int gamepadIndex, SDL_GameControllerAxis axis) const
 	{
-		if (!IsValidGamepadIndex(gamepadIndex))
-			return 0.0f;
+		if (!IsValidGamepadIndex(gamepadIndex)) return 0.0f;
 		
 		// SDL_GameControllerGetAxis() returns a value in the range [-32768, 32767]. Triggers, however, range from [0, 32767].
 		float axisValue = SDL_GameControllerGetAxis(gamepads_[gamepadIndex].GameController, axis) / float(SDL_JOYSTICK_AXIS_MAX);
 		
-		return GetClamped(axisValue, -1.0f, 1.0f); // Clamp just to go sure 
+		return GetClamped(axisValue, -1.0f, 1.0f); // Clamp defensively
 	}
 
 	void GamepadInput::StartRumble(int gamepadIndex, float force, int duration) 
@@ -256,10 +255,10 @@ namespace pix
 
 		if (force > 1.0f) force = 1.0f;
 
-		if (duration < 0) duration = SDL_HAPTIC_INFINITY;
+		Uint32 convertedDuration = duration < 0 ? SDL_HAPTIC_INFINITY : (Uint32)duration;
 
-		if (gamepads_[gamepadIndex].RumbleHandle != nullptr && SDL_HapticRumblePlay(gamepads_[gamepadIndex].RumbleHandle, force, duration) != 0)
-			ErrorLogger::Get().LogSDLError("GamepadInput::StartRumble() - SDL_HapticRumblePlay() fail");
+		if (gamepads_[gamepadIndex].RumbleHandle != nullptr && SDL_HapticRumblePlay(gamepads_[gamepadIndex].RumbleHandle, force, convertedDuration) != 0)
+			ErrorLogger::Get().LogSDLError("GamepadInput::StartRumble() - SDL_HapticRumblePlay() failure");
 	}
 
 	void GamepadInput::StopRumble(int gamepadIndex) 
@@ -267,7 +266,7 @@ namespace pix
 		if (!IsValidGamepadIndex(gamepadIndex)) return;
 
 		if (gamepads_[gamepadIndex].RumbleHandle != nullptr && SDL_HapticRumbleStop(gamepads_[gamepadIndex].RumbleHandle) != 0)
-			ErrorLogger::Get().LogSDLError("GamepadInput::StopRumble() - SDL_HapticRumbleStop() fail");
+			ErrorLogger::Get().LogSDLError("GamepadInput::StopRumble() - SDL_HapticRumbleStop() failure");
 
 	}
 
@@ -306,11 +305,27 @@ namespace pix
 
 	SDL_Haptic* GamepadInput::TryOpenRumble(SDL_Joystick* joystick)
 	{
+		if (!joystick)
+		{
+			ErrorLogger::Get().LogError("GamepadInput::TryOpenRumble() failure", "joystick is nullptr!");
+			return nullptr;
+		}
+
+		int isHaptic = SDL_JoystickIsHaptic(joystick);
+
+		if (isHaptic < 0)
+		{
+			ErrorLogger::Get().LogSDLError("GamepadInput::TryOpenRumble() - SDL_JoystickIsHaptic() failure");
+			return nullptr;
+		}
+
+		if (isHaptic == 0) return nullptr;
+
 		SDL_Haptic* haptic = SDL_HapticOpenFromJoystick(joystick);
 
 		if (!haptic)
 		{
-			ErrorLogger::Get().LogSDLError("GamepadInput::TryOpenRumble() - SDL_HapticOpenFromJoystick() fail");
+			ErrorLogger::Get().LogSDLError("GamepadInput::TryOpenRumble() - SDL_HapticOpenFromJoystick() failure");
 			return nullptr;
 		}
 
@@ -318,7 +333,7 @@ namespace pix
 
 		if (supportCode < 0)
 		{
-			ErrorLogger::Get().LogSDLError("GamepadInput::TryOpenRumble() - SDL_HapticRumbleSupported() fail");
+			ErrorLogger::Get().LogSDLError("GamepadInput::TryOpenRumble() - SDL_HapticRumbleSupported() failure");
 			SDL_HapticClose(haptic);
 			return nullptr;
 		}
@@ -329,13 +344,12 @@ namespace pix
 		}
 		else if (SDL_HapticRumbleInit(haptic) != 0)
 		{
-			ErrorLogger::Get().LogSDLError("GamepadInput::TryOpenRumble() - SDL_HapticRumbleInit() fail");
+			ErrorLogger::Get().LogSDLError("GamepadInput::TryOpenRumble() - SDL_HapticRumbleInit() failure");
 			SDL_HapticClose(haptic);
 			return nullptr;
 		}
 
 		return haptic;
 	}
-
 
 }

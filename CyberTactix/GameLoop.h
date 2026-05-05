@@ -1,6 +1,6 @@
 #pragma once
 
-#include<string>
+#include <string>
 #include "LaunchConfig.h"
 #include "UpdateLoopScheduler.h"
 
@@ -10,21 +10,26 @@ namespace pix
 	// GameLoop is the abstract class for the main game loop.
 	//
 	// Technical note:
-	// SDL events are pumped immediately before each Update() call.
-	// Thus, input is polled immediately before each Update() call so simulation always consumes the freshest available physical input.
+	// SDL events are processed immediately before each Update() call so simulation always consumes the freshest available physical input.
+    // Transient input state is therefore update-based, not render-frame-based.
+    // When no Update() is executed, SDL event pumping is still performed once so direct device state such as mouse position remains fresh for Render().
+	// 
+	// Initialization policy:
+    // Non-critical subsystem failures are logged but do not abort startup.
+    // Only failures that make running impossible, such as missing window or renderer, stop the loop.
 	// 
 	// Philosophy:
 	// GameLoop provides an abstract framework for running the game, initializing all PixSDLib singletons. 
-	// Concrete game loops implement their custom Update() and Render() method, set the update loop scheduler to their
+	// Concrete game loops implement their custom Update() and Render() method, set the update loop scheduler (non-owning) to their
 	// liking, and the whole life cycle and correct order of events is handled by GameLoop.
 	class GameLoop
 	{
 	public:
 
 		GameLoop(const std::string& companyName, const std::string& appName, const LaunchConfigData& configData);
-		~GameLoop();
+		virtual ~GameLoop();
 
-		// Run() is the method where the whole game runs in until QuitRunning() is issued 
+		// Runs the game loop until Quit() is called
 		void Run();
 
 		// Update() may be called zero or multiple times per frame, depending on the configured update loop scheduler
@@ -37,8 +42,8 @@ namespace pix
 		// If updateLoopScheduler is nullptr, Update() is called once per frame (variable update loop)
 		void SetUpdateLoopScheduler(AbstractUpdateLoopScheduler* updateLoopScheduler);
 
-		// Aborts the Run() loop at the end of the current iteration
-		void QuitRunning();
+		// Ends the Run() loop at the end of the current iteration
+		void Quit();
 
 		// Returns the update loop scheduler, or nullptr if none is assigned
 		AbstractUpdateLoopScheduler* GetUpdateLoopScheduler() const;
@@ -46,25 +51,27 @@ namespace pix
 		// Returns the time delta between the start of this frame and the last one in milliseconds
 		float GetDeltaTime() const;
 		
-		// Returns the normalized unprocessed time for this frame, after the updates are processed.
+		// Returns the normalized unprocessed time for this frame. 
+		// This value is already computed at the beginning of the frame, before the updates are processed.
 		// The returned value is in range [0,1], where value 1 is the normalized update period. 
 		// This is used to interpolate visuals between the previous update state and the current one to eliminate visual jitter. 
 		float GetInterpolationAlpha() const;
 		
 		bool IsRunning() const;
 
-		std::string GetPrefPath(const std::string& companyName, const std::string& appName) const;
+		static std::string GetPrefPath(const std::string& companyName, const std::string& appName);
 
 	private:
 
 		void HandleEvents();
 		void UpdateInterpolationAlpha();
 
-		AbstractUpdateLoopScheduler* updateLoopScheduler_;
+		// Non-owning
+		AbstractUpdateLoopScheduler* updateLoopScheduler_ = nullptr;
 
-		float deltaTime_; // in milliseconds
-		float interpolationAlpha_;
-		bool isRunning_;
+		float deltaTime_ = 0.0f; // in milliseconds
+		float interpolationAlpha_ = 1.0f;
+		bool isRunning_ = true;
 	};
 
 }

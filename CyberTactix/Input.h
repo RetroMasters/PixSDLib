@@ -25,7 +25,7 @@ namespace pix
 		// Returns the KeyboardInput instance
 		static KeyboardInput& Get();
 
-		// Returns true if the key is pressed, 0 otherwise
+		// Returns true if the key is pressed, false otherwise
 		bool IsKeyDown(SDL_Scancode key) const;
 
 	private:
@@ -61,33 +61,36 @@ namespace pix
 			MIDDLE = SDL_BUTTON_MIDDLE,
 			RIGHT = SDL_BUTTON_RIGHT,
 			X1 = SDL_BUTTON_X1,
-			X2 = SDL_BUTTON_X2
+			X2 = SDL_BUTTON_X2,
+			BUTTON_MAX = SDL_BUTTON_X2 + 1
 		};
 
 		// Returns the MouseInput instance
 		static MouseInput& Get();
 		
-		// Zeroes the wheel delta
+		// Clears the wheel delta
 		void BeginUpdate();
 
-		// Handles SDL_MOUSEWHEEL events: accumulates wheel delta (+-1.0 per notch, traditionally)
+		// Handles SDL_MOUSEWHEEL events: accumulates wheel delta (+/-1.0 per notch, traditionally)
 		void HandleEvents(const SDL_Event& event);
 
 		// Updates cursor position and button state
 		void Update() ;
 
-		
+
 
 		// Returns true if the button is pressed, false otherwise
 		bool IsButtonDown(Button button) const;
 
-		Vec2i GetMousePosition() const; // Convenience function, but left here
+		// Convenience function returning both mouse position components
+		Vec2i GetMousePosition() const; 
 
 		int GetMousePositionX() const;
 
 		int GetMousePositionY() const;
 
-		Vec2f GetWheelDelta() const; // Convenience function, but left here
+		// Convenience function returning both wheel delta components
+		Vec2f GetWheelDelta() const; 
 
 		float GetWheelDeltaX() const;
 
@@ -95,24 +98,24 @@ namespace pix
 
 	private:
 
-		MouseInput();
+		MouseInput() = default;
 		~MouseInput() = default;
 
-		int positionX_;
-		int positionY_;
-		float wheelDeltaX_;
-		float wheelDeltaY_;
-		Uint32 buttonFlags_;
+		int positionX_ = 0;
+		int positionY_ = 0;
+		float wheelDeltaX_ = 0.0f;
+		float wheelDeltaY_ = 0.0f;
+		Uint32 buttonFlags_ = 0;
 	};
 
 
-	// The Gamepad singleton is a low-level wrapper for the gamepad input functionality.
+	// The GamepadInput singleton is a low-level wrapper for the gamepad input functionality.
 	// 
 	// Technical Note:
     // GamepadInput relies on SDL_PollEvent() or SDL_PumpEvents() that update internal controller state (buttons and axes).
 	// 
 	// Philosophy:
-	// The GamepadInput singleton is the centralized low-level source for gamepad input funtionality. 
+	// The GamepadInput singleton is the centralized low-level source for gamepad input functionality. 
 	// Haptics only expose a simple rumble effect, but that is sufficient for most use cases.
 	// Higher-level input management is built on top of that.
 	class GamepadInput : private Uncopyable
@@ -143,16 +146,20 @@ namespace pix
 
 		// Runs a simple rumble effect on a haptic device.
 		// The force of the rumble to play is clamped in range [0.0f,1.0f].
-		// The duration of the effect is measured in ms (a negative value means "infinite" duration).
+		// The duration of the effect is measured in milliseconds (a negative value means "infinite" duration).
 		void StartRumble(int gamepadIndex, float force, int duration);
 
 		void StopRumble(int gamepadIndex);
 
-
-
 		bool HasRumble(int gamepadIndex) const;
 
+		// Returns the number of active gamepads.
+        // Active gamepad indices are not guaranteed to be contiguous.
 		int GetActiveGamepadCount() const;
+
+		// Returns the number of gamepad slots, including inactive slots.
+	    // Iterate from 0 to GetGamepadSlotCount() - 1 and use IsValidGamepadIndex() to test each slot.
+		int GetGamepadSlotCount() const;
 
 		bool IsValidGamepadIndex(int gamepadIndex) const;
 
