@@ -64,7 +64,7 @@ namespace pix
 
 		// Destroys SDL_Texture and sets sdlTexture_ to nullptr.
 		// The command is ignored if sdlTexture_ is already a nullptr.
-		void DeleteSDLTexture(); 
+		void DestroySDLTexture(); 
 
 		SDL_Texture* sdlTexture_ = nullptr;
 	};

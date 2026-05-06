@@ -1,4 +1,7 @@
 #include "Renderer.h"
+#include <cstring>
+#include <string>
+#include <SDL.h>
 #include "Window.h"
 #include "ErrorLogger.h"
 
@@ -18,25 +21,26 @@ namespace pix
 	{
 		if (isInitialized_) return true;
 
-		if (logicalResolutionWidth < 1) logicalResolutionWidth = 1;
-		if (logicalResolutionHeight < 1) logicalResolutionHeight = 1;
-
-		isVsync_ = vsync;
-
 		Uint32 flags = SDL_RENDERER_ACCELERATED | SDL_RENDERER_TARGETTEXTURE;
 		if (vsync)
 			flags |= SDL_RENDERER_PRESENTVSYNC;
 
 		sdlRenderer_ = SDL_CreateRenderer(Window::Get().GetSDLWindow(), -1, flags); 
 
-		if (sdlRenderer_ == nullptr)
+		if (!sdlRenderer_)
 		{
-			ErrorLogger::Get().LogSDLError("Renderer::Init() - SDL_CreateRenderer() fail");
+			ErrorLogger::Get().LogSDLError("Renderer::Init() - SDL_CreateRenderer() failure");
+
 			return false;
 		}
 
+		if (logicalResolutionWidth < 1) logicalResolutionWidth = 1;
+		if (logicalResolutionHeight < 1) logicalResolutionHeight = 1;
+
+		isVsync_ = vsync;
+
 		if (SDL_RenderSetLogicalSize(sdlRenderer_, logicalResolutionWidth, logicalResolutionHeight) != 0)
-			ErrorLogger::Get().LogSDLError("Renderer::Init() - SDL_RenderSetLogicalSize() fail");
+			ErrorLogger::Get().LogSDLError("Renderer::Init() - SDL_RenderSetLogicalSize() failure");
 
 		int w, h;
 		SDL_RenderGetLogicalSize(sdlRenderer_, &w, &h);
@@ -44,23 +48,15 @@ namespace pix
 		logicalResolutionHeight_ = h;
 
 		if (logicalResolutionWidth_ != logicalResolutionWidth || logicalResolutionHeight_ != logicalResolutionHeight)
-			ErrorLogger::Get().LogError("Renderer::Init() - SDL_RenderGetLogicalSize() fail", "Returned " + std::to_string(logicalResolutionWidth_) + " x " + std::to_string(logicalResolutionHeight_)
-				+ " instead of " + std::to_string(logicalResolutionWidth) + "x" + std::to_string(logicalResolutionHeight) + "!");
+			ErrorLogger::Get().LogError("Renderer::Init() - logical size mismatch", "SDL_RenderGetLogicalSize() returned " + std::to_string(logicalResolutionWidth_) + " x " + std::to_string(logicalResolutionHeight_)
+				+ " instead of " + std::to_string(logicalResolutionWidth) + " x " + std::to_string(logicalResolutionHeight) + "!");
 
-
-		if (!SetLinearFilterHint(isLinearFilter))
-		{
-			if (isLinearFilter)
-				ErrorLogger::Get().LogError("Renderer::Init() - SetLinearScaleQuality() fail", "Failed to set scale quality to linear!");
-			else
-				ErrorLogger::Get().LogError("Renderer::Init() - SetLinearScaleQuality() fail", "Failed to set scale quality to nearest!");
-		}
-
+		SetLinearFilter(isLinearFilter);	
 		SetIntegerScale(isIntegerScale);
-
-
+		
 		SetRenderColor(0, 0, 0, 255);
-		SetAndClearRenderTarget(nullptr);
+		SetRenderTarget(nullptr);
+		Clear();
 
 		isInitialized_ = true;
 
@@ -102,52 +98,77 @@ namespace pix
 		return SDL_RenderGeometry(sdlRenderer_, texture.GetSDLTexture(), vertices, vertexCount, indices, indexCount) == 0;
 	}
 
-	void Renderer::SetAndClearRenderTarget(TargetTexture* renderTarget)
+	bool Renderer::Clear()
 	{
-		SetRenderTarget(renderTarget);
-
 		if (SDL_RenderClear(sdlRenderer_) != 0)
-			ErrorLogger::Get().LogSDLError("SetAndClearRenderTarget() - SDL_RenderClear() fail");
+		{
+			ErrorLogger::Get().LogSDLError("Renderer::Clear() - SDL_RenderClear() failure");
+			return false;
+		}
+
+		return true;
 	}
 
 
-
-	void Renderer::SetRenderTarget(TargetTexture* renderTarget)
+	bool Renderer::SetRenderTarget(TargetTexture* renderTarget)
 	{
-		if (renderTarget == nullptr)
+		SDL_Texture* sdlTexture = renderTarget ? renderTarget->GetSDLTexture() : nullptr;
+
+		if (SDL_SetRenderTarget(sdlRenderer_, sdlTexture) != 0)
 		{
-			if (SDL_SetRenderTarget(sdlRenderer_, nullptr) != 0)
-				ErrorLogger::Get().LogSDLError("SetRenderTarget() - SDL_SetRenderTarget() fail");
+			ErrorLogger::Get().LogSDLError("Renderer::SetRenderTarget() - SDL_SetRenderTarget() failure");
+			return false;
 		}
-		else
-		{
-			if (SDL_SetRenderTarget(sdlRenderer_, renderTarget->GetSDLTexture()) != 0)
-				ErrorLogger::Get().LogSDLError("SetRenderTarget() - SDL_SetRenderTarget() fail");
-		}
+
+		return true;
 	}
 
-	void Renderer::SetRenderColor(Uint8 r, Uint8 g, Uint8 b, Uint8 a)
+	bool Renderer::SetRenderColor(Uint8 r, Uint8 g, Uint8 b, Uint8 a)
 	{
 		if (SDL_SetRenderDrawColor(sdlRenderer_, r, g, b, a) != 0)
-			ErrorLogger::Get().LogSDLError("SetRenderColor() - SDL_SetRenderDrawColor() fail");
+		{
+			ErrorLogger::Get().LogSDLError("Renderer::SetRenderColor() - SDL_SetRenderDrawColor() failure");
+			return false;
+		}
+
+		return true;
 	}
 
-	void Renderer::SetRenderScale(float scaleX, float scaleY)
+	bool Renderer::SetRenderScale(float scaleX, float scaleY)
 	{
 		if (SDL_RenderSetScale(sdlRenderer_, scaleX, scaleY) != 0)
-			ErrorLogger::Get().LogSDLError("SetRenderScale() - SDL_RenderSetScale() fail");
+		{
+			ErrorLogger::Get().LogSDLError("Renderer::SetRenderScale() - SDL_RenderSetScale() failure");
+			return false;
+		}
+
+		return true;
 	}
 
-	bool Renderer::SetLinearFilterHint(bool isLinearFilter)
+	bool Renderer::SetLinearFilter(bool isLinearFilter)
 	{
-		return SDL_SetHint(SDL_HINT_RENDER_SCALE_QUALITY, isLinearFilter ? "1" : "0") == SDL_TRUE;
+		if (SDL_SetHint(SDL_HINT_RENDER_SCALE_QUALITY, isLinearFilter ? "1" : "0") == SDL_FALSE)
+		{
+			if (isLinearFilter)
+				ErrorLogger::Get().LogError("Renderer::SetLinearFilter() failure", "Failed to set scale quality to linear!");
+			else
+				ErrorLogger::Get().LogError("Renderer::SetLinearFilter() failure", "Failed to set scale quality to nearest!");
+
+			return false;
+		}
+
+		return true;
 	}
 
-	void Renderer::SetIntegerScale(bool isIntegerScale)
+	bool Renderer::SetIntegerScale(bool isIntegerScale)
 	{
-		
 		if (SDL_RenderSetIntegerScale(sdlRenderer_, isIntegerScale ? SDL_TRUE : SDL_FALSE) != 0)
-			ErrorLogger::Get().LogSDLError("SetIntegerScale() - SDL_RenderSetIntegerScale() fail");
+		{
+			ErrorLogger::Get().LogSDLError("Renderer::SetIntegerScale() - SDL_RenderSetIntegerScale() failure");
+			return false;
+		}
+
+		return true;
 	}
 
 	void Renderer::SwapBuffers()
@@ -160,7 +181,7 @@ namespace pix
 	void Renderer::GetRenderColor(Uint8& r, Uint8& g, Uint8& b, Uint8& a) const
 	{
 		if (SDL_GetRenderDrawColor(sdlRenderer_, &r, &g, &b, &a) != 0)
-			ErrorLogger::Get().LogSDLError("GetRenderColor() - SDL_GetRenderDrawColor() fail");
+			ErrorLogger::Get().LogSDLError("Renderer::GetRenderColor() - SDL_GetRenderDrawColor() failure");
 
 	}
 
@@ -174,7 +195,7 @@ namespace pix
 		return logicalResolutionHeight_;
 	}
 
-	bool Renderer::IsLinearFilterHint() const
+	bool Renderer::IsLinearFilter() const
 	{
 		const char* hint = SDL_GetHint(SDL_HINT_RENDER_SCALE_QUALITY);
 	
@@ -212,15 +233,6 @@ namespace pix
 	}
 
 
-
-	Renderer::Renderer() :
-		sdlRenderer_(nullptr),
-		logicalResolutionWidth_(0.0f),
-		logicalResolutionHeight_(0.0f),
-		isVsync_(false),
-		isInitialized_(false)
-	{
-	}
 
 	Renderer::~Renderer()
 	{

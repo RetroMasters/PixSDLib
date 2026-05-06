@@ -5,7 +5,7 @@ namespace pix
 {
 	Texture::~Texture()
 	{
-		DeleteSDLTexture();
+		DestroySDLTexture();
 	}
 
 
@@ -139,7 +139,7 @@ namespace pix
 	}
 
 
-	void Texture::DeleteSDLTexture()
+	void Texture::DestroySDLTexture()
 	{
 		if (sdlTexture_)
 		{

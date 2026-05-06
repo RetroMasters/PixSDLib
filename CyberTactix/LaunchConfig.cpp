@@ -28,11 +28,4 @@ namespace pix
 	{
 		return isInitialized_;
 	}
-
-	LaunchConfig::LaunchConfig():
-		data_(),
-		isInitialized_(false)
-	{
-	}
-
 }

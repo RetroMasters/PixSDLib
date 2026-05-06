@@ -35,7 +35,7 @@ namespace pix
 			return false;
 		}
 
-		DeleteSDLTexture();
+		DestroySDLTexture();
 		sdlTexture_ = newTexture;
 		
 		// Restore blend state

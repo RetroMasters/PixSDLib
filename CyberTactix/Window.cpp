@@ -12,38 +12,41 @@ namespace pix
 
 
 
-	bool Window::Init(int width, int height, bool isFullscreen, const std::string& title)
+	bool Window::Init(int windowedWidth, int windowedHeight, bool isFullscreen, const std::string& title)
 	{
 		if (isInitialized_) return true;
 
-		if (width < 1) width = 1;
-		if (height < 1) height = 1;
+		if (windowedWidth < 1) windowedWidth = 1;
+		if (windowedHeight < 1) windowedHeight = 1;
 
 		Uint32 flags = SDL_WINDOW_RESIZABLE | SDL_WINDOW_SHOWN;
 
-		if (isFullscreen) 
-			flags |= SDL_WINDOW_FULLSCREEN_DESKTOP;
+		if (isFullscreen) flags |= SDL_WINDOW_FULLSCREEN_DESKTOP;
 
-		sdlWindow_ = SDL_CreateWindow(title.c_str(), SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, width, height, flags);
+		sdlWindow_ = SDL_CreateWindow(title.c_str(), SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, windowedWidth, windowedHeight, flags);
 		if (!sdlWindow_)
 		{
-			ErrorLogger::Get().LogSDLError("Window::Init - SDL_CreateWindow() fail");
+			ErrorLogger::Get().LogSDLError("Window::Init() - SDL_CreateWindow() failure");
 			return false;
 		}
 
+		// Try to get the desktop resolution of the main monitor
 		SDL_DisplayMode desktopMode;
 		if (SDL_GetDesktopDisplayMode(0, &desktopMode) != 0)
 		{
-			ErrorLogger::Get().LogSDLError("Window::Init - SDL_GetDesktopDisplayMode() fail");
+			ErrorLogger::Get().LogSDLError("Window::Init() - SDL_GetDesktopDisplayMode() failure");
+			screenWidth_ = windowedWidth;
+			screenHeight_ = windowedHeight;
 		}
-		else  // Cache native resolution
+		else
 		{
+		   // Cache the desktop resolution of the main monitor (SDL display 0) 
 		   screenWidth_ = desktopMode.w; 
 		   screenHeight_ = desktopMode.h;
 		}
 
-		windowedWidth_ = width;
-		windowedHeight_ = height;
+		windowedWidth_ = windowedWidth;
+		windowedHeight_ = windowedHeight;
 
 		title_ = title;
 		isInitialized_ = true;
@@ -73,7 +76,7 @@ namespace pix
 		if (height < 1) height = 1;
 
 		// Only apply immediately if we're in windowed mode
-		if (!IsFullScreen())
+		if (!IsFullscreen())
 			SDL_SetWindowSize(sdlWindow_, width, height);
 
 		// Always update the preferred windowed size
@@ -83,17 +86,17 @@ namespace pix
 
 	void Window::SetFullscreen(bool isFullscreen)
 	{
-		if (IsFullScreen() == isFullscreen) return;
+		if (IsFullscreen() == isFullscreen) return;
 
 		if (isFullscreen)
 		{
 			if (SDL_SetWindowFullscreen(sdlWindow_, SDL_WINDOW_FULLSCREEN_DESKTOP) != 0)
-				ErrorLogger::Get().LogSDLError("Window::SetFullscreen() - SDL_SetWindowFullscreen() fail");
+				ErrorLogger::Get().LogSDLError("Window::SetFullscreen() - SDL_SetWindowFullscreen() failure");
 		}
 		else
 		{
 			if (SDL_SetWindowFullscreen(sdlWindow_, 0) != 0)
-				ErrorLogger::Get().LogSDLError("Window::SetFullscreen() - SDL_SetWindowFullscreen() fail");
+				ErrorLogger::Get().LogSDLError("Window::SetFullscreen() - SDL_SetWindowFullscreen() failure");
 			else
 				SDL_SetWindowSize(sdlWindow_, windowedWidth_, windowedHeight_);
 		}
@@ -107,7 +110,7 @@ namespace pix
 
 
 
-	bool Window::IsFullScreen() const
+	bool Window::IsFullscreen() const
 	{
 		return (SDL_GetWindowFlags(sdlWindow_) & SDL_WINDOW_FULLSCREEN_DESKTOP) != 0;
 	}
@@ -145,19 +148,6 @@ namespace pix
 	bool Window::IsInitialized() const 
 	{
 		return isInitialized_;
-	}
-
-
-
-	Window::Window():
-		sdlWindow_(nullptr),
-		windowedWidth_(1),
-		windowedHeight_(1),
-		screenWidth_(1),
-		screenHeight_(1),
-		title_(),
-		isInitialized_(false)
-	{
 	}
 
 	Window::~Window()

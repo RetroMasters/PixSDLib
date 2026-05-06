@@ -16,7 +16,7 @@ namespace pix
 	GameLoop::GameLoop(const std::string& companyName, const std::string& appName, const LaunchConfigData& configData)
 	{
 		ErrorLogger& errorLogger = ErrorLogger::Get();
-		errorLogger.Init(GetPrefPath(companyName, appName), configData.MaxCountPerError);
+		errorLogger.Init(GetPrefPath(companyName, appName), configData.MaxLogCountPerError);
 
 		// Windows 10+ feature for crisp, properly scaled graphics on high-DPI monitors. Must be called before SDL_Init()!
 		if (!SDL_SetHint(SDL_HINT_WINDOWS_DPI_AWARENESS, "permonitorv2"))
@@ -27,13 +27,13 @@ namespace pix
 
 		LaunchConfig::Get().Init(configData);
 
-		if (!Window::Get().Init(configData.LogicalScreenWidth, configData.LogicalScreenHeight, configData.IsFullscreen, appName))
+		if (!Window::Get().Init(configData.LogicalResolutionWidth, configData.LogicalResolutionHeight, configData.IsFullscreen, appName))
 		{
 			Quit();  // Having no window is a fatal error
 			return;
 		}
 
-		if (!Renderer::Get().Init(configData.LogicalScreenWidth, configData.LogicalScreenHeight, configData.IsIntegerScale, configData.IsLinearFilter, configData.IsVsync))
+		if (!Renderer::Get().Init(configData.LogicalResolutionWidth, configData.LogicalResolutionHeight, configData.IsIntegerScale, configData.IsLinearFilter, configData.IsVsync))
 		{
 			Quit(); // Having no renderer is a fatal error
 			return;
@@ -121,7 +121,7 @@ namespace pix
 
 			Renderer::Get().SwapBuffers(); // Vsynced double buffering
 
-			// SDL_Delay(1); //experimental, helps to keep gameloop smooth on some integrated cards for unknown reason
+			// SDL_Delay(1); // Experimental, helps to keep gameloop smooth on some integrated cards for unknown reason
 		}
 
 		//SteamAPI_Shutdown();
