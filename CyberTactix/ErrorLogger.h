@@ -1,9 +1,9 @@
 #pragma once
 
 #include <vector>
-#include<unordered_map>
+#include <unordered_map>
 #include <string>
-#include"Uncopyable.h"
+#include "Uncopyable.h"
 
 namespace pix
 {
@@ -14,8 +14,8 @@ namespace pix
     // Errors are expected to be the absolute exception, not the rule.
     // The game should continue running whenever possible, even if non-critical errors occur.
     //
-    // To reduce overhead, repeated occurrences of the same error can be capped:
-    // once an error is known, further logging attempts are ignored.
+	// To reduce overhead, repeated occurrences of the same error can be capped.
+    // Once the cap is reached, further logging attempts for that error name are ignored.
     // Logging can also be disabled on demand in hot code paths.
     //
     // Performance-critical functions that run in tight loops should not log errors;
@@ -32,16 +32,17 @@ namespace pix
 		// Initializes the ErrorLogger. 
         // Creates or truncates "ErrorLog.txt" inside outputDirectory, which must exist and be writable.
         // Limits the number of logged occurrences per error name to maxCountPerError.
-		// Returns true if initialization succeeds or if the ErrorLogger is already initialized, false otherwise.
+		// Returns true if initialization succeeds, false otherwise.
+		// Calling Init() again after successful initialization has no effect and returns true.
 		bool Init(const std::string& outputDirectory, int maxCountPerError);
 
-		// Logs the last SDL error on the current thread, if present and not already logged
+		// Logs the last SDL error on the current thread, if present and allowed by the per-error cap
 		void LogSDLError(const std::string& errorName);
 
 		// Logs a custom error message under the given error name
 		void LogError(const std::string& errorName, const std::string& errorMessage);
 
-		// Clears the log file and all in-memory error state
+		// Clears all in-memory error state and truncates the log file if possible
 		void ClearLog();
 
 		void SetLoggingEnabled(bool enabled);
@@ -77,20 +78,28 @@ namespace pix
 
 	private:
 
-		static constexpr int maxLogEntries_ = 10000;
+		struct Error
+		{
+			Error(const std::string& name, const std::string& message);
 
-		ErrorLogger();
+			std::string Name;
+			std::string Message;
+		};
+
+		static constexpr int MAX_LOG_ENTRIES = 10000;
+
+		ErrorLogger() = default;
 		~ErrorLogger() = default;
 
 		void WriteToFile(const std::string& input);
 		std::string FormatError(const std::string& errorName, const std::string& errorMessage) const;
 
-		std::vector<std::pair<std::string, std::string>> errors_;
+		std::vector<Error> errors_;  
 		std::unordered_map<std::string, int> errorCounts_;
 		std::string outputPath_;
-		int maxCountPerError_;
-		bool isLoggingEnabled_;
-		bool isInitialized_;
+		int maxCountPerError_ = MAX_LOG_ENTRIES;
+		bool isLoggingEnabled_ = true;
+		bool isInitialized_ = false;
 	};
 
 }

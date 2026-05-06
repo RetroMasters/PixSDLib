@@ -1,7 +1,6 @@
-#pragma once
 
-#include <SDL.h>
 #include "ErrorLogger.h"
+#include <SDL.h>
 
 namespace pix
 {
@@ -36,8 +35,8 @@ namespace pix
 		maxCountPerError_ = maxCountPerError;
 		if (maxCountPerError_ < 1)
 			maxCountPerError_ = 1;
-		else if (maxCountPerError_ > maxLogEntries_)
-			maxCountPerError_ = maxLogEntries_;
+		else if (maxCountPerError_ > MAX_LOG_ENTRIES)
+			maxCountPerError_ = MAX_LOG_ENTRIES;
 
 		isInitialized_ = true;
 
@@ -46,17 +45,17 @@ namespace pix
 
 	void ErrorLogger::LogSDLError(const std::string& errorName)
 	{
-		if (!isLoggingEnabled_ || !isInitialized_ || errors_.size() >= maxLogEntries_) return;
+		if (!isLoggingEnabled_ || !isInitialized_ || errors_.size() >= MAX_LOG_ENTRIES) return;
 
 		const char* sdlError = SDL_GetError();
-		if (sdlError == nullptr || (*sdlError) == '\0')
+		if (!sdlError || (*sdlError) == '\0')
 			return;
-
-		int& count = errorCounts_[errorName];
-		if (count >= maxCountPerError_) return;
 
 		std::string errorMessage = sdlError;
 		SDL_ClearError();
+
+		int& count = errorCounts_[errorName];
+		if (count >= maxCountPerError_) return;
 
 		WriteToFile(FormatError(errorName, errorMessage));
 		errors_.emplace_back(errorName, errorMessage);
@@ -65,9 +64,9 @@ namespace pix
 
 	void ErrorLogger::LogError(const std::string& errorName, const std::string& errorMessage)
 	{
-		if (!isLoggingEnabled_ || !isInitialized_ || errors_.size() >= maxLogEntries_) return;
+		if (!isLoggingEnabled_ || !isInitialized_ || errors_.size() >= MAX_LOG_ENTRIES) return;
 
-		int& count = errorCounts_[errorName]; // inserts value-initialized entry with the value 0 if there is none
+		int& count = errorCounts_[errorName]; // Inserts value 0 if there is none
 		if (count >= maxCountPerError_) return;
 
 		WriteToFile(FormatError(errorName, errorMessage));
@@ -75,18 +74,19 @@ namespace pix
 		++count;
 	}
 
-	void ErrorLogger::ClearLog() 
+	void ErrorLogger::ClearLog()
 	{
 		if (!isInitialized_) return;
 
 		SDL_RWops* file = SDL_RWFromFile(outputPath_.c_str(), "w");
-		if (!file)
-			return;
+		if (file)
+			SDL_RWclose(file);
 
-		SDL_RWclose(file);
 		errors_.clear();
 		errorCounts_.clear();
 	}
+
+
 
 	void ErrorLogger::SetLoggingEnabled(bool value)
 	{
@@ -102,28 +102,32 @@ namespace pix
 		else if (index >= errors_.size())
 		  index = errors_.size() - 1;
 
-		return FormatError(errors_[index].first, errors_[index].second);
+		return FormatError(errors_[index].Name, errors_[index].Message);
 	}
 
 	std::string ErrorLogger::GetErrorByName(const std::string& errorName) const
 	{
 		std::string foundErrors;
 
-		for (const auto& error : errors_)
+		const int errorCount = errors_.size();
+
+		for (int i = 0; i < errorCount; i++)
 		{
-			if (error.first == errorName)
-				foundErrors += FormatError(error.first, error.second);
+			if (errors_[i].Name == errorName)
+				foundErrors += FormatError(errors_[i].Name, errors_[i].Message);
 		}
 
 		return foundErrors;
 	}
 
-	std::string ErrorLogger::GetAllErrors() const 
+	std::string ErrorLogger::GetAllErrors() const
 	{
 		std::string allErrors;
 
-		for (const auto& error : errors_)
-			allErrors += FormatError(error.first, error.second);
+		const int errorCount = errors_.size();
+
+		for (int i = 0; i < errorCount; i++)
+			allErrors += FormatError(errors_[i].Name, errors_[i].Message);
 
 		return allErrors;
 	}
@@ -168,15 +172,9 @@ namespace pix
 	}
 
 
-
-
-	ErrorLogger::ErrorLogger():
-		errors_(),
-		errorCounts_(),
-		outputPath_(),
-		maxCountPerError_(10000),
-		isLoggingEnabled_(true),
-		isInitialized_(false)
+	ErrorLogger::Error::Error(const std::string& name, const std::string& message) :
+		Name(name),
+		Message(message)
 	{
 	}
 
@@ -189,7 +187,7 @@ namespace pix
 		if (!file)
 			return;
 
-		SDL_RWwrite(file, input.data(), 1, input.size());
+		SDL_RWwrite(file, input.c_str(), 1, input.size());
 		SDL_RWclose(file);
 	}
 

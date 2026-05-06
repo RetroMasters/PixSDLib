@@ -2,7 +2,7 @@
 
 #include <SDL_mixer.h>
 #include <string>
-#include"Uncopyable.h"
+#include "Uncopyable.h"
 
 namespace pix
 {
@@ -11,15 +11,15 @@ namespace pix
     //
     // Technical note:
     // SDL_mixer has two separate data structures for audio data. One it calls a
-    // "chunk," which is meant to be a file completely decoded into memory up
-    // front, and the other it calls "music" which is a file intended to be
+    // "chunk", which is meant to be a file completely decoded into memory up
+    // front, and the other it calls "music", which is a file intended to be
     // decoded on demand. Historically, uncompressed formats like WAV were intended 
     // for chunks, while compressed formats like MP3 were streamed as music.
     //   
-    // In modern times, this isn't split by format anymore, and most are
+    // In modern times, this is not split by format anymore, and most are
     // interchangeable, so the question is what the app thinks is worth
     // predecoding or not. Chunks might take more memory, but once they are loaded
-    // won't need to decode again, whereas music always needs to be decoded on the
+    // they will not need to decode again, whereas music always needs to be decoded on the
     // fly. Also, crucially, there are as many channels for chunks as the app can
     // allocate, but SDL_mixer only offers a single "music" channel.
     // 
@@ -42,12 +42,12 @@ namespace pix
         // Returns true if initialization succeeds or if Audio is already initialized, false otherwise.
         bool Init();
 
-        // Destroys the Audio
+        // Destroys the audio subsystem
         void Destroy();
 
-        // ------------- MUSIC -----------------------
+        // ##################################################### MUSIC ###########################################################
 
-        // Halts the current track and loads a new one. There is only one "music" channel.
+        // Loads a new track and replaces the current one if loading succeeds. There is only one "music" channel.
         void ReloadMusic(const std::string& path);
 
         // Halts and deletes music
@@ -65,14 +65,14 @@ namespace pix
         // Set music volume between [0, 1]
         void SetMusicVolume(float volume);
 
-        // Playing sound will repeat repeatCount times. If repeatCount == -1, it will loop "infinitely" (approx 65000 times). 
+        // Sets the music repeat count. If repeatCount == -1, SDL_mixer loops it approximately 65000 times.
         void SetMusicRepeatCount(int repeatCount);
 
         // Set the current time position in the music stream, in seconds
         void SetMusicPosition(double timePosition);
 
 
-        // ---------------- SOUND CHUNK --------------------
+        // ############################################# SOUND CHUNK ##############################################################
 
         // Loads a supported audio format fully into memory as a sound chunk
         Mix_Chunk* LoadSoundChunk(const std::string& path);
@@ -89,7 +89,7 @@ namespace pix
 
         void SetSoundChunkVolume(Mix_Chunk* soundChunk, float volume);
 
-        // ------------------ CHANNELS ---------------------
+        // ############################################### CHANNELS #################################################################
 
         // Reallocates the specified number of channels for simultaneous playback of sound chunks. 
         // Returns the actual number of channels allocated.
@@ -107,21 +107,21 @@ namespace pix
         // Sets master volume in range [0, 1]. All channel volumes will be multiplied by the master volume.
         void SetMasterVolume(float volume);
 
-        // ------------------- GETTERS -------------------------
+        // ################################################ GETTERS ####################################################################
 
         bool IsMusicPaused() const;
 
         float GetMusicVolume() const;
 
         // Gets the current time position in the music stream, in seconds
-        // Returns -1.0 on fail
+        // Returns -1.0 on failure
         double GetMusicPosition() const;
 
         int  GetMusicRepeatCount() const;
 
         int  GetAllocatedChannelCount() const;
 
-        // Returns the amount of currently playing/paused channels
+        // Returns the number of currently playing or paused channels
         int  GetOccupiedChannelCount() const;
 
         float GetChannelVolume() const;
@@ -133,15 +133,15 @@ namespace pix
 
     private:
 
-        Audio();
+        Audio() = default;
         ~Audio();
 
-        Mix_Music* musicTrack_;
-        float      masterVolume_;
-        float      channelVolume_;
-        float      musicVolume_;  // Music is running on a dedicated separate channel.
-        int        musicRepeatCount_;  //current SDL-BUG: 0,1 play both 1x, 2 plays 3x (correctly)
-        bool       isInitialized_;
+        Mix_Music* musicTrack_ = nullptr;
+        float      masterVolume_ = 0.3f;
+        float      channelVolume_ = 1.0f;
+        float      musicVolume_ = 1.0f;  // Music is running on a dedicated separate channel.
+        int        musicRepeatCount_ = -1;  // TODO: current SDL-BUG: 0,1 play both 1x, 2 plays 3x (correctly)
+        bool       isInitialized_ = false;
     };
 
 }

@@ -72,10 +72,8 @@ namespace pix
 	{
 		GamepadInput::Get().RemoveAllGamepads();
 
-		Audio::Get().DeleteMusic();
+		Audio::Get().Destroy();
 
-		Mix_CloseAudio();
-		Mix_Quit();
 		TTF_Quit();
 		IMG_Quit();
 
