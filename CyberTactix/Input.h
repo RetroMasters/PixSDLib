@@ -69,7 +69,9 @@ namespace pix
 		static MouseInput& Get();
 		
 		// Clears the wheel delta
-		void BeginUpdate();
+		void EndUpdate();
+
+		void EndRender();
 
 		// Handles SDL_MOUSEWHEEL events: accumulates wheel delta (+/-1.0 per notch, traditionally)
 		void HandleEvents(const SDL_Event& event);
@@ -89,12 +91,13 @@ namespace pix
 
 		int GetMousePositionY() const;
 
-		// Convenience function returning both wheel delta components
-		Vec2f GetWheelDelta() const; 
+		float GetWheelDeltaXInUpdate() const;
 
-		float GetWheelDeltaX() const;
+		float GetWheelDeltaYInUpdate() const;  
 
-		float GetWheelDeltaY() const;  
+		float GetWheelDeltaXInRender() const;
+
+		float GetWheelDeltaYInRender() const;
 
 	private:
 
@@ -103,8 +106,10 @@ namespace pix
 
 		int positionX_ = 0;
 		int positionY_ = 0;
-		float wheelDeltaX_ = 0.0f;
-		float wheelDeltaY_ = 0.0f;
+		float wheelDeltaXInUpdate_ = 0.0f;
+		float wheelDeltaYInUpdate_ = 0.0f;
+		float wheelDeltaXInRender_ = 0.0f;
+		float wheelDeltaYInRender_ = 0.0f;
 		Uint32 buttonFlags_ = 0;
 	};
 

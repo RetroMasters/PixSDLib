@@ -3,22 +3,17 @@
 namespace pix
 {
 
-	Sprite2DEx::Sprite2DEx()  : MovableObject2D(),
-		Mesh(nullptr)
-	{
-	}
-
-	Sprite2DEx::Sprite2DEx(const TriangleMesh2D* mesh, const Transform2D& transform)  : MovableObject2D(transform),
+	Sprite2DEx::Sprite2DEx(const TriangleMesh2D* mesh, const Transform2D& transform) : MovableObject2D(transform),
 		Mesh(mesh)
 	{
 	}
 
-	Sprite2DEx::Sprite2DEx(const TriangleMesh2D* mesh, const Transform2D& transform, const Transform2D& prevTransform)  : MovableObject2D(transform, prevTransform),
+	Sprite2DEx::Sprite2DEx(const TriangleMesh2D* mesh, const Transform2D& transform, const Transform2D& prevTransform) : MovableObject2D(transform, prevTransform),
 		Mesh(mesh)
 	{
 	}
 
-	Sprite2DEx::Sprite2DEx(const TriangleMesh2D* mesh, const Vec2& position, const Vec2f& scale, const Rotation2D& rotation)  : MovableObject2D(position, scale, rotation),
+	Sprite2DEx::Sprite2DEx(const TriangleMesh2D* mesh, Vec2 position, Vec2f scale, Rotation2D rotation) : MovableObject2D(position, scale, rotation),
 		Mesh(mesh)
 	{
 	}

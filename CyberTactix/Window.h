@@ -34,8 +34,9 @@ namespace pix
 		// Initializes the Window singleton and creates the main window.
         // The initial window mode (windowed or fullscreen) is applied at creation time to avoid visible transitions during startup.
 		// Returns true if the SDL_Window was created, or if the Window is already initialized.
+		// Calling Init() again after successful initialization has no effect and returns true.
 		// Window setup failures after creation are logged but do not make Init() fail.
-		// Can be reinitialized (not intended) after Destroy().
+		// Window is not meant to be reinitialized during normal program execution.
 		bool Init(int windowedWidth, int windowedHeight, bool isFullscreen, const std::string& title);
 
 		// Destroys the window resource.

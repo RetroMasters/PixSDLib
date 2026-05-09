@@ -1,15 +1,7 @@
 #include "MovableObject3D.h"
 
-// MoveableObject is the basis class for an object that can move in space.
 namespace pix
 {
-	
-		MovableObject3D::MovableObject3D() :
-			Transform(),
-			prevTransform_()
-		{
-		}
-
 		MovableObject3D::MovableObject3D(const Transform3D& transform) :
 			Transform(transform),
 			prevTransform_(Transform)
@@ -22,7 +14,7 @@ namespace pix
 		{
 		}
 
-		MovableObject3D::MovableObject3D(const Vec3& position, const Vec3f& scale, const Rotation3D& rotation) :
+		MovableObject3D::MovableObject3D(const Vec3& position, Vec3f scale, const Rotation3D& rotation) :
 			Transform(position, scale, rotation),
 			prevTransform_(Transform)
 		{
@@ -34,7 +26,7 @@ namespace pix
 		}
 
 
-		const Transform3D& MovableObject3D::GetPreviousTransform() const
+		const Transform3D& MovableObject3D::GetPrevTransform() const
 		{
 			return prevTransform_;
 		}

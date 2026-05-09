@@ -40,9 +40,12 @@ namespace pix
         // It opens the default device for stereo sound with reasonable defaults.
         // If MP3 or OGG is not supported, the ErrorLogger will log this.
         // Returns true if initialization succeeds or if Audio is already initialized, false otherwise.
+        // Calling Init() again after successful initialization has no effect and returns true.
+        // Audio is not meant to be reinitialized during normal program execution.
         bool Init();
 
-        // Destroys the audio subsystem
+        // Destroys the audio system.
+        // Loaded Mix_Chunk resources are not owned by SDL_mixer; destroy SoundEffect objects separately.
         void Destroy();
 
         // ##################################################### MUSIC ###########################################################
@@ -81,12 +84,16 @@ namespace pix
 
         void PlaySoundChunk(int channel, Mix_Chunk* soundChunk, int repeatCount);
 
+        // Pauses all active channels currently playing soundChunk
         void PauseSoundChunk(Mix_Chunk* soundChunk);
 
+        // Resumes all paused channels assigned to soundChunk
         void ResumeSoundChunk(Mix_Chunk* soundChunk);
 
+        // Stops all channels assigned to soundChunk, freeing those channels for new playback
         void StopSoundChunk(Mix_Chunk* soundChunk);
 
+        // Sets the volume of soundChunk in the clamped range [0, 1]
         void SetSoundChunkVolume(Mix_Chunk* soundChunk, float volume);
 
         // ############################################### CHANNELS #################################################################
@@ -101,10 +108,10 @@ namespace pix
 
         void StopAllChannels();
 
-        // Set the volume for all channels (except music) in the range [0, 1]
+        // Set the volume for all channels (except music) in the clamped range [0, 1]
         void SetChannelVolume(float volume);
 
-        // Sets master volume in range [0, 1]. All channel volumes will be multiplied by the master volume.
+        // Sets master volume in the clamped range [0, 1]. All channel volumes will be multiplied by the master volume.
         void SetMasterVolume(float volume);
 
         // ################################################ GETTERS ####################################################################

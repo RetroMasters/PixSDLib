@@ -1,35 +1,20 @@
 #include "Sprite2DExNode.h"
 
-#include "PixMath.h"
-
 namespace pix
 {
 
-	Sprite2DExNode::Sprite2DExNode()  : MovableObject2D(),
-		Mesh(nullptr),
-		parent_(nullptr),
-		children_()
+	Sprite2DExNode::Sprite2DExNode(const TriangleMesh2D* mesh, const Transform2D& transform) : MovableObject2D(transform),
+		Mesh(mesh)
 	{
 	}
 
-	Sprite2DExNode::Sprite2DExNode(const TriangleMesh2D* mesh, const Transform2D& transform)  : MovableObject2D(transform),
-		Mesh(mesh),
-		parent_(nullptr),
-		children_()
+	Sprite2DExNode::Sprite2DExNode(const TriangleMesh2D* mesh, const Transform2D& transform, const Transform2D& prevTransform) : MovableObject2D(transform, prevTransform),
+		Mesh(mesh)
 	{
 	}
 
-	Sprite2DExNode::Sprite2DExNode(const TriangleMesh2D* mesh, const Transform2D& transform, const Transform2D& prevTransform)  : MovableObject2D(transform, prevTransform),
-		Mesh(mesh),
-		parent_(nullptr),
-		children_()
-	{
-	}
-
-	Sprite2DExNode::Sprite2DExNode(const TriangleMesh2D* mesh, const Vec2& position, const Vec2f& scale, const Rotation2D& rotation)  : MovableObject2D(position, scale, rotation),
-		Mesh(mesh),
-		parent_(nullptr),
-		children_()
+	Sprite2DExNode::Sprite2DExNode(const TriangleMesh2D* mesh, Vec2 position, Vec2f scale, Rotation2D rotation) : MovableObject2D(position, scale, rotation),
+		Mesh(mesh)
 	{
 	}
 
@@ -38,8 +23,9 @@ namespace pix
 		// Detach self from parent
 		SetParent(nullptr);
 
-		// Detaching self from children can be optimized since this node gets destroyed anyway
-		for (size_t i = 0; i < children_.size(); i++)
+		const int childCount = children_.size();
+		// Re-root children directly because this node is being destroyed
+		for (int i = 0; i < childCount; i++)
 		{
 			children_[i]->Transform = children_[i]->GetGlobalTransform();
 			children_[i]->prevTransform_ = children_[i]->GetPrevGlobalTransform();
@@ -47,27 +33,28 @@ namespace pix
 		}
 	}
 
-	void Sprite2DExNode::SetParent(Sprite2DExNode* newParent) 
+	bool Sprite2DExNode::SetParent(Sprite2DExNode* newParent) 
 	{
-		if (newParent == parent_) return;
+		if (newParent == parent_) return true;
 
-		// The new parent must not be this node or a descendant of it
 		Sprite2DExNode* currentParent = newParent;
+		// The new parent must not be this node or a descendant of it
 		while (currentParent)
 		{
-			if (currentParent == this) return;
+			if (currentParent == this) return false;
 
 			currentParent = currentParent->parent_;
 		}
 
 		// Remove from current parent
-		if (parent_ != nullptr)
+		if (parent_)
 		{
 			Transform = GetGlobalTransform();
 			prevTransform_ = GetPrevGlobalTransform();
 
-			// Remove from current Parent
-			for (size_t i = 0; i < parent_->children_.size(); i++)
+			const int parentChildCount = parent_->children_.size();
+		
+			for (int i = 0; i < parentChildCount; i++)
 			{
 				if (parent_->children_[i] == this)
 				{
@@ -78,7 +65,7 @@ namespace pix
 		}
 
 		// Add to newParent
-		if (newParent != nullptr)
+		if (newParent)
 		{
 			Transform2D newParentTransform = newParent->GetGlobalTransform();
 			Transform2D newParentPrevTransform = newParent->GetPrevGlobalTransform();
@@ -96,8 +83,9 @@ namespace pix
 
 		// Make newParent known to this node
 		parent_ = newParent;
-	}
 
+		return true;
+	}
 
 	Sprite2DExNode* Sprite2DExNode::GetParent() const 
 	{
@@ -109,17 +97,16 @@ namespace pix
 		return children_;
 	}
 
-
 	Transform2D Sprite2DExNode::GetGlobalTransform() const 
 	{
 		const Sprite2DExNode* parent = parent_;
 
-		Vec2   position = Transform.Position;
-		Vec2f   scale = Transform.Scale;
+		Vec2 position = Transform.Position;
+		Vec2f scale = Transform.Scale;
 		Rotation2D rotation = Transform.Rotation;
 
 		// Transform to world space
-		while (parent != nullptr)
+		while (parent)
 		{
 			scale *= parent->Transform.Scale;
 			rotation.AddRotation(parent->Transform.Rotation);
@@ -140,7 +127,7 @@ namespace pix
 		Rotation2D rotation = prevTransform_.Rotation;
 
 		// Transform to world space
-		while (parent != nullptr)
+		while (parent)
 		{
 			scale *= parent->prevTransform_.Scale;
 			rotation.AddRotation(parent->prevTransform_.Rotation);

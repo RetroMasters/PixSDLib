@@ -102,22 +102,27 @@ namespace pix
 
 			UpdateInterpolationAlpha();
 
-			// When no Update() is executed, call SDL_PumpEvents() once so direct device state such as mouse position stays fresh for Render().
-            // Transient input state, such as mouse wheel delta, is processed only inside Update() to keep input timing consistent with simulation timing.
-			if (updateCount <= 0) SDL_PumpEvents();
+			// Poll current device input state and handle events
+			HandleEvents();
+			MouseInput::Get().Update();
 
 			for (int i = 0; i < updateCount; i++)
 			{
-				MouseInput::Get().BeginUpdate();
-
-				HandleEvents();
-
-				MouseInput::Get().Update();
+				// Ensure input is pumped for every Update(), not just once per frame, so that Update() gets the freshest device input state available
+				if (i > 0)
+				{
+					SDL_PumpEvents();
+					MouseInput::Get().Update();
+				}
 
 				Update(); // VIRTUAL				
+
+				MouseInput::Get().EndUpdate();
 			}
 
 			Render(); // VIRTUAL 
+
+			MouseInput::Get().EndRender();
 
 			Renderer::Get().SwapBuffers(); // Vsynced double buffering
 

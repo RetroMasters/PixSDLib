@@ -1,61 +1,46 @@
 #include "Sprite2DNode.h"
-#include"PixMath.h"
 
 namespace pix
 {
-
-	Sprite2DNode::Sprite2DNode()  : MovableObject2D(),
-		Mesh(nullptr),
-		parent_(nullptr),
-		children_()
+	Sprite2DNode::Sprite2DNode(const SpriteMesh* mesh, const Transform2D& transform) : MovableObject2D(transform),
+		Mesh(mesh)
 	{
 	}
 
-	Sprite2DNode::Sprite2DNode(const SpriteMesh* mesh, const Transform2D& transform)  : MovableObject2D(transform),
-		Mesh(mesh),
-		parent_(nullptr),
-		children_()
+	Sprite2DNode::Sprite2DNode(const SpriteMesh* mesh, const Transform2D& transform, const Transform2D& prevTransform) : MovableObject2D(transform, prevTransform),
+		Mesh(mesh)
 	{
 	}
 
-	Sprite2DNode::Sprite2DNode(const SpriteMesh* mesh, const Transform2D& transform, const Transform2D& prevTransform)  : MovableObject2D(transform, prevTransform),
-		Mesh(mesh),
-		parent_(nullptr),
-		children_()
-	{
-	}
-
-	Sprite2DNode::Sprite2DNode(const SpriteMesh* mesh, const Vec2& position, const Vec2f& scale, const Rotation2D& rotation)  : MovableObject2D(position, scale, rotation),
-		Mesh(mesh),
-		parent_(nullptr),
-		children_()
+	Sprite2DNode::Sprite2DNode(const SpriteMesh* mesh, Vec2 position, Vec2f scale, Rotation2D rotation) : MovableObject2D(position, scale, rotation),
+		Mesh(mesh)
 	{
 	}
 
 	Sprite2DNode::~Sprite2DNode()  
 	{
-		// Detaching self from parent
+		// Detach self from parent
 		SetParent(nullptr);
 
-		// Detaching self from children can be optimized since this node gets destroyed anyway
-		for (size_t i = 0; i < children_.size(); i++) 
+		const int childCount = children_.size();
+		// Re-root children directly because this node is being destroyed
+		for (int i = 0; i < childCount; i++) 
 		{
 			children_[i]->Transform = children_[i]->GetGlobalTransform();
 			children_[i]->prevTransform_ = children_[i]->GetPrevGlobalTransform();
-
 			children_[i]->parent_ = nullptr;
 		}
 	}
 
-	void Sprite2DNode::SetParent(Sprite2DNode* newParent) 
+	bool Sprite2DNode::SetParent(Sprite2DNode* newParent) 
 	{
-		if (newParent == parent_) return;
+		if (newParent == parent_) return true;
 
-		// The new parent must not be this node or a descendant of it
 		Sprite2DNode* currentParent = newParent; 
-		while(currentParent)
+		// The new parent must not be this node or a descendant of it
+		while (currentParent)
 		{
-			if (currentParent == this) return;
+			if (currentParent == this) return false;
 
 			currentParent = currentParent->parent_;
 		}
@@ -66,7 +51,9 @@ namespace pix
 			Transform = GetGlobalTransform();
 			prevTransform_ = GetPrevGlobalTransform();
 
-			for (size_t i = 0; i < parent_->children_.size(); i++)
+			const int parentChildCount = parent_->children_.size();
+
+			for (int i = 0; i < parentChildCount; i++)
 			{
 				if (parent_->children_[i] == this)
 				{
@@ -95,8 +82,9 @@ namespace pix
 
 		// Make newParent known to this node
 		parent_ = newParent;
-	}
 
+		return true;
+	}
 
 	Sprite2DNode* Sprite2DNode::GetParent() const 
 	{
@@ -107,7 +95,6 @@ namespace pix
 	{
 		return children_;
 	}
-
 
 	Transform2D Sprite2DNode::GetGlobalTransform() const 
 	{

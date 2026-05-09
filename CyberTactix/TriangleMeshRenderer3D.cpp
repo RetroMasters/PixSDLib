@@ -217,7 +217,7 @@ namespace pix
 		const int vertexCount = vertices.size();
 
 		// Interpolate the sprite transform
-		Transform3D interpolatedTransform = GetInterpolated(sprite.GetPreviousTransform(), sprite.Transform, configuration_.InterpolationAlpha);
+		Transform3D interpolatedTransform = GetInterpolated(sprite.GetPrevTransform(), sprite.Transform, configuration_.InterpolationAlpha);
 
 		// Precompute the interpolated transform's combined scale and rotation for per-vertex use (flat mesh: Z can be ignored)
 		const Vec3f scaledXAxis = interpolatedTransform.Rotation.GetXAxis() * interpolatedTransform.Scale.X;
@@ -286,7 +286,7 @@ namespace pix
 		while (parent != nullptr)
 		{
 			parent->Transform.TransformPoints(worldPositionBuffer_.data(), worldPositionBuffer_.size());
-			parent->GetPreviousTransform().TransformPoints(prevWorldPositionBuffer_.data(), prevWorldPositionBuffer_.size());
+			parent->GetPrevTransform().TransformPoints(prevWorldPositionBuffer_.data(), prevWorldPositionBuffer_.size());
 			parent = parent->GetParent();
 		}
 
@@ -391,8 +391,8 @@ namespace pix
 		interpolationAlpha = GetClamped(interpolationAlpha, 0.0f, 1.0f);
 		verticalFOV = GetClamped(verticalFOV, 1.0f, 89.0f);
 
-		configuration_.InterpolatedCameraPosition = GetInterpolatedUnchecked(camera.GetPreviousTransform().Position, camera.Transform.Position, (double)interpolationAlpha);
-		configuration_.InterpolatedCameraRotation = GetInterpolated(camera.GetPreviousTransform().Rotation, camera.Transform.Rotation, interpolationAlpha);
+		configuration_.InterpolatedCameraPosition = GetInterpolatedUnchecked(camera.GetPrevTransform().Position, camera.Transform.Position, (double)interpolationAlpha);
+		configuration_.InterpolatedCameraRotation = GetInterpolated(camera.GetPrevTransform().Rotation, camera.Transform.Rotation, interpolationAlpha);
 		configuration_.InterpolatedCameraZAxis = configuration_.InterpolatedCameraRotation.GetZAxis();
 		configuration_.InterpolationAlpha = interpolationAlpha;
 		configuration_.RenderTargetOffset = renderTargetOffset;

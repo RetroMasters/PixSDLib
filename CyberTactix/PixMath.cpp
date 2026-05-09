@@ -57,8 +57,6 @@ namespace pix
 	// ################################################################################### ROTATIONS ##################################################################
 
 
-	Rotation2D::Rotation2D(): xAxis_(1.0f, 0.0f) {}
-
 	Rotation2D::Rotation2D(float degrees) 
 	{
 		Set(degrees);
@@ -69,14 +67,14 @@ namespace pix
 		degrees *= (float)RADIANS_PER_DEGREE;
 
 		// No need for normalization as numerical errors don't accumulate
-		xAxis_ = Vec2f(std::cosf(degrees), std::sinf(degrees));
+		xAxis_ = Vec2f(std::cos(degrees), std::sin(degrees));
 	}
 
 	Rotation2D& Rotation2D::AddRotation(float deltaDegrees)
 	{
 		deltaDegrees *= (float)RADIANS_PER_DEGREE;
 
-		Vec2f localXAxis(std::cosf(deltaDegrees), std::sinf(deltaDegrees));
+		Vec2f localXAxis(std::cos(deltaDegrees), std::sin(deltaDegrees));
 
 		xAxis_ = Vec2f(xAxis_.X * localXAxis.X - xAxis_.Y * localXAxis.Y,
 				       xAxis_.Y * localXAxis.X + xAxis_.X * localXAxis.Y);
@@ -145,7 +143,7 @@ namespace pix
 
 	float Rotation2D::GetAngle() const
 	{
-		return std::atan2f(xAxis_.Y, xAxis_.X) * (float)DEGREES_PER_RADIAN;
+		return std::atan2(xAxis_.Y, xAxis_.X) * (float)DEGREES_PER_RADIAN;
 	}
 
 	Rotation2D Rotation2D::GetInverse() const
@@ -158,8 +156,6 @@ namespace pix
 	}
 
 
-
-	Rotation3D::Rotation3D() : xAxis_(1.0f, 0.0f, 0.0f), yAxis_(0.0f, 1.0f, 0.0f) {}
 
 	void Rotation3D::SetToIdentity()
 	{
@@ -220,8 +216,8 @@ namespace pix
 	{
 		const float rad = degrees * (float)RADIANS_PER_DEGREE;
 
-		const float c = std::cosf(rad);
-		const float s = std::sinf(rad);
+		const float c = std::cos(rad);
+		const float s = std::sin(rad);
 
 		xAxis_ = Vec3f(xAxis_.X, xAxis_.Z * s + xAxis_.Y * c, xAxis_.Z * c - xAxis_.Y * s);
 		yAxis_ = Vec3f(yAxis_.X, yAxis_.Z * s + yAxis_.Y * c, yAxis_.Z * c - yAxis_.Y * s);
@@ -233,8 +229,8 @@ namespace pix
 	{
 		const float rad = degrees * (float)RADIANS_PER_DEGREE;
 
-		const float c = std::cosf(rad);
-		const float s = std::sinf(rad);
+		const float c = std::cos(rad);
+		const float s = std::sin(rad);
 
 		xAxis_ = Vec3f(xAxis_.X * c - xAxis_.Z * s, xAxis_.Y, xAxis_.X * s + xAxis_.Z * c);
 		yAxis_ = Vec3f(yAxis_.X * c - yAxis_.Z * s, yAxis_.Y, yAxis_.X * s + yAxis_.Z * c);
@@ -246,8 +242,8 @@ namespace pix
 	{
 		const float rad = degrees * (float)RADIANS_PER_DEGREE;
 
-		const float s = std::sinf(rad);
-		const float c = std::cosf(rad);
+		const float s = std::sin(rad);
+		const float c = std::cos(rad);
 
 		xAxis_ = Vec3f(xAxis_.X * c + xAxis_.Y * s, xAxis_.Y * c - xAxis_.X * s, xAxis_.Z);
 		yAxis_ = Vec3f(yAxis_.X * c + yAxis_.Y * s, yAxis_.Y * c - yAxis_.X * s, yAxis_.Z);
@@ -271,8 +267,8 @@ namespace pix
 	{
 		const float rad = degrees * (float)RADIANS_PER_DEGREE;
 
-		const float s = std::sinf(rad);
-		const float c = std::cosf(rad);
+		const float s = std::sin(rad);
+		const float c = std::cos(rad);
 
 		const Vec3f zAxis = xAxis_.GetCrossProduct(yAxis_);
 		yAxis_ = yAxis_ * c - zAxis * s;  // localRotY.Y = c, localRotY.Z = -s
@@ -284,8 +280,8 @@ namespace pix
 	{
 		const float rad = degrees * (float)RADIANS_PER_DEGREE;
 
-		const float s = std::sinf(rad);
-		const float c = std::cosf(rad);
+		const float s = std::sin(rad);
+		const float c = std::cos(rad);
 
 		const Vec3f zAxis = xAxis_.GetCrossProduct(yAxis_);
 		xAxis_ = xAxis_ * c + zAxis * s; // localRotX.X = c, localRotX.Z = s
@@ -297,8 +293,8 @@ namespace pix
 	{
 		const float rad = degrees * (float)RADIANS_PER_DEGREE;
 
-		const float s = std::sinf(rad);
-		const float c = std::cosf(rad);
+		const float s = std::sin(rad);
+		const float c = std::cos(rad);
 
 		const Vec3f tempX = xAxis_;
 		xAxis_ = xAxis_ * c - yAxis_ * s; // localRotX.X = c, localRotX.Y = -s						   
@@ -477,13 +473,6 @@ namespace pix
 	// ################################################################################### TRANSFORMS ##################################################################
 
 
-	Transform2D::Transform2D(): 
-		Position(0.0, 0.0), 
-		Scale(1.0f, 1.0f), 
-		Rotation() 
-	{
-	}
-
 	Transform2D::Transform2D(Vec2 position, Vec2f scale, Rotation2D rotation): 
 		Position(position), 
 		Scale(scale), 
@@ -551,17 +540,12 @@ namespace pix
 		point.X = GetSafeDivision(point.X, (double)Scale.X);
 		point.Y = GetSafeDivision(point.Y, (double)Scale.Y);
 	}
-
 	
 
-	Transform3D::Transform3D(): 
-		Position(0.0, 0.0, 0.0), 
-		Scale(1.0f, 1.0f, 1.0f), 
-		Rotation() 
+
+	Transform3D::Transform3D(const Vec3& position, Vec3f scale, const Rotation3D& rotation) : Position(position), Scale(scale), Rotation(rotation) 
 	{
 	}
-
-	Transform3D::Transform3D(const Vec3& position, Vec3f scale, const Rotation3D& rotation) :Position(position), Scale(scale), Rotation(rotation) {}
 
 	void Transform3D::TransformPoints(Vec3* points, int count) const 
 	{
@@ -586,17 +570,11 @@ namespace pix
 
 	void Transform3D::TransformPoint(Vec3& point) const 
 	{
-		// Convert to Vec3 for repeated use
-		const Vec3 scale(Scale);
-		const Vec3 xAxis(Rotation.GetXAxis());
-		const Vec3 yAxis(Rotation.GetYAxis());
-		const Vec3 zAxis(Rotation.GetZAxis());
-
 		// Scale the point
-		point *= scale;
+		point *= Vec3(Scale);
 
 		// Rotate the point
-		point = xAxis * point.X + yAxis * point.Y + zAxis * point.Z;
+		Rotation.RotatePoint(point);
 
 		// Translate the point
 		point += Position;

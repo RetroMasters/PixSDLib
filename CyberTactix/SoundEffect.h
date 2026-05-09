@@ -2,59 +2,71 @@
 
 #include <SDL_mixer.h>
 #include <string>
-#include"Uncopyable.h"
+#include "Uncopyable.h"
 
 namespace pix
 {
-    // The SoundEffect class manages the lifetime and replay functionality of sound chunks.
-    // It is built on top of the Audio singleton. 
-    // 
-    // Philosophy:
-    // We want fire-and-forget functionality, sounds that can be stacked, but also paused and resumed at once.
+     // SoundEffect manages the lifetime and playback of a short sound chunk.
+     // It is built on top of the Audio singleton.
+     //
+     // Philosophy:
+     // Provides fire-and-forget playback for short sound effects.
+     // Multiple instances of the same sound can overlap, while all instances of this sound
+     // can still be paused, resumed, or stopped together.
     class SoundEffect : private Uncopyable
     {
     public:
         // ------------ INITIALIZATION ---------------------
 
-        SoundEffect(); 
-        SoundEffect(const std::string& filePath, float chunkVolume = 1.0f);
+        SoundEffect() = default; 
+        SoundEffect(const std::string& filePath, float chunkVolume = 1.0f, int repeatCount = 0);
         ~SoundEffect();
 
-        // Reload() reloads a new sound chunk from file and sets its volume (the state of the repeat count remains unchanged).
-        // Returns true if reloaded successfully, false otherwise.
-        bool Reload(const std::string& filePath, float chunkVolume = 1.0f);
+        // Loads a new sound chunk from file while preserving volume and repeat count. 
+        // Existing loaded data is replaced only if loading succeeds.
+        // Replacing a loaded chunk stops existing instances of the old chunk. 
+        // Returns true if loading succeeds, false otherwise.
+        bool Reload(const std::string& filePath);
 
         // ----------------- FUNCTIONALITY ---------------------
 
-        // Starts a new sound instance on a free channel, does not affect already playing or paused ones
+        // Starts a new sound instance on a free channel.
+        // Does not affect already playing or paused instances.
         void Play();
-        // Pauses all sound instances currently playing
+        
+        // Pauses all active instances of this sound effect
         void Pause();
-        // Resumes all sound instances previously paused
+
+        // Resumes all paused instances of this sound effect
         void Resume();
-        // Stops and removes all sound instances (playing or paused)
+
+        // Stops all active instances of this sound effect
         void Stop();
 
-        //  Sets the chunk volume in range [0,1]
-        void  SetVolume(float volume);
+        // Sets the chunk volume in the clamped range [0, 1]. 
+        // A sound chunk does not need to be loaded.
+        void SetVolume(float volume);
 
-        // Playing sound will repeat repeatCount times. If repeatCount is -1, it will loop "infinitely" (~65000 times). 
-        void  SetRepeatCount(int repeatCount);
+        // Sets how often playback repeats after the first play for new sound instances.
+        // If repeatCount == -1, SDL_mixer loops it approximately 65000 times.
+        void SetRepeatCount(int repeatCount);
 
         // ------------- GETTERS -----------------
 
         float GetVolume() const;
 
-        // Returns how many simultaneous channels are playing the sound
-        int   GetPlayingChannelCount() const;
+        // Returns how many channels are currently playing this sound effect
+        int GetPlayingChannelCount() const;
 
-        int   GetRepeatCount() const;
+        int GetRepeatCount() const;
+
+        bool IsLoaded() const;
 
     private:
 
-        Mix_Chunk* soundChunk_;
-        float      volume_;
-        int        repeatCount_;
+        Mix_Chunk* soundChunk_ = nullptr;
+        float chunkVolume_ = 1.0f;
+        int repeatCount_ = 0;
     };
 
 }

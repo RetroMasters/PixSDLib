@@ -152,7 +152,7 @@ namespace pix
 	{
 		if (!isInitialized_) return;
 
-		if (soundChunk == nullptr)
+		if (!soundChunk)
 		{
 			ErrorLogger::Get().LogError("Audio::DestroySoundChunk() failure", "SoundChunk is nullptr!");
 			return;
@@ -183,7 +183,7 @@ namespace pix
 
 		if (!soundChunk)
 		{
-			ErrorLogger::Get().LogError("Audio::PauseSoundChunk() failure", "soundChunk is nullptr!");
+			ErrorLogger::Get().LogError("Audio::PauseSoundChunk() failure", "SoundChunk is nullptr!");
 			return;
 		}
 
@@ -204,7 +204,7 @@ namespace pix
 
 		if (!soundChunk)
 		{
-			ErrorLogger::Get().LogError("Audio::ResumeSoundChunk() failure", "soundChunk is nullptr!");
+			ErrorLogger::Get().LogError("Audio::ResumeSoundChunk() failure", "SoundChunk is nullptr!");
 			return;
 		}
 
@@ -223,7 +223,7 @@ namespace pix
 
 		if (!soundChunk)
 		{
-			ErrorLogger::Get().LogError("Audio::StopSoundChunk() failure", "soundChunk is nullptr!");
+			ErrorLogger::Get().LogError("Audio::StopSoundChunk() failure", "SoundChunk is nullptr!");
 			return;
 		}
 
@@ -245,7 +245,7 @@ namespace pix
 
 		if (!soundChunk)
 		{
-			ErrorLogger::Get().LogError("Audio::SetSoundChunkVolume() failure", "soundChunk is nullptr!");
+			ErrorLogger::Get().LogError("Audio::SetSoundChunkVolume() failure", "SoundChunk is nullptr!");
 			return;
 		}
 
@@ -317,8 +317,6 @@ namespace pix
 
 	float Audio::GetMusicVolume() const
 	{
-		if (!isInitialized_) return 0.0f;
-
 		return musicVolume_;
 	}
 
@@ -360,15 +358,11 @@ namespace pix
 
 	float Audio::GetChannelVolume() const 
 	{
-		if (!isInitialized_) return 0.0f;
-
 		return channelVolume_; //Mix_Volume(-1,-1);
 	}
 
 	float Audio::GetMasterVolume() const 
 	{
-		if (!isInitialized_) return 0.0f;
-
 		return masterVolume_;
 	}
 
@@ -376,7 +370,7 @@ namespace pix
 	{
 		if (!isInitialized_) return 0;
 
-		if (soundChunk == nullptr)
+		if (!soundChunk)
 		{
 			ErrorLogger::Get().LogError("Audio::GetPlayingChannelCount() failure", "SoundChunk is nullptr!");
 			return 0;

@@ -34,11 +34,11 @@ namespace pix
 		return value;
 	}
 
-	// Returns max/lowest for nonzero numerator and zero denominator; returns 0 for 0/0 and other undefined results(NaN).
+	// Returns max/lowest for nonzero numerator and zero denominator; returns 0 for 0/0 and other undefined results (NaN).
 	// Note: 0/0 = 0 is sound in practice for the primary purpose of games (e.g. the speed of a static object is still zero, regardless of time delta).
 	float GetSafeDivision(float numerator, float denominator);
 
-	// Returns max/lowest for nonzero numerator and zero denominator; returns 0 for 0/0 and other undefined results(NaN).
+	// Returns max/lowest for nonzero numerator and zero denominator; returns 0 for 0/0 and other undefined results (NaN).
 	// Note: 0/0 = 0 is sound in practice for the primary purpose of games (e.g. the speed of a static object is still zero, regardless of time delta).
 	double GetSafeDivision(double numerator, double denominator);
 
@@ -49,10 +49,10 @@ namespace pix
 	// Generic 2D vector
 	template<typename T> struct Vector2
 	{
-		T X;
+		T X; // Intentionally left uninitialized: any value can be valid
 		T Y;
 
-		// Intentionally left uninitialized: any value can be valid
+		
 		Vector2() = default; 
 
 		Vector2(T x, T y): X(x), Y(y) {}
@@ -216,11 +216,11 @@ namespace pix
 	// Generic 3D vector
 	template<typename T> struct Vector3
 	{
-		T X;
+		T X; // Intentionally left uninitialized: any value can be valid
 		T Y;
 		T Z;
 
-		// Intentionally left uninitialized: any value can be valid
+		
 		Vector3() = default;
 
 		Vector3(T x, T y, T z) : X(x), Y(y), Z(z) {}
@@ -448,7 +448,7 @@ namespace pix
 	{
 	public:
 
-		Rotation2D();
+		Rotation2D() = default;
 
 		Rotation2D(float degrees);
 
@@ -493,7 +493,7 @@ namespace pix
 		// Used for efficient implementation of GetInverse() and Interpolate()
 		Rotation2D(float x, float y); 
 
-		Vec2f xAxis_;
+		Vec2f xAxis_ = Vec2f(1.0f, 0.0f);
 	};
 
 	// Rotation3D represents a 3D rotation using two perpendicular unit vectors (its local X and Y axes).
@@ -502,6 +502,7 @@ namespace pix
 	// 
 	// Positive rotation angles follow the mathematical rule:
 	// counterclockwise when looking along the positive direction of the rotation axis.
+	// In particular, with +Z out of the screen and -Z forward, positive Z rotation appears clockwise when looking into the screen.
 	// 
 	// The rotation is always kept valid and numerically stable:
 	// after every mutating operation the axes are re-normalized to prevent floating-point drift from accumulating over time.
@@ -513,7 +514,7 @@ namespace pix
 	{
 	public:
 
-		Rotation3D();
+		Rotation3D() = default;
 
 		void SetToIdentity();
 
@@ -582,8 +583,8 @@ namespace pix
 
 		Rotation3D& Normalize();
 
-		Vec3f xAxis_;
-		Vec3f yAxis_;
+		Vec3f xAxis_ = Vec3f(1.0f, 0.0f, 0.0f);
+		Vec3f yAxis_ = Vec3f(0.0f, 1.0f, 0.0f);
 	};
 
 
@@ -620,7 +621,7 @@ namespace pix
 	// keeping this type lightweight and reusable without additional overhead.
 	struct Transform2D
 	{
-		Transform2D();
+		Transform2D() = default;
 
 		Transform2D(Vec2 position, Vec2f scale = Vec2f(1.0f, 1.0f), Rotation2D rotation = Rotation2D());
 
@@ -636,10 +637,10 @@ namespace pix
 
 		void InverseTransformPoint(Vec2& point) const;
 
-		
 
-		Vec2 Position;
-		Vec2f Scale;
+
+		Vec2 Position = Vec2(0.0, 0.0);
+		Vec2f Scale = Vec2f(1.0f, 1.0f);
 		Rotation2D Rotation;
 	};
 
@@ -656,7 +657,7 @@ namespace pix
 	// keeping this type lightweight and reusable without additional overhead.
 	struct Transform3D
 	{
-		Transform3D();
+		Transform3D() = default;
 
 		Transform3D(const Vec3& position, Vec3f scale = Vec3f(1.0f, 1.0f, 1.0f), const Rotation3D& rotation = Rotation3D());
 
@@ -672,8 +673,8 @@ namespace pix
 
 		void InverseTransformPoint(Vec3& point) const;
 
-		Vec3 Position;
-		Vec3f Scale;
+		Vec3 Position = Vec3(0.0, 0.0, 0.0);
+		Vec3f Scale = Vec3f(1.0f, 1.0f, 1.0f);
 		Rotation3D Rotation;
 	};
 

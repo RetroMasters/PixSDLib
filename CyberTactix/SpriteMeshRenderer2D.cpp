@@ -61,7 +61,7 @@ namespace pix
 		const Vertex2D* const vertices = sprite.Mesh->Vertices;
 
 		// Interpolate the sprite transform
-		Transform2D interpolatedTransform = GetInterpolated(sprite.GetPreviousTransform(), sprite.Transform, configuration_.InterpolationAlpha);
+		Transform2D interpolatedTransform = GetInterpolated(sprite.GetPrevTransform(), sprite.Transform, configuration_.InterpolationAlpha);
 
 		// Precompute the object rotation in logical screen space
 		Vec2f xAxis = interpolatedTransform.Rotation.GetXAxis();
@@ -118,7 +118,7 @@ namespace pix
 		while (parent)
 		{
 			parent->Transform.TransformPoints(worldPositionBuffer, 4);
-			parent->GetPreviousTransform().TransformPoints(prevWorldPositionBuffer, 4);
+			parent->GetPrevTransform().TransformPoints(prevWorldPositionBuffer, 4);
 			parent = parent->GetParent();
 		}
 
@@ -280,9 +280,9 @@ namespace pix
 
 		interpolationAlpha = GetClamped(interpolationAlpha, 0.0f, 1.0f);
 
-		configuration_.InterpolatedCameraPosition = GetInterpolatedUnchecked(camera.GetPreviousTransform().Position, camera.Transform.Position, (double)interpolationAlpha);
-		configuration_.InterpolatedCameraZoom = GetInterpolatedUnchecked(camera.GetPreviousTransform().Scale, camera.Transform.Scale, interpolationAlpha);
-		configuration_.InterpolatedCameraRotation = GetInterpolated(camera.GetPreviousTransform().Rotation, camera.Transform.Rotation, interpolationAlpha);
+		configuration_.InterpolatedCameraPosition = GetInterpolatedUnchecked(camera.GetPrevTransform().Position, camera.Transform.Position, (double)interpolationAlpha);
+		configuration_.InterpolatedCameraZoom = GetInterpolatedUnchecked(camera.GetPrevTransform().Scale, camera.Transform.Scale, interpolationAlpha);
+		configuration_.InterpolatedCameraRotation = GetInterpolated(camera.GetPrevTransform().Rotation, camera.Transform.Rotation, interpolationAlpha);
 		configuration_.InterpolationAlpha = interpolationAlpha;
 		configuration_.RenderTargetOffset = renderTargetOffset;
 	}

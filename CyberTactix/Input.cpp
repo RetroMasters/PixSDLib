@@ -37,17 +37,24 @@ namespace pix
 		return mouseInputSource_;
 	}
 
-	void MouseInput::BeginUpdate()
+	void MouseInput::EndUpdate()
 	{
-		wheelDeltaX_ = wheelDeltaY_ = 0.0f;
+		wheelDeltaXInUpdate_ = wheelDeltaYInUpdate_ = 0.0f;
+	}
+
+	void MouseInput::EndRender()
+	{
+		wheelDeltaXInRender_ = wheelDeltaYInRender_ = 0.0f;
 	}
 
 	void MouseInput::HandleEvents(const SDL_Event& event)
 	{
 		if (event.type == SDL_MOUSEWHEEL)
 		{
-			wheelDeltaX_ += event.wheel.preciseX;
-			wheelDeltaY_ += event.wheel.preciseY;
+			wheelDeltaXInUpdate_ += event.wheel.preciseX;
+			wheelDeltaYInUpdate_ += event.wheel.preciseY;
+			wheelDeltaXInRender_ += event.wheel.preciseX;
+			wheelDeltaYInRender_ += event.wheel.preciseY;
 		}
 	}
 
@@ -76,19 +83,24 @@ namespace pix
 		return positionY_;
 	}
 
-	Vec2f MouseInput::GetWheelDelta() const
+	float MouseInput::GetWheelDeltaXInUpdate() const
 	{
-		return Vec2f(wheelDeltaX_, wheelDeltaY_);
+		return wheelDeltaXInUpdate_;
 	}
 
-	float MouseInput::GetWheelDeltaX() const
+	float MouseInput::GetWheelDeltaYInUpdate() const
 	{
-		return wheelDeltaX_;
+		return wheelDeltaYInUpdate_;
 	}
 
-	float MouseInput::GetWheelDeltaY() const
+	float MouseInput::GetWheelDeltaXInRender() const
 	{
-		return wheelDeltaY_;
+		return wheelDeltaXInRender_;
+	}
+
+	float MouseInput::GetWheelDeltaYInRender() const
+	{
+		return wheelDeltaYInRender_;
 	}
 
 

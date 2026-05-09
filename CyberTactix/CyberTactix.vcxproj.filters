@@ -356,5 +356,8 @@
     <ClInclude Include="UVOps.h">
       <Filter>Header Files\PixSDLib\Graphics\Geometry2D</Filter>
     </ClInclude>
+    <ClInclude Include="ClassStyleReference.h">
+      <Filter>Header Files\PixSDLib\Misc</Filter>
+    </ClInclude>
   </ItemGroup>
 </Project>

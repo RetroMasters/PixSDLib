@@ -1,101 +1,126 @@
 #include "SoundEffect.h"
 #include "Audio.h"
 #include "ErrorLogger.h"
+#include "PixMath.h"
 
 namespace pix
 {
-	SoundEffect::SoundEffect():
-		soundChunk_(nullptr),
-		volume_(1.0f),
-		repeatCount_(0)
-	{
-	}
 
-	SoundEffect::SoundEffect(const std::string& filePath, float chunkVolume):
-		soundChunk_(nullptr),
-		volume_(chunkVolume),
-		repeatCount_(0)
+	SoundEffect::SoundEffect(const std::string& filePath, float chunkVolume, int repeatCount) 
 	{
-		Reload(filePath, chunkVolume);
+		SetVolume(chunkVolume);
+
+		SetRepeatCount(repeatCount);
+
+		Reload(filePath);
 	}
 
 	SoundEffect::~SoundEffect()
 	{
-		// The sound effect might just be unused, so it is not necessarily an error when sounChunk_ is nullptr
 		if(soundChunk_) 
 		  Audio::Get().DestroySoundChunk(soundChunk_);
 	}
 
-	bool SoundEffect::Reload(const std::string& filePath, float chunkVolume) 
+	bool SoundEffect::Reload(const std::string& filePath) 
 	{
-		if(soundChunk_)
-		  Audio::Get().DestroySoundChunk(soundChunk_);
-
-		soundChunk_ = Audio::Get().LoadSoundChunk(filePath);
+		Mix_Chunk* newChunk = Audio::Get().LoadSoundChunk(filePath);
+		if (!newChunk) return false;
 
 		if (soundChunk_)
-		{
-			SetVolume(chunkVolume); 
-			return true;
-		}
+			Audio::Get().DestroySoundChunk(soundChunk_);
 
-		return false;
+		soundChunk_ = newChunk;
+
+		Audio::Get().SetSoundChunkVolume(soundChunk_, chunkVolume_);
+
+		return true;
 	}
 
 
 
 	void SoundEffect::Play() 
 	{
+		if (!soundChunk_)
+		{
+			ErrorLogger::Get().LogError("SoundEffect::Play() failure", "SoundChunk is nullptr!");
+			return;
+		}
+
 		Audio::Get().PlaySoundChunk(-1, soundChunk_, repeatCount_);
 	}
 
 	void SoundEffect::Pause() 
 	{
+		if (!soundChunk_)
+		{
+			ErrorLogger::Get().LogError("SoundEffect::Pause() failure", "SoundChunk is nullptr!");
+			return;
+		}
+
 		Audio::Get().PauseSoundChunk(soundChunk_);
 	}
 
 	void SoundEffect::Resume()
 	{
+		if (!soundChunk_)
+		{
+			ErrorLogger::Get().LogError("SoundEffect::Resume() failure", "SoundChunk is nullptr!");
+			return;
+		}
+
 		Audio::Get().ResumeSoundChunk(soundChunk_);
 	}
 
 	void SoundEffect::Stop() 
 	{
+		if (!soundChunk_)
+		{
+			ErrorLogger::Get().LogError("SoundEffect::Stop() failure", "SoundChunk is nullptr!");
+			return;
+		}
+
 		Audio::Get().StopSoundChunk(soundChunk_);
 	}
 
 	void SoundEffect::SetVolume(float volume) 
 	{
-		if (volume < 0.0f) volume = 0.0f;
-		if (volume > 1.0f) volume = 1.0f;
+		volume = GetClamped(volume, 0.0f, 1.0f);
 
-		Audio::Get().SetSoundChunkVolume(soundChunk_, volume);
+		if(soundChunk_)
+		   Audio::Get().SetSoundChunkVolume(soundChunk_, volume);
 
-		volume_ = volume;
+		chunkVolume_ = volume;
 	}
 
-	void SoundEffect::SetRepeatCount(int loops)
+	void SoundEffect::SetRepeatCount(int repeatCount)
 	{
-		if (loops < -1) loops = -1;
+		if (repeatCount < -1) repeatCount = -1;
 
-		repeatCount_ = loops;
+		repeatCount_ = repeatCount;
 	}
 
 
 
 	float SoundEffect::GetVolume() const
 	{
-		return volume_;
+		return chunkVolume_;
 	}
 
 	int SoundEffect::GetPlayingChannelCount() const 
 	{
+		if (!soundChunk_) return 0;
+		
 		return Audio::Get().GetPlayingChannelCount(soundChunk_);
 	}
 
 	int SoundEffect::GetRepeatCount() const
 	{
 		return repeatCount_;
+	}
+
+	bool SoundEffect::IsLoaded() const
+	{
+		return soundChunk_ != nullptr;
 	}
 
 }

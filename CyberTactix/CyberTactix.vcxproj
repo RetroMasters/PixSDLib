@@ -177,6 +177,7 @@
     <ClInclude Include="Audio.h" />
     <ClInclude Include="ErrorLogger.h" />
     <ClInclude Include="GameLoop.h" />
+    <ClInclude Include="ClassStyleReference.h" />
     <ClInclude Include="ImageTexture.h" />
     <ClInclude Include="Input.h" />
     <ClInclude Include="InputPumps.h" />

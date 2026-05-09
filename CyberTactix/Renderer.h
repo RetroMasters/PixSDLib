@@ -29,8 +29,9 @@ namespace pix
 		// Initializes the Renderer singleton. Requires the Window singleton to be initialized.
         // Clears the default render target to black to ensure a deterministic initial backbuffer.
         // Returns true if the SDL_Renderer was created, or if the Renderer is already initialized.
+		// Calling Init() again after successful initialization has no effect and returns true.
         // Renderer setup failures after creation are logged but do not make Init() fail.
-        // For reinitialization (not intended), destroy existing textures, call Destroy(), and then Init() again.
+		// Renderer is not meant to be reinitialized during normal program execution.
 		bool Init(int logicalResolutionWidth, int logicalResolutionHeight, bool isIntegerScale, bool isLinearFilter, bool vsync);
 
 		// Destroys the SDL_Renderer.
