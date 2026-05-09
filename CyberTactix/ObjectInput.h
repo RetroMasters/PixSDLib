@@ -8,6 +8,9 @@ namespace pix
 	// ObjectInput encapsulates a set of customizable input bindings and query functionality.
     // It achieves this by internally managing input pumps and virtual axes.
 	// 
+	// Technical note:
+	// In general, transient input state (Became* input actions) is either update-based or render-frame-based, and must not be mixed.
+	// 
 	// Philosophy:
 	// ObjectInput provides an isolated, configurable input context per consumer.
     // For example, a menu and a gameplay object may each maintain their own ObjectInput

@@ -51,10 +51,20 @@ namespace pix
 	{
 		if (event.type == SDL_MOUSEWHEEL)
 		{
-			wheelDeltaXInUpdate_ += event.wheel.preciseX;
-			wheelDeltaYInUpdate_ += event.wheel.preciseY;
-			wheelDeltaXInRender_ += event.wheel.preciseX;
-			wheelDeltaYInRender_ += event.wheel.preciseY;
+			float wheelX = event.wheel.preciseX;
+			float wheelY = event.wheel.preciseY;
+
+			// Normalize flipped wheel events so positive X/Y follow SDL's normal direction convention
+			if (event.wheel.direction == SDL_MOUSEWHEEL_FLIPPED)
+			{
+				wheelX = -wheelX;
+				wheelY = -wheelY;
+			}
+
+			wheelDeltaXInUpdate_ += wheelX;
+			wheelDeltaYInUpdate_ += wheelY;
+			wheelDeltaXInRender_ += wheelX;
+			wheelDeltaYInRender_ += wheelY;
 		}
 	}
 
@@ -83,22 +93,22 @@ namespace pix
 		return positionY_;
 	}
 
-	float MouseInput::GetWheelDeltaXInUpdate() const
+	float MouseInput::GetUpdateWheelDeltaX() const
 	{
 		return wheelDeltaXInUpdate_;
 	}
 
-	float MouseInput::GetWheelDeltaYInUpdate() const
+	float MouseInput::GetUpdateWheelDeltaY() const
 	{
 		return wheelDeltaYInUpdate_;
 	}
 
-	float MouseInput::GetWheelDeltaXInRender() const
+	float MouseInput::GetRenderWheelDeltaX() const
 	{
 		return wheelDeltaXInRender_;
 	}
 
-	float MouseInput::GetWheelDeltaYInRender() const
+	float MouseInput::GetRenderWheelDeltaY() const
 	{
 		return wheelDeltaYInRender_;
 	}
@@ -183,14 +193,21 @@ namespace pix
 
 	int GamepadInput::RemoveAllGamepads() 
 	{
-		int gamepadCount = gamepads_.size();
+		const int slotCount = gamepads_.size();
+		int removedCount = 0;
 
-		for (int i = 0; i < gamepadCount; i++)
-			RemoveGamepad(gamepads_[i].JoystickID);
+		for (int i = 0; i < slotCount; i++)
+		{
+			if (gamepads_[i].IsInitialized)
+			{
+				RemoveGamepad(gamepads_[i].JoystickID);
+				removedCount++;
+			}
+		}
 
 		gamepads_.clear();
 
-		return gamepadCount;
+		return removedCount;
 	}
 
 	void GamepadInput::RemoveGamepad(SDL_JoystickID joystickID)

@@ -69,7 +69,7 @@ namespace pix
         // - noiseWidth defines the hysteresis band around the update threshold, in milliseconds.
         // - filterLength defines how many frame deltas are averaged.
         // - maxUpdatesPerFrame limits how many fixed updates may be executed during one rendered frame.
-		HysteresisUpdateLoopScheduler(float updatesPerSecond, float noiseWidth, int filterLength, int maxUpdatesPerFrame = 2);
+		HysteresisUpdateLoopScheduler(float updatesPerSecond = 60, float noiseWidth = 0.5f, int filterLength = 60, int maxUpdatesPerFrame = 2);
 
 	    ~HysteresisUpdateLoopScheduler() override = default;
 
@@ -87,11 +87,11 @@ namespace pix
 
 		void UpdateAverageDeltaTime(float newDeltaTime);
 		
-		float noiseWidth_; // defines the hysteresis band around the update threshold, in milliseconds.
-		int   filterLength_;
+		float noiseWidth_ = 0.5f; // defines the hysteresis band around the update threshold, in milliseconds.
+		int   filterLength_ = 60;
 		int   maxUpdatesPerFrame_ = 2;
 		float unprocessedTime_ = 0.0f;
-		float thresholdOffset_ = 0.0f;
+		float thresholdOffset_ = 0.25f;
 		float averageDeltaTime_ = 0.0f;
 		int   sampleIndex_ = 0; // For ring buffer implementation
 		std::vector<float> deltaTimeSamples_;

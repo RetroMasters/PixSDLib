@@ -10,13 +10,15 @@ namespace pix
 	// GameLoop is the abstract class for the main game loop.
 	//
 	// Technical note:
-	// SDL events are processed immediately before each Update() call so simulation always consumes the freshest available physical input.
-    // Transient input state is therefore update-based, not render-frame-based.
-    // When no Update() is executed, SDL event pumping is still performed once so direct device state such as mouse position remains fresh for Render().
+	// SDL events are polled and processed at the beginning of each frame.
+    // Before each additional fixed Update() in the same frame, SDL_PumpEvents() refreshes SDL's internal input state,
+    // so simulation consumes the freshest available physical input.
+    // Mouse wheel input is event-based and is processed only during the frame event poll.
 	// 
 	// Initialization policy:
     // Non-critical subsystem failures are logged but do not abort startup.
-    // Only failures that make running impossible, such as missing window or renderer, stop the loop.
+    // User code may continue, quit, or let the player decide.
+    // Only failures that make running impossible, such as a missing window or renderer, stop the loop.
 	// 
 	// Philosophy:
 	// GameLoop provides an abstract framework for running the game, initializing all PixSDLib singletons. 
@@ -38,8 +40,9 @@ namespace pix
 		// Render() is called exactly once per frame
 		virtual void Render() = 0;
 
-		// The update-loop scheduler is owned by the caller and can be swapped at runtime.
-		// If updateLoopScheduler is nullptr, Update() is called once per frame (variable update loop)
+		// Sets the update-loop scheduler. It can be swapped at runtime.
+        // GameLoop does not own the scheduler; lifetime is managed by the caller or derived class.
+        // If updateLoopScheduler is nullptr, Update() is called once per frame (variable update loop).
 		void SetUpdateLoopScheduler(AbstractUpdateLoopScheduler* updateLoopScheduler);
 
 		// Ends the Run() loop at the end of the current iteration

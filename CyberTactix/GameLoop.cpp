@@ -56,7 +56,6 @@ namespace pix
 		Audio::Get().SetChannelVolume(configData.SoundVolume);
 		Audio::Get().SetMusicVolume(configData.MusicVolume);
 
-		//SetUpdateLoopScheduler((AbstractUpdateLoopScheduler*) new HysteresisUpdateLoopScheduler(configData.UpdatesPerSecond, 0.5f, 60, 3));
 		SetUpdateLoopScheduler(nullptr);
 
 		//Gamepad::addGamepadsFromFile("gamecontrollerdb.txt");
@@ -94,11 +93,14 @@ namespace pix
 		{
 			prevTimeStamp = timeStamp;
 			timeStamp = SDL_GetTicks64();
-			deltaTime_ = timeStamp - prevTimeStamp; // Lossless conversion to float for a small time delta
+			deltaTime_ = (float)(timeStamp - prevTimeStamp); // Effectively lossless for normal frame deltas
 
 			int updateCount = 1;
-			if(updateLoopScheduler_)
-			  updateCount = updateLoopScheduler_->Update(deltaTime_);
+			if (updateLoopScheduler_)
+			{
+				updateCount = updateLoopScheduler_->Update(deltaTime_);
+				updateCount = GetClamped(updateCount, 0, 100); // Final safety cap against invalid scheduler output
+			}
 
 			UpdateInterpolationAlpha();
 

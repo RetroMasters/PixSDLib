@@ -40,13 +40,16 @@ namespace pix
 	// The MouseInput singleton is a low-level wrapper for the most common mouse input functionality.
 	// 
 	// Technical note:
-	// MouseInput relies on SDL_PollEvent() or SDL_PumpEvents() that update the internal state of the mouse.
+	// Mouse position and button state rely on SDL_PollEvent() or SDL_PumpEvents() updating SDL's internal mouse state.
+    // Mouse wheel input is event-based and requires HandleEvents() to receive SDL_MOUSEWHEEL events.
 	// 
-	// Usage pattern:
-	// 0. If the game is updated each frame, do steps 1,2,3 each frame, otherwise inside fixed-update calls.
-    // 1. Call BeginUpdate() once at the start of the loop iteration before event polling.
-    // 2. Call HandleEvents() for each SDL_Event during event polling.
-    // 3. Call Update() once after all event polling to snapshot button and position state 
+	// In general, transient input state (Became* input actions) is either update-based or render-frame-based, and must not be mixed.
+    // That is why transient mouse wheel input maintains two separate retrieval paths: one update-based, one render-frame-based.
+	// 
+	// Usage pattern inside the Gameloop to handle mousewheel input correctly:
+	// 1) Call HandleEvents() for each SDL_Event during event polling.
+    // 2) Call EndUpdate() after each fixed-update call.
+    // 3) Call EndRender() after the render call.
 	// 
 	// Philosophy:
 	// The purpose of the MouseInput singleton is to have most common mouse input functionality centralized. 
@@ -68,16 +71,17 @@ namespace pix
 		// Returns the MouseInput instance
 		static MouseInput& Get();
 		
-		// Clears the wheel delta
+		// Ends the current fixed-update input lifetime by clearing update-based wheel delta.
 		void EndUpdate();
 
+		// Ends the current render-frame input lifetime by clearing frame-based wheel delta.
 		void EndRender();
 
-		// Handles SDL_MOUSEWHEEL events: accumulates wheel delta (+/-1.0 per notch, traditionally)
+		// Handles SDL_MOUSEWHEEL events and accumulates normalized wheel delta (traditionally +/-1.0 per notch)
 		void HandleEvents(const SDL_Event& event);
 
 		// Updates cursor position and button state
-		void Update() ;
+		void Update();
 
 
 
@@ -91,13 +95,17 @@ namespace pix
 
 		int GetMousePositionY() const;
 
-		float GetWheelDeltaXInUpdate() const;
+		// Wheel direction after normalization: 
+		// scroll right -> positive X, scroll left -> negative X, 
+		// scroll up/away from user -> positive Y, scroll down/toward user -> negative Y.
 
-		float GetWheelDeltaYInUpdate() const;  
+		// Only valid in fixed-update calls of the Gameloop, according to the usage pattern
+		float GetUpdateWheelDeltaX() const;
+		float GetUpdateWheelDeltaY() const;  
 
-		float GetWheelDeltaXInRender() const;
-
-		float GetWheelDeltaYInRender() const;
+		// Only valid in render calls of the Gameloop, according to the usage pattern
+		float GetRenderWheelDeltaX() const;
+		float GetRenderWheelDeltaY() const;
 
 	private:
 
@@ -136,7 +144,9 @@ namespace pix
         // Controller add/remove events are handled separately.
 		int AddAllGamepads();
 
-		// Also called by the destructor
+		// Closes all active gamepads and returns the number of closed gamepads.
+        // Also called by the destructor.
+        // Prefer explicit RemoveAllGamepads() during shutdown before SDL_Quit().
 		int RemoveAllGamepads();
 
 		
