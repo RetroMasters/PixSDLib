@@ -69,7 +69,7 @@ namespace pix
         // - noiseWidth defines the hysteresis band around the update threshold, in milliseconds.
         // - filterLength defines how many frame deltas are averaged.
         // - maxUpdatesPerFrame limits how many fixed updates may be executed during one rendered frame.
-		HysteresisUpdateLoopScheduler(float updatesPerSecond = 60, float noiseWidth = 0.5f, int filterLength = 60, int maxUpdatesPerFrame = 2);
+		explicit HysteresisUpdateLoopScheduler(float updatesPerSecond, float noiseWidth = 0.5f, int filterLength = 60, int maxUpdatesPerFrame = 2);
 
 	    ~HysteresisUpdateLoopScheduler() override = default;
 

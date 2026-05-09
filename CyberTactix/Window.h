@@ -7,7 +7,7 @@
 namespace pix
 {
 
-	// The Window singleton manages the lifetime, state, and configuration of the main SDL window,
+	// The Window singleton manages the lifetime, state, and configuration of its single SDL window,
 	// providing controlled access to resizing and fullscreen/windowed mode transitions.
 	//
 	// Philosophy:
@@ -31,13 +31,12 @@ namespace pix
 		// Returns the Window instance
 		static Window& Get();
 
-		// Initializes the Window singleton and creates the main window.
-        // The initial window mode (windowed or fullscreen) is applied at creation time to avoid visible transitions during startup.
+		// Initializes the Window singleton and creates the single SDL_Window in the requested initial mode.
 		// Returns true if the SDL_Window was created, or if the Window is already initialized.
 		// Calling Init() again after successful initialization has no effect and returns true.
 		// Window setup failures after creation are logged but do not make Init() fail.
 		// Window is not meant to be reinitialized during normal program execution.
-		bool Init(int windowedWidth, int windowedHeight, bool isFullscreen, const std::string& title);
+		bool Init(const std::string& title, int windowedWidth, int windowedHeight, bool isFullscreen);
 
 		// Destroys the window resource.
 		// Must be called after destroying the Renderer to ensure proper cleanup order.

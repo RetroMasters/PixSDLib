@@ -10,7 +10,7 @@ namespace pix
 	// 
 	// Philosophy:
 	// Vertex2DEx defines a point with rendering attributes used by TriangleMesh2D.
-	// The normal vector can provide the illusion of a 3D surface for lighting effects, or carry any other information.
+	// The normal vector can provide the illusion of a 3D surface for lighting effects, or carry custom data.
 	struct Vertex2DEx
 	{
 		Vertex2DEx() = default;
@@ -31,7 +31,7 @@ namespace pix
 
 
 
-	// TriangleMesh2D stores vertices for a 2D mesh composed of triangles.
+	// TriangleMesh2D stores a dynamic list of vertices for a 2D mesh composed of triangles.
     // Each triangle is three consecutive Vertex2DEx entries.
     //
     // Philosophy:

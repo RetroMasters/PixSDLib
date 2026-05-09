@@ -27,7 +27,7 @@ namespace pix
 
 		LaunchConfig::Get().Init(configData);
 
-		if (!Window::Get().Init(configData.LogicalResolutionWidth, configData.LogicalResolutionHeight, configData.IsFullscreen, appName))
+		if (!Window::Get().Init(appName, configData.LogicalResolutionWidth, configData.LogicalResolutionHeight, configData.IsFullscreen))
 		{
 			Quit();  // Having no window is a fatal error
 			return;

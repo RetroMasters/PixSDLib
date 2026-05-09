@@ -163,6 +163,8 @@ namespace pix
 			return false; 
 		}
 
+		// Restart() applies the first frame immediately if a target mesh is assigned.
+        // Call Restart() after assigning a sequence/target if the first frame should be visible before the first Update().
 		void Restart() 
 		{
 			currentFrameIndex_ = 0;

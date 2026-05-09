@@ -22,10 +22,10 @@ namespace pix
 
 		Vec2f Position = Vec2f(0.0f, 0.0f);
 		SDL_Color Color = { 255, 255, 255, 255 };
-		Vec2f  UV = Vec2f(0.0f, 0.0f);
+		Vec2f UV = Vec2f(0.0f, 0.0f);
 	};
 
-	// SpriteMesh is a quad of four Vertex2D vertices.
+	// SpriteMesh is a quad made of four Vertex2D vertices.
 	// Intended corner order in the array: 0 = TopLeft, 1 = TopRight, 2 = BottomRight, 3 = BottomLeft.
 	//
 	// Philosophy:

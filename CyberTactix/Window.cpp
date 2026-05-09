@@ -12,7 +12,7 @@ namespace pix
 
 
 
-	bool Window::Init(int windowedWidth, int windowedHeight, bool isFullscreen, const std::string& title)
+	bool Window::Init(const std::string& title, int windowedWidth, int windowedHeight, bool isFullscreen)
 	{
 		if (isInitialized_) return true;
 

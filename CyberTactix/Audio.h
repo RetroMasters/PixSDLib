@@ -23,8 +23,6 @@ namespace pix
     // fly. Also, crucially, there are as many channels for chunks as the app can
     // allocate, but SDL_mixer only offers a single "music" channel.
     // 
-    // This class is not thread-safe; all calls must occur on the same thread.
-    // 
     // Philosophy:
     // The purpose of the Audio singleton is to have simple functionality for managing stereo sound centralized.
     // This should be sufficient for most games using stereo sound. For more sophisticated audio, a different audio system should be used.

@@ -30,7 +30,7 @@ namespace pix
 	};
 
 
-	// TriangleMesh3D stores vertices for a 3D mesh composed of triangles. 
+	// TriangleMesh2D stores a dynamic list of vertices for a 3D mesh composed of triangles.
 	// Each triangle is three consecutive Vertex3D entries.
 	//
 	// Philosophy:

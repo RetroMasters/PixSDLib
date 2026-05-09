@@ -8,7 +8,7 @@
 namespace pix
 {
 	// The Renderer singleton manages the lifetime of the SDL_Renderer and exposes core functionality for rendering.
-	//
+	// 
 	// Philosophy:
 	// The purpose of the Renderer singleton is to have core functionality for rendering centralized. 
     // SDL types are used where possible to preserve zero-overhead usage in rendering and
@@ -16,7 +16,7 @@ namespace pix
     // used where correctness and safe usage must be guaranteed by the API.
 	// 
 	// Rendering is a critical subsystem; after Init() failure, normal engine execution should not continue.
-    // Rendering methods therefore assume successful initialization and do not perform repeated initialization checks.
+	// Rendering methods therefore assume successful initialization and do not perform repeated initialization checks.
 	class Renderer : private Uncopyable
 	{
 	public:

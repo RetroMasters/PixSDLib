@@ -28,6 +28,8 @@ namespace pix
 	{
 	public:
 
+		static std::string GetPrefPath(const std::string& companyName, const std::string& appName);
+
 		GameLoop(const std::string& companyName, const std::string& appName, const LaunchConfigData& configData);
 		virtual ~GameLoop();
 
@@ -61,8 +63,6 @@ namespace pix
 		float GetInterpolationAlpha() const;
 		
 		bool IsRunning() const;
-
-		static std::string GetPrefPath(const std::string& companyName, const std::string& appName);
 
 	private:
 

@@ -116,7 +116,7 @@ namespace pix
 
 		const Vertex2D* const vertices = node.Mesh->Vertices;
 		const Sprite3DNode* parent = &node;
-		const double interpolationAlpha = configuration_.InterpolationAlpha; // Convert to double for repeated use
+		const double interpolationAlpha = (double)configuration_.InterpolationAlpha; // Convert to double for repeated use
 
 		// Cache initial vertex positions
 		Vec3 worldPositionBuffer[4] = 

@@ -16,9 +16,6 @@
     <Filter Include="Header Files\PixSDLib">
       <UniqueIdentifier>{303a25ac-8cfc-425c-88a2-e75e95476bab}</UniqueIdentifier>
     </Filter>
-    <Filter Include="Source Files\TestGame">
-      <UniqueIdentifier>{6697ab39-6d6f-4c0e-87f0-fd5478c7f71c}</UniqueIdentifier>
-    </Filter>
     <Filter Include="Source Files\PixSDLib">
       <UniqueIdentifier>{01eccef5-95f7-4a22-9a8c-137ca2726a04}</UniqueIdentifier>
     </Filter>

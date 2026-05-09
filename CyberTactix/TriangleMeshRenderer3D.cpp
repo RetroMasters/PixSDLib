@@ -271,7 +271,7 @@ namespace pix
 		const Sprite3DExNode* parent = &node;
 		const std::vector<Vertex2DEx>& vertices = node.Mesh->Vertices;
 		const int vertexCount = vertices.size();
-		const double interpolationAlpha = configuration_.InterpolationAlpha; // Convert to double for repeated use
+		const double interpolationAlpha = (double)configuration_.InterpolationAlpha; // Convert to double for repeated use
 
 		worldPositionBuffer_.clear(); 
 		prevWorldPositionBuffer_.clear(); 

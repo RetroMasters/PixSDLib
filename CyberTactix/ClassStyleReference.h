@@ -14,11 +14,19 @@ namespace pix
 	{
 	public:
 
+		// ###################################### TYPES ######################################
+
+		struct StyleConfig
+        {
+			int Value = 0;
+		};
+
 		// ###################################### STATIC #####################################
 
 		static constexpr int COMPILE_TIME_CONSTANT = 64;
 
 		// static void DoSomethingStatic();
+		// static StyleConfig Config;
 
 		// ############################## INITIALIZATION / LIFETIME ##########################
 
@@ -52,6 +60,7 @@ namespace pix
 
 	protected:
 
+		// TYPES
 		// STATIC
 		// INITIALIZATION / LIFETIME
 		// FUNCTIONALITY / STATE CHANGES
@@ -65,6 +74,7 @@ namespace pix
 
 	private:
 
+		// TYPES
 		// STATIC
 		// INITIALIZATION / LIFETIME
 		// FUNCTIONALITY / STATE CHANGES
