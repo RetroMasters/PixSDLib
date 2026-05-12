@@ -14,12 +14,9 @@ namespace pix
 	public:
 
 		MovableObject3D() = default;
-
-		MovableObject3D(const Transform3D& transform);
-
+		explicit MovableObject3D(const Transform3D& transform);
 		MovableObject3D(const Transform3D& transform, const Transform3D& prevTransform);
-
-		MovableObject3D(const Vec3& position, Vec3f scale = Vec3f(1.0f, 1.0f, 1.0f), const Rotation3D& rotation = Rotation3D());
+		explicit MovableObject3D(const Vec3& position, Vec3f scale = Vec3f(1.0f, 1.0f, 1.0f), const Rotation3D& rotation = Rotation3D());
 
 		virtual ~MovableObject3D() = default;
 

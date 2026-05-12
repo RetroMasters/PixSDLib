@@ -18,10 +18,8 @@ namespace pix
 		Sprite3DEx();
 
 		Sprite3DEx(const TriangleMesh2D* mesh, const Transform3D& transform);
-
 		Sprite3DEx(const TriangleMesh2D* mesh, const Transform3D& transform, const Transform3D& prevTransform);
-
-		Sprite3DEx(const TriangleMesh2D* mesh, const Vec3& position, const Vec3f& scale = { 1.0f, 1.0f, 1.0f }, const Rotation3D& rotation = Rotation3D());
+		explicit Sprite3DEx(const TriangleMesh2D* mesh, const Vec3& position = Vec3(0.0, 0.0, 0.0), Vec3f scale = Vec3f(1.0f, 1.0f, 1.0f), const Rotation3D& rotation = Rotation3D());
 
 		virtual ~Sprite3DEx() = default;
 

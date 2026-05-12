@@ -41,11 +41,11 @@ namespace pix
 
 	public:
 
-		SpriteMeshRenderer2D(int initialVertexBatchCapacity = 50000);
+		explicit SpriteMeshRenderer2D(int initialVertexBatchCapacity = 50000);
 		~SpriteMeshRenderer2D() = default;
 
 		// Renders a SpriteMesh using the specified world transform.
-		// This is the most performant rendering path when the final transform
+		// This is the most performant alternative for rendering sprites when the final transform
 		// is already available (e.g., static meshes or externally computed transform).
 		void Render(const SpriteMesh& mesh, const Transform2D& transform);
 
@@ -76,6 +76,35 @@ namespace pix
 		// Fractional values are supported and influence rasterization/rounding.
 		// If pointSize is negative (not intended), the generated corner ordering is flipped.
 		void RenderPoint(const SpriteMesh& mesh, Vec2 point, float pointSize);
+
+		// Renders a texture-based square quad in logical render-target space.
+		// position is the center of the generated quad.
+		// pixelSize is the side length of the generated quad in logical render-target units.
+		// No snapping or truncation is performed; callers can snap positions before calling if desired.
+		// Low-overhead: operates directly in render-target space and does not apply the camera transform.
+		void RenderPixel(const SpriteMesh& mesh, Vec2f position, float pixelSize = 1.0f);
+
+		// Renders a texture-based line quad in logical render-target space.
+		// startPosition and endPosition define the center line of the generated quad.
+		// lineWidth is the width of the generated quad in logical render-target units.
+		// Because the line is rendered as a stretched quad, this can also be used for oriented quad rendering.
+		// No snapping or truncation is performed; callers can snap positions before calling if desired.
+		// Low-overhead: operates directly in render-target space and does not apply the camera transform.
+		void RenderPixelLine(const SpriteMesh& mesh, Vec2f startPosition, Vec2f endPosition, float lineWidth = 1.0f);
+
+		// Like RenderPixelLine(), but optimized for horizontal lines.
+		// startPosition is the center of the left edge of the generated quad.
+		// length is the horizontal length in logical render-target units.
+		// No snapping or truncation is performed; callers can snap positions before calling if desired.
+		// Low-overhead: operates directly in render-target space and does not apply the camera transform.
+		void RenderHorizontalPixelLine(const SpriteMesh& mesh, Vec2f startPosition, float length, float lineWidth = 1.0f);
+
+		// Like RenderPixelLine(), but optimized for vertical lines.
+		// startPosition is the center of the top edge of the generated quad.
+		// length is the vertical length in logical render-target units.
+		// No snapping or truncation is performed; callers can snap positions before calling if desired.
+		// Low-overhead: operates directly in render-target space and does not apply the camera transform.
+		void RenderVerticalPixelLine(const SpriteMesh& mesh, Vec2f startPosition, float length, float lineWidth = 1.0f);
 
 		// Clears the current batch and updates the rendering configuration.
 		// After calling BeginBatch(), subsequent render calls append geometry to the batch, transformed according to this configuration.

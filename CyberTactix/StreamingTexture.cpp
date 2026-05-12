@@ -10,6 +10,11 @@ namespace pix
 		Realloc(width, height);
 	}
 
+	StreamingTexture::~StreamingTexture()
+	{
+		Unlock();
+	}
+
 	bool StreamingTexture::Realloc(int width, int height)
 	{
 		if (isLocked_)

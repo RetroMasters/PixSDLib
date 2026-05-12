@@ -18,7 +18,7 @@ namespace pix
 		Sprite2DEx() = default;
 		Sprite2DEx(const TriangleMesh2D* mesh, const Transform2D& transform);
 		Sprite2DEx(const TriangleMesh2D* mesh, const Transform2D& transform, const Transform2D& prevTransform);
-		Sprite2DEx(const TriangleMesh2D* mesh, Vec2 position = Vec2(0.0, 0.0), Vec2f scale = Vec2f(1.0f, 1.0f), Rotation2D rotation = Rotation2D());
+		explicit Sprite2DEx(const TriangleMesh2D* mesh, Vec2 position = Vec2(0.0, 0.0), Vec2f scale = Vec2f(1.0f, 1.0f), Rotation2D rotation = Rotation2D());
 
 		~Sprite2DEx() override = default;
 

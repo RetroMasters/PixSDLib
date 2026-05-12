@@ -39,7 +39,7 @@ namespace pix
 	{
 		TriangleMesh3D() = default;
 	 
-		TriangleMesh3D(const std::vector<Vertex3D>& vertices):
+		explicit TriangleMesh3D(const std::vector<Vertex3D>& vertices):
 			Vertices(vertices)
 		{
 		}

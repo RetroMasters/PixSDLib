@@ -40,7 +40,7 @@ namespace pix
 
 	public:
 
-		SpriteMeshRenderer3D(int initialVertexBatchCapacity = 50000);
+		explicit SpriteMeshRenderer3D(int initialVertexBatchCapacity = 50000);
 	    ~SpriteMeshRenderer3D() = default;
 
 		// Renders a SpriteMesh using the specified world transform.

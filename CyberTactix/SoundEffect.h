@@ -19,7 +19,7 @@ namespace pix
         // ------------ INITIALIZATION ---------------------
 
         SoundEffect() = default; 
-        SoundEffect(const std::string& filePath, float chunkVolume = 1.0f, int repeatCount = 0);
+        explicit SoundEffect(const std::string& filePath, float chunkVolume = 1.0f, int repeatCount = 0);
         ~SoundEffect();
 
         // Loads a new sound chunk from file while preserving volume and repeat count. 

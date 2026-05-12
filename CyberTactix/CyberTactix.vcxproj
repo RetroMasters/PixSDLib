@@ -166,6 +166,7 @@
     <ClCompile Include="TargetTexture.cpp" />
     <ClCompile Include="TextTexture.cpp" />
     <ClCompile Include="Texture.cpp" />
+    <ClCompile Include="TextureOps.cpp" />
     <ClCompile Include="TriangleMesh2DRenderer2D.cpp" />
     <ClCompile Include="TriangleMeshRenderer3D.cpp" />
     <ClCompile Include="UpdateLoopScheduler.cpp" />
@@ -205,6 +206,7 @@
     <ClInclude Include="SpriteMeshOps.h" />
     <ClInclude Include="StreamingTexture.h" />
     <ClInclude Include="TargetTexture.h" />
+    <ClInclude Include="TextureOps.h" />
     <ClInclude Include="UV.h" />
     <ClInclude Include="UVOps.h" />
     <ClInclude Include="TextTexture.h" />

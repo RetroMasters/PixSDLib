@@ -65,8 +65,9 @@ namespace pix
 
 		bool SetRenderScale(float scaleX, float scaleY);
 
-		// Sets the renderer's texture filtering preference (implemented internally as an SDL hint).
-        // Returns true if the hint was successfully set, false otherwise.
+		// Sets the renderer's default texture filtering preference for newly created textures.
+		// Implemented internally as an SDL hint.
+		// Returns true if the hint was successfully set, false otherwise.
 		bool SetLinearFilter(bool isLinearFilter);
 
 		bool SetIntegerScale(bool isIntegerScale);

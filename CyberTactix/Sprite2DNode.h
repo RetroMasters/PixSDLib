@@ -23,7 +23,7 @@ namespace pix
 		Sprite2DNode() = default;
 		Sprite2DNode(const SpriteMesh* mesh, const Transform2D& transform);
 		Sprite2DNode(const SpriteMesh* mesh, const Transform2D& transform, const Transform2D& prevTransform);
-		Sprite2DNode(const SpriteMesh* mesh, Vec2 position, Vec2f scale = Vec2f(1.0f, 1.0f), Rotation2D rotation = Rotation2D());
+		explicit Sprite2DNode(const SpriteMesh* mesh, Vec2 position = Vec2(0.0, 0.0), Vec2f scale = Vec2f(1.0f, 1.0f), Rotation2D rotation = Rotation2D());
 
 		// Prevent copying 
 		Sprite2DNode(const Sprite2DNode&) = delete;    

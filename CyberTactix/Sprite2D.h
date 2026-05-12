@@ -18,7 +18,7 @@ namespace pix
 		Sprite2D() = default;
 		Sprite2D(const SpriteMesh* mesh, const Transform2D& transform);
 		Sprite2D(const SpriteMesh* mesh, const Transform2D& transform, const Transform2D& prevTransform);
-		Sprite2D(const SpriteMesh* mesh, Vec2 position = Vec2(0.0, 0.0), Vec2f scale = Vec2f(1.0f, 1.0f), Rotation2D rotation = Rotation2D());
+		explicit Sprite2D(const SpriteMesh* mesh, Vec2 position = Vec2(0.0, 0.0), Vec2f scale = Vec2f(1.0f, 1.0f), Rotation2D rotation = Rotation2D());
 
 	    ~Sprite2D() override = default;
 

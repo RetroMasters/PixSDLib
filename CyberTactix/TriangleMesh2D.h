@@ -40,7 +40,7 @@ namespace pix
 	{
 		TriangleMesh2D() = default;
 
-		TriangleMesh2D(const std::vector<Vertex2DEx>& vertices) :
+		explicit TriangleMesh2D(const std::vector<Vertex2DEx>& vertices) :
 			Vertices(vertices)
 		{
 		}

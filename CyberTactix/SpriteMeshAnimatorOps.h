@@ -41,9 +41,9 @@ namespace pix
 	// sampling stops early if no further full frame fits.
 	// On failure (invalid inputs), returns an empty sequence.
 	// texWidth/texHeight are the texture size in pixels.
-	// Each keyframe's tick duration is set to tickDuration.
+	// Each keyframe's duration is set to durationTicks.
 	// flip flags can be combined (SDL_FLIP_HORIZONTAL | SDL_FLIP_VERTICAL) and are applied after sampling the sequence.
-	std::vector<SpriteMeshUVKeyframe> GetUVKeyframeSequence(int texWidth, int texHeight, const SDL_Rect& startRect, int frameCount, float tickDuration, SDL_RendererFlip flip = SDL_FLIP_NONE);
+	std::vector<SpriteMeshUVKeyframe> GetUVKeyframeSequence(int texWidth, int texHeight, const SDL_Rect& startRect, int frameCount, float durationTicks, SDL_RendererFlip flip = SDL_FLIP_NONE);
 
 	
 

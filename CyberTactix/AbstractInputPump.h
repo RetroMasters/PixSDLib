@@ -101,7 +101,7 @@ namespace pix
 
 		// virtualAxis must be valid. 
 		// DefaultPumpFunction() is set if pumpFunction is nullptr.
-		AbstractInputPump(VirtualAxis& virtualAxis, PumpFunction pumpFunction = nullptr);
+		explicit AbstractInputPump(VirtualAxis& virtualAxis, PumpFunction pumpFunction = nullptr);
 
 		virtual ~AbstractInputPump() = default;
 

@@ -20,6 +20,7 @@ namespace pix
         // If called on an uninitialized texture, default SDL state is applied (SDL_BLENDMODE_BLEND, RGBA = 255, 255, 255, 255).
 		// Returns true if the texture is recreated successfully, false otherwise.
 		bool Realloc(int width, int height);
+
 	};
 
 }

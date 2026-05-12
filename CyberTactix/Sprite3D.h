@@ -18,7 +18,7 @@ namespace pix
 		Sprite3D() = default;
 		Sprite3D(const SpriteMesh* mesh, const Transform3D& transform);
 		Sprite3D(const SpriteMesh* mesh, const Transform3D& transform, const Transform3D& prevTransform);
-		Sprite3D(const SpriteMesh* mesh, const Vec3& position = Vec3(0.0, 0.0, 0.0), Vec3f scale = Vec3f(1.0f, 1.0f, 1.0f), const Rotation3D& rotation = Rotation3D());
+		explicit Sprite3D(const SpriteMesh* mesh, const Vec3& position = Vec3(0.0, 0.0, 0.0), Vec3f scale = Vec3f(1.0f, 1.0f, 1.0f), const Rotation3D& rotation = Rotation3D());
 
 		~Sprite3D() override = default;
 

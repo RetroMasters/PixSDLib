@@ -112,7 +112,7 @@ namespace pix
 
 		SpriteMeshAnimator() = default;
 
-		SpriteMeshAnimator(const std::vector<KeyframeType>* frameSequence, SpriteMesh* targetMesh = nullptr) : 
+		explicit SpriteMeshAnimator(const std::vector<KeyframeType>* frameSequence, SpriteMesh* targetMesh = nullptr) : 
 			frameSequence_(frameSequence), 
 			targetMesh_(targetMesh)
 		{

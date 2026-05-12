@@ -19,7 +19,7 @@ namespace pix
 
 		StreamingTexture() = default;
 		StreamingTexture(int width, int height);
-		~StreamingTexture() override = default;
+		~StreamingTexture() override;
 
 		// Realloc() recreates a resized texture and preserves the previous blend state.
 		// If called on an uninitialized texture, default SDL state is applied (SDL_BLENDMODE_BLEND, RGBA = 255, 255, 255, 255).
@@ -56,11 +56,11 @@ if (streamingTexture.Lock(&pixels, &pitch))
 {
 	Uint8* row = (Uint8*)pixels;
 
-	for (int y = 0; y < height; ++y)
+	for (int y = 0; y < height; y++)
 	{
 		Uint8* pixel = row;
 
-		for (int x = 0; x < width; ++x)
+		for (int x = 0; x < width; x++)
 		{
 			pixel[0] = 0x00; // R
 			pixel[1] = 0xFF; // G
@@ -88,11 +88,11 @@ if (streamingTexture.Lock(&pixels, &pitch))
 {
 	Uint8* rowBytes = (Uint8*)pixels;
 
-	for (int y = 0; y < height; ++y)
+	for (int y = 0; y < height; y++)
 	{
 		SDL_Color* row = (SDL_Color*)rowBytes;
 
-		for (int x = 0; x < width; ++x)
+		for (int x = 0; x < width; x++)
 			row[x] = SDL_Color{ 0, 255, 255, 255 };
 
 		rowBytes += pitch;

@@ -225,6 +225,9 @@
     <ClCompile Include="SpriteMeshOps.cpp">
       <Filter>Source Files\PixSDLib\Graphics\Geometry2D</Filter>
     </ClCompile>
+    <ClCompile Include="TextureOps.cpp">
+      <Filter>Source Files\PixSDLib\Graphics\Texture</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="ErrorLogger.h">
@@ -355,6 +358,9 @@
     </ClInclude>
     <ClInclude Include="ClassStyleReference.h">
       <Filter>Header Files\PixSDLib\Misc</Filter>
+    </ClInclude>
+    <ClInclude Include="TextureOps.h">
+      <Filter>Header Files\PixSDLib\Graphics\Texture</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

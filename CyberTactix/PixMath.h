@@ -448,9 +448,13 @@ namespace pix
 	{
 	public:
 
+		friend Rotation2D GetInterpolated(Rotation2D startRotation, Rotation2D endRotation, float interpolationAlpha);
+
+
+
 		Rotation2D() = default;
 
-		Rotation2D(float degrees);
+		explicit Rotation2D(float degrees);
 
 
 
@@ -484,9 +488,6 @@ namespace pix
 
 		Rotation2D GetInverse() const;
 
-		
-
-		friend Rotation2D GetInterpolated(Rotation2D startRotation, Rotation2D endRotation, float interpolationAlpha);
 
 	private:
 
@@ -513,6 +514,10 @@ namespace pix
 	class Rotation3D
 	{
 	public:
+
+		friend Rotation3D GetInterpolated(const Rotation3D& startRotation, const Rotation3D& endRotation, float interpolationAlpha);
+
+
 
 		Rotation3D() = default;
 
@@ -574,9 +579,6 @@ namespace pix
 		Vec3f GetZAxis() const;
 
 
-
-		friend Rotation3D GetInterpolated(const Rotation3D& startRotation, const Rotation3D& endRotation, float interpolationAlpha);
-
 	private:
 
 		Rotation3D(Vec3f xAxis, Vec3f yAxis); // Used for AddGlobalRotation(Vec3f rotAxis, float degrees)
@@ -623,7 +625,7 @@ namespace pix
 	{
 		Transform2D() = default;
 
-		Transform2D(Vec2 position, Vec2f scale = Vec2f(1.0f, 1.0f), Rotation2D rotation = Rotation2D());
+		explicit Transform2D(Vec2 position, Vec2f scale = Vec2f(1.0f, 1.0f), Rotation2D rotation = Rotation2D());
 
 		// Applies the transform to points.
 		// points must be non-null when count > 0. Caller must ensure count does not exceed the array length.
@@ -659,7 +661,7 @@ namespace pix
 	{
 		Transform3D() = default;
 
-		Transform3D(const Vec3& position, Vec3f scale = Vec3f(1.0f, 1.0f, 1.0f), const Rotation3D& rotation = Rotation3D());
+		explicit Transform3D(const Vec3& position, Vec3f scale = Vec3f(1.0f, 1.0f, 1.0f), const Rotation3D& rotation = Rotation3D());
 
 		// Applies the transform to points.
 		// points must be non-null when count > 0. Caller must ensure count does not exceed the array length.

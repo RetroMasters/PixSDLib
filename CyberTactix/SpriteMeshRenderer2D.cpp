@@ -272,7 +272,88 @@ namespace pix
 		vertexBatch_.emplace_back(quadPoint, vertices[3].Color, vertices[3].UV);
 	}
 
-	
+	void SpriteMeshRenderer2D::RenderPixel(const SpriteMesh& mesh, Vec2f position, float pixelSize)
+	{
+		const Vertex2D* const vertices = mesh.Vertices;
+
+		const float halfSize = pixelSize * 0.5f; // Half side length of the generated quad
+
+		// Top-left corner
+		Vec2f quadPoint(position.X - halfSize, position.Y - halfSize);
+		vertexBatch_.emplace_back(quadPoint, vertices[0].Color, vertices[0].UV);
+
+		// Top-right corner
+		quadPoint = Vec2f(position.X + halfSize, position.Y - halfSize);
+		vertexBatch_.emplace_back(quadPoint, vertices[1].Color, vertices[1].UV);
+
+		// Bottom-right corner
+		quadPoint = Vec2f(position.X + halfSize, position.Y + halfSize);
+		vertexBatch_.emplace_back(quadPoint, vertices[2].Color, vertices[2].UV);
+
+		// Bottom-left corner
+		quadPoint = Vec2f(position.X - halfSize, position.Y + halfSize);
+		vertexBatch_.emplace_back(quadPoint, vertices[3].Color, vertices[3].UV);
+	}
+
+	void SpriteMeshRenderer2D::RenderPixelLine(const SpriteMesh& mesh, Vec2f startPosition, Vec2f endPosition, float lineWidth)
+	{
+		const Vertex2D* const vertices = mesh.Vertices;
+
+		const Vec2f halfWidthNormal = ((startPosition - endPosition).Normalize() * (lineWidth * 0.5f)).GetNormal();
+
+		// Add quad points in clockwise order on the render target around the centered line segment
+		Vec2f quadPoint = startPosition + halfWidthNormal;
+		vertexBatch_.emplace_back(quadPoint, vertices[0].Color, vertices[0].UV);
+
+		quadPoint = endPosition + halfWidthNormal;
+		vertexBatch_.emplace_back(quadPoint, vertices[1].Color, vertices[1].UV);
+
+		quadPoint = endPosition - halfWidthNormal;
+		vertexBatch_.emplace_back(quadPoint, vertices[2].Color, vertices[2].UV);
+
+		quadPoint = startPosition - halfWidthNormal;
+		vertexBatch_.emplace_back(quadPoint, vertices[3].Color, vertices[3].UV);
+	}
+
+	void SpriteMeshRenderer2D::RenderHorizontalPixelLine(const SpriteMesh& mesh, Vec2f startPosition, float length, float lineWidth)
+	{
+		const Vertex2D* const vertices = mesh.Vertices;
+
+		const float halfWidth = lineWidth * 0.5f;
+
+		// Add quad points in clockwise order on the render target around the centered line segment
+		Vec2f quadPoint(startPosition.X, startPosition.Y - halfWidth);
+		vertexBatch_.emplace_back(quadPoint, vertices[0].Color, vertices[0].UV);
+
+		quadPoint = Vec2f(startPosition.X + length, startPosition.Y - halfWidth);
+		vertexBatch_.emplace_back(quadPoint, vertices[1].Color, vertices[1].UV);
+
+		quadPoint = Vec2f(startPosition.X + length, startPosition.Y + halfWidth);
+		vertexBatch_.emplace_back(quadPoint, vertices[2].Color, vertices[2].UV);
+
+		quadPoint = Vec2f(startPosition.X, startPosition.Y + halfWidth);
+		vertexBatch_.emplace_back(quadPoint, vertices[3].Color, vertices[3].UV);
+	}
+
+	void SpriteMeshRenderer2D::RenderVerticalPixelLine(const SpriteMesh& mesh, Vec2f startPosition, float length, float lineWidth)
+	{
+		const Vertex2D* const vertices = mesh.Vertices;
+
+		const float halfWidth = lineWidth * 0.5f;
+
+		// Add quad points in clockwise order on the render target around the centered line segment
+		Vec2f quadPoint(startPosition.X - halfWidth, startPosition.Y);
+		vertexBatch_.emplace_back(quadPoint, vertices[0].Color, vertices[0].UV);
+
+		quadPoint = Vec2f(startPosition.X + halfWidth, startPosition.Y);
+		vertexBatch_.emplace_back(quadPoint, vertices[1].Color, vertices[1].UV);
+
+		quadPoint = Vec2f(startPosition.X + halfWidth, startPosition.Y + length);
+		vertexBatch_.emplace_back(quadPoint, vertices[2].Color, vertices[2].UV);
+
+		quadPoint = Vec2f(startPosition.X - halfWidth, startPosition.Y + length);
+		vertexBatch_.emplace_back(quadPoint, vertices[3].Color, vertices[3].UV);
+	}
 
 	void SpriteMeshRenderer2D::BeginBatch(const MovableObject2D& camera, Vec2f renderTargetOffset, float interpolationAlpha)
 	{

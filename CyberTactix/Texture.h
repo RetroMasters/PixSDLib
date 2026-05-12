@@ -38,6 +38,10 @@ namespace pix
 		// Modulates all channels for a blending operation
 		void SetRGBAMod(Uint8 r, Uint8 g, Uint8 b, Uint8 alpha); // Convenience function; avoids multiple SDL calls
 
+		// Sets the scale filter used when this texture is rendered with scaling.
+		// false = nearest pixel sampling, true = linear filtering.
+		void SetLinearFilter(bool isLinearFilter);
+
 
 
 		// Returns SDL_BLENDMODE_INVALID if the texture is not initialized
@@ -57,6 +61,14 @@ namespace pix
 
 		// Ownership remains with Texture; destroying the exposed SDL_Texture results in undefined behavior.
 		SDL_Texture* GetSDLTexture() const; // Get the resource for the C API
+
+		// Returns true if this texture uses linear filtering, false if it uses nearest filtering.
+		// Returns false if the texture is not initialized or the query fails.
+		bool IsLinearFilter() const;
+
+		// Returns true if this Texture currently wraps a valid SDL_Texture.
+		// Derived classes must ensure that sdlTexture_ is either nullptr or a valid initialized texture.
+		bool IsInitialized() const;
 
 	protected:
 

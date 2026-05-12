@@ -23,7 +23,7 @@ namespace pix
 		Sprite3DExNode() = default;
 		Sprite3DExNode(const TriangleMesh2D* mesh, const Transform3D& transform);
 		Sprite3DExNode(const TriangleMesh2D* mesh, const Transform3D& transform, const Transform3D& prevTransform);
-		Sprite3DExNode(const TriangleMesh2D* mesh, const Vec3& position, Vec3f scale = Vec3f(1.0f, 1.0f, 1.0f), const Rotation3D& rotation = Rotation3D());
+		explicit Sprite3DExNode(const TriangleMesh2D* mesh, const Vec3& position = Vec3(0.0, 0.0, 0.0), Vec3f scale = Vec3f(1.0f, 1.0f, 1.0f), const Rotation3D& rotation = Rotation3D());
 
 		// Prevent copying
 		Sprite3DExNode(const Sprite3DExNode&) = delete;

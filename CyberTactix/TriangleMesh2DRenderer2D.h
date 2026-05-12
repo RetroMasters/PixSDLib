@@ -43,7 +43,7 @@ namespace pix
 
 	public:
 
-		TriangleMesh2DRenderer2D(int initialVertexBatchCapacity = 50000);
+		explicit TriangleMesh2DRenderer2D(int initialVertexBatchCapacity = 50000);
 		~TriangleMesh2DRenderer2D() = default;
 
 		// Renders a TriangleMesh2D using the specified world transform.

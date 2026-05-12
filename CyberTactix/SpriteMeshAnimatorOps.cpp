@@ -5,18 +5,18 @@
 namespace pix
 {
 
-	std::vector<SpriteMeshUVKeyframe> GetUVKeyframeSequence(int texWidth, int texHeight, const SDL_Rect& startRect, int frameCount, float tickDuration, SDL_RendererFlip flip)
+	std::vector<SpriteMeshUVKeyframe> GetUVKeyframeSequence(int texWidth, int texHeight, const SDL_Rect& startRect, int frameCount, float durationTicks, SDL_RendererFlip flip)
 	{
 		std::vector<SpriteMeshUVKeyframe> frameSequence;
 
-		if (!IsRectInTexBounds(texWidth, texHeight, startRect) || startRect.w <= 0 || startRect.h <= 0 || frameCount < 1 || tickDuration <= 0.0f)
+		if (!IsRectInTexBounds(texWidth, texHeight, startRect) || startRect.w <= 0 || startRect.h <= 0 || frameCount < 1 || durationTicks <= 0.0f)
 			return frameSequence;
 
 		frameSequence.reserve(frameCount);
 
 		SDL_Rect sampleRect = startRect;
 	    
-		frameSequence.emplace_back(GetUVQuad(texWidth, texHeight, sampleRect), tickDuration);
+		frameSequence.emplace_back(GetUVQuad(texWidth, texHeight, sampleRect), durationTicks);
 
 		for (int i = 1; i < frameCount; i++)
 		{
@@ -24,14 +24,14 @@ namespace pix
 			{
 				sampleRect.x += sampleRect.w;
 			    
-				frameSequence.emplace_back(GetUVQuad(texWidth, texHeight, sampleRect), tickDuration);
+				frameSequence.emplace_back(GetUVQuad(texWidth, texHeight, sampleRect), durationTicks);
 			}
 			else if (sampleRect.y + (2 * sampleRect.h) <= texHeight) // Is there enough vertical space for another frame in the next row?
 			{
 				sampleRect.x = 0;
 				sampleRect.y += sampleRect.h;
 
-				frameSequence.emplace_back(GetUVQuad(texWidth, texHeight, sampleRect), tickDuration);
+				frameSequence.emplace_back(GetUVQuad(texWidth, texHeight, sampleRect), durationTicks);
 			}
 			else
 			{

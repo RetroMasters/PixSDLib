@@ -61,6 +61,22 @@ namespace pix
 			ErrorLogger::Get().LogSDLError("Texture::SetRGBAMod() - SDL_SetTextureAlphaMod() failure");
 	}
 
+	void Texture::SetLinearFilter(bool isLinearFilter)
+	{
+		if (!sdlTexture_)
+		{
+			ErrorLogger::Get().LogError("Texture::SetLinearFilter() failure", "sdlTexture_ is nullptr!");
+			return;
+		}
+
+		const SDL_ScaleMode scaleMode = isLinearFilter ? SDL_ScaleModeLinear : SDL_ScaleModeNearest;
+
+		if (SDL_SetTextureScaleMode(sdlTexture_, scaleMode) != 0)
+			ErrorLogger::Get().LogSDLError("Texture::SetLinearFilter() - SDL_SetTextureScaleMode() failure");
+			
+	}
+
+
 
 
 	SDL_BlendMode Texture::GetBlendMode() const 
@@ -138,6 +154,29 @@ namespace pix
 		return sdlTexture_;
 	}
 
+	bool Texture::IsLinearFilter() const
+	{
+		if (!sdlTexture_)
+		{
+			ErrorLogger::Get().LogError("Texture::IsLinearFilter() failure", "sdlTexture_ is nullptr!");
+			return false;
+		}
+
+		SDL_ScaleMode scaleMode;
+
+		if (SDL_GetTextureScaleMode(sdlTexture_, &scaleMode) != 0)
+		{
+			ErrorLogger::Get().LogSDLError("Texture::IsLinearFilter() - SDL_GetTextureScaleMode() failure");
+			return false;
+		}
+
+		return scaleMode == SDL_ScaleModeLinear || scaleMode == SDL_ScaleModeBest;
+	}
+
+	bool Texture::IsInitialized() const
+	{
+		return sdlTexture_ != nullptr;
+	}
 
 	void Texture::DestroySDLTexture()
 	{

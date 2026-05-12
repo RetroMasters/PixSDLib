@@ -14,9 +14,9 @@ namespace pix
 	public:
 
 		MovableObject2D() = default;
-		MovableObject2D(const Transform2D& transform);
+		explicit MovableObject2D(const Transform2D& transform);
 		MovableObject2D(const Transform2D& transform, const Transform2D& prevTransform);
-		MovableObject2D(Vec2 position, Vec2f scale = Vec2f(1.0f, 1.0f), Rotation2D rotation = Rotation2D());
+		explicit MovableObject2D(Vec2 position, Vec2f scale = Vec2f(1.0f, 1.0f), Rotation2D rotation = Rotation2D());
 
 		virtual ~MovableObject2D() = default;
 

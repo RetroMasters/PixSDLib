@@ -44,7 +44,7 @@ namespace pix
 
 	public:
  
-		TriangleMeshRenderer3D(int initialVertexBatchCapacity = 50000);
+		explicit TriangleMeshRenderer3D(int initialVertexBatchCapacity = 50000);
 		~TriangleMeshRenderer3D() = default;
 
 		// Renders a TriangleMesh3D using the specified world transform.

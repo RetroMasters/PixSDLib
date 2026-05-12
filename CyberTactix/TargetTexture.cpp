@@ -10,7 +10,7 @@ namespace pix
 	   Realloc(width, height);
 	}
 
-	bool TargetTexture::Realloc(int width, int height) 
+	bool TargetTexture::Realloc(int width, int height)
 	{
 		if (width <= 0 || height <= 0)
 		{
@@ -37,9 +37,9 @@ namespace pix
 
 		DestroySDLTexture();
 		sdlTexture_ = newTexture;
-		
+
 		// Restore blend state
-		SetBlendMode(blendMode); 
+		SetBlendMode(blendMode);
 		SetRGBAMod(r, g, b, a);
 
 		return true;
